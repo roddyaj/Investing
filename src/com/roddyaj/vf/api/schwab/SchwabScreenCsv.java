@@ -1,4 +1,4 @@
-package com.roddyaj.vf.api.schwab.csv;
+package com.roddyaj.vf.api.schwab;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

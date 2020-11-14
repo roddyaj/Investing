@@ -7,5 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/commons-csv-1.8.jar" sourcepath="lib/commons-csv-1.8-sources.jar"/>
+	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar" sourcepath="lib/json-simple-1.1.1-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

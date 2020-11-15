@@ -54,15 +54,10 @@ public class RequestCache
 		}
 	}
 
-	private String getString(URI uri, String cacheKey) throws IOException
+	public String getString(URI uri, String cacheKey) throws IOException
 	{
 		return get(uri, cacheKey, this::requestString, Files::readString);
 	}
-
-//	private byte[] getBytes(URI uri, String cacheKey) throws IOException
-//	{
-//		return get(uri, cacheKey, this::requestBytes, Files::readAllBytes);
-//	}
 
 	private String requestString(HttpRequest request, Path cacheFile) throws IOException
 	{
@@ -77,20 +72,6 @@ public class RequestCache
 			throw new IOException(e);
 		}
 	}
-
-//	private byte[] requestBytes(HttpRequest request, Path cacheFile) throws IOException
-//	{
-//		try
-//		{
-//			HttpResponse<byte[]> response = client.send(request, BodyHandlers.ofByteArray());
-//			Files.write(cacheFile, response.body());
-//			return response.body();
-//		}
-//		catch (InterruptedException e)
-//		{
-//			throw new IOException(e);
-//		}
-//	}
 
 	private <T> T get(URI uri, String cacheKey, Requester<T> requester, Reader<T> reader) throws IOException
 	{

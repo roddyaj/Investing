@@ -3,8 +3,11 @@ package com.roddyaj.vf.api.alphavantage;
 import java.io.IOException;
 import java.net.URI;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import com.roddyaj.vf.model.Pair;
+import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.request.RequestCache;
 
 public class AlphaVantageAPI
@@ -19,6 +22,32 @@ public class AlphaVantageAPI
 	{
 		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).toString();
 		cache = new RequestCache();
+	}
+
+	public SymbolData requestData(String symbol) throws IOException
+	{
+		SymbolData data = new SymbolData();
+		JSONObject json;
+
+		json = getOverview(symbol);
+		data.eps = Double.parseDouble((String)json.get("EPS"));
+		data.analystTargetPrice = Double.parseDouble((String)json.get("AnalystTargetPrice"));
+
+		json = getBalanceSheet(symbol);
+		JSONArray annualReports = (JSONArray)json.get("annualReports");
+		for (Object r : annualReports)
+		{
+			JSONObject report = (JSONObject)r;
+			String periodEnding = (String)report.get("fiscalDateEnding");
+			long equity = Long.parseLong((String)report.get("totalShareholderEquity"));
+			data.shareholderEquity.add(new Pair<>(periodEnding, equity));
+		}
+
+		json = getQuote(symbol);
+		JSONObject quote = (JSONObject)json.get("Global Quote");
+		data.price = Double.parseDouble((String)quote.get("05. price"));
+
+		return data;
 	}
 
 	public JSONObject getOverview(String symbol) throws IOException

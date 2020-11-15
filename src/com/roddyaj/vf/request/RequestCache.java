@@ -1,0 +1,127 @@
+package com.roddyaj.vf.request;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+public class RequestCache
+{
+	private final HttpRequest.Builder requestBuilder;
+
+	private final HttpClient client;
+
+	private final Path cacheRoot;
+
+	public RequestCache()
+	{
+		client = HttpClient.newHttpClient();
+		requestBuilder = HttpRequest.newBuilder();
+		cacheRoot = Paths.get(System.getProperty("user.home"), ".vf", "cache");
+		if (!Files.exists(cacheRoot))
+		{
+			try
+			{
+				Files.createDirectories(cacheRoot);
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public JSONObject getJson(URI uri, String cacheKey) throws IOException
+	{
+		String responseBody = getString(uri, cacheKey);
+		JSONParser parser = new JSONParser();
+		try
+		{
+			return (JSONObject)parser.parse(responseBody);
+		}
+		catch (ParseException e)
+		{
+			throw new IOException(e);
+		}
+	}
+
+	private String getString(URI uri, String cacheKey) throws IOException
+	{
+		return get(uri, cacheKey, this::requestString, Files::readString);
+	}
+
+//	private byte[] getBytes(URI uri, String cacheKey) throws IOException
+//	{
+//		return get(uri, cacheKey, this::requestBytes, Files::readAllBytes);
+//	}
+
+	private String requestString(HttpRequest request, Path cacheFile) throws IOException
+	{
+		try
+		{
+			HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+			Files.writeString(cacheFile, response.body());
+			return response.body();
+		}
+		catch (InterruptedException e)
+		{
+			throw new IOException(e);
+		}
+	}
+
+//	private byte[] requestBytes(HttpRequest request, Path cacheFile) throws IOException
+//	{
+//		try
+//		{
+//			HttpResponse<byte[]> response = client.send(request, BodyHandlers.ofByteArray());
+//			Files.write(cacheFile, response.body());
+//			return response.body();
+//		}
+//		catch (InterruptedException e)
+//		{
+//			throw new IOException(e);
+//		}
+//	}
+
+	private <T> T get(URI uri, String cacheKey, Requester<T> requester, Reader<T> reader) throws IOException
+	{
+		Path requestDir = Paths.get(cacheRoot.toString(), cacheKey);
+		if (!Files.exists(requestDir))
+			Files.createDirectory(requestDir);
+//		Path propertiesFile = Paths.get(requestDir.toString(), "properties");
+		Path responseFile = Paths.get(requestDir.toString(), "response");
+		if (Files.exists(responseFile))
+		{
+			System.out.println("Cache:  " + uri);
+			T cachedBody = reader.read(responseFile);
+			return cachedBody;
+		}
+		else
+		{
+			System.out.println("Remote: " + uri);
+			HttpRequest request = requestBuilder.uri(uri).build();
+			return requester.request(request, responseFile);
+		}
+	}
+
+	@FunctionalInterface
+	private interface Reader<T>
+	{
+		T read(Path cacheFile) throws IOException;
+	}
+
+	@FunctionalInterface
+	private interface Requester<T>
+	{
+		T request(HttpRequest request, Path cacheFile) throws IOException;
+	}
+}

@@ -2,14 +2,10 @@ package com.roddyaj.vf.api.alphavantage;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+
+import com.roddyaj.vf.request.RequestCache;
 
 public class AlphaVantageAPI
 {
@@ -17,26 +13,33 @@ public class AlphaVantageAPI
 
 	private final String urlBase;
 
-	private final HttpClient client;
-
-	private final HttpRequest.Builder requestBuilder;
+	private final RequestCache cache;
 
 	public AlphaVantageAPI(String apiKey)
 	{
-		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).append('&').toString();
-		client = HttpClient.newHttpClient();
-		requestBuilder = HttpRequest.newBuilder();
+		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).toString();
+		cache = new RequestCache();
 	}
 
-	public JSONObject getOverview(String symbol) throws IOException, InterruptedException, ParseException
+	public JSONObject getOverview(String symbol) throws IOException
 	{
-		String url = new StringBuilder(urlBase).append("function=OVERVIEW&symbol=").append(symbol).toString();
-		HttpRequest request = requestBuilder.uri(URI.create(url)).build();
-		HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+		return getAsJSON(symbol, "OVERVIEW");
+	}
 
-		System.out.println(url + ": " + response.statusCode());
+	public JSONObject getBalanceSheet(String symbol) throws IOException
+	{
+		return getAsJSON(symbol, "BALANCE_SHEET");
+	}
 
-		JSONParser parser = new JSONParser();
-		return (JSONObject)parser.parse(response.body());
+	public JSONObject getQuote(String symbol) throws IOException
+	{
+		return getAsJSON(symbol, "GLOBAL_QUOTE");
+	}
+
+	private JSONObject getAsJSON(String symbol, String function) throws IOException
+	{
+		String url = new StringBuilder(urlBase).append("&function=").append(function).append("&symbol=").append(symbol).toString();
+		String cacheKey = new StringBuilder("AV_").append(symbol).append('_').append(function).toString();
+		return cache.getJson(URI.create(url), cacheKey);
 	}
 }

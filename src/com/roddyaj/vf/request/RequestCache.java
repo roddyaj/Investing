@@ -82,12 +82,21 @@ public class RequestCache
 		Path responseFile = Paths.get(requestDir.toString(), "response");
 		if (Files.exists(responseFile))
 		{
-			System.out.println("Cache:  " + uri);
+//			System.out.println("Cache:  " + uri);
 			T cachedBody = reader.read(responseFile);
 			return cachedBody;
 		}
 		else
 		{
+			try
+			{
+				Thread.sleep(21_000);
+			}
+			catch (InterruptedException e)
+			{
+				throw new IOException(e);
+			}
+
 			System.out.println("Remote: " + uri);
 			HttpRequest request = requestBuilder.uri(uri).build();
 			return requester.request(request, responseFile);

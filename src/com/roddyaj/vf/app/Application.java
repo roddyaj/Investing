@@ -9,15 +9,17 @@ import java.util.List;
 
 import com.roddyaj.vf.api.alphavantage.AlphaVantageAPI;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
+import com.roddyaj.vf.model.Pair;
 import com.roddyaj.vf.model.SymbolData;
+import com.roddyaj.vf.strategy.AnalystTargetStrategy;
+import com.roddyaj.vf.strategy.Rule1Strategy;
+import com.roddyaj.vf.strategy.Strategy;
 
 public class Application
 {
 	private final Path inputFile;
 
 	private final String apiKey;
-
-	private final boolean sleep = true;
 
 	public Application(String[] args)
 	{
@@ -68,16 +70,12 @@ public class Application
 		AlphaVantageAPI avAPI = new AlphaVantageAPI(apiKey);
 		try
 		{
-			int index = 0;
 			for (String symbol : symbols)
 			{
 				try
 				{
 					SymbolData data = avAPI.requestData(symbol);
-					calculate(symbol, data, index++);
-
-					if (sleep)
-						Thread.sleep(61_000);
+					evaluate(symbol, data);
 				}
 				catch (RuntimeException e)
 				{
@@ -85,38 +83,28 @@ public class Application
 				}
 			}
 		}
-		catch (IOException | InterruptedException e)
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
 	}
 
-	private void calculate(String symbol, SymbolData data, int index)
+	private void evaluate(String symbol, SymbolData data)
 	{
-		double historicalPE = 1000; // TODO
+		List<Strategy> strategies = List.of(new Rule1Strategy(), new AnalystTargetStrategy());
 
-		int years = data.shareholderEquity.size() - 1;
-		double recentEquity = data.shareholderEquity.get(0).second.doubleValue();
-		double olderEquity = data.shareholderEquity.get(data.shareholderEquity.size() - 1).second.doubleValue();
-		double growthRate = Math.pow(recentEquity / olderEquity, 1. / years);
-//		System.out.println(recentEquity + " " + olderEquity + " " + years + " " + growthRate);
-
-		final double marr = 0.15;
-		final double mosFactor = 0.5;
-
-		double mosPrice = data.eps * Math.min(historicalPE, (growthRate - 1) * 100 * 2) * Math.pow(growthRate, 5) / Math.pow(1 + marr, 5) * mosFactor;
-
-		boolean buy = data.price < mosPrice;
-		boolean analystBuy = data.price < data.analystTargetPrice;
-
-		boolean logIt = buy && analystBuy;
-		if (logIt)
+		boolean allPass = true;
+		StringBuilder message = new StringBuilder();
+		message.append(String.format("%-5s %7.2f", symbol, data.price));
+		for (Strategy strategy : strategies)
 		{
-			StringBuilder message = new StringBuilder();
-			message.append(String.format("%3d. %-5s %7.2f", index, symbol, data.price)).append("   ");
-			message.append(String.format("Rule 1: %7.2f %-4s", mosPrice, (buy ? "Yes!" : "No"))).append("   ");
-			message.append(String.format("Analyst: %7.2f %-4s", data.analystTargetPrice, (analystBuy ? "Yes!" : "No")));
-			System.out.println(message);
+			Pair<Boolean, String> result = strategy.evaluate(data);
+			boolean pass = result.first.booleanValue();
+			allPass &= pass;
+			message.append("   ").append(result.second).append(String.format(" %-4s", pass ? "Yes!" : "No"));
 		}
+
+		if (allPass)
+			System.out.println(message);
 	}
 }

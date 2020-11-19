@@ -24,16 +24,15 @@ public class AlphaVantageAPI
 		cache = new RequestCache();
 	}
 
-	public SymbolData requestData(String symbol) throws IOException
+	public void requestData(SymbolData data) throws IOException
 	{
-		SymbolData data = new SymbolData();
 		JSONObject json;
 
-		json = getOverview(symbol);
+		json = getOverview(data.symbol);
 		data.eps = Double.parseDouble((String)json.get("EPS"));
 		data.analystTargetPrice = Double.parseDouble((String)json.get("AnalystTargetPrice"));
 
-		json = getBalanceSheet(symbol);
+		json = getBalanceSheet(data.symbol);
 		JSONArray annualReports = (JSONArray)json.get("annualReports");
 		for (Object r : annualReports)
 		{
@@ -43,11 +42,9 @@ public class AlphaVantageAPI
 			data.shareholderEquity.add(new Pair<>(periodEnding, equity));
 		}
 
-		json = getQuote(symbol);
+		json = getQuote(data.symbol);
 		JSONObject quote = (JSONObject)json.get("Global Quote");
 		data.price = Double.parseDouble((String)quote.get("05. price"));
-
-		return data;
 	}
 
 	public JSONObject getOverview(String symbol) throws IOException

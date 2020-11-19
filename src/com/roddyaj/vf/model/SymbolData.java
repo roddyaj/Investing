@@ -5,8 +5,14 @@ import java.util.List;
 
 public class SymbolData
 {
+	public final String symbol;
 	public double eps;
 	public List<Pair<String, Long>> shareholderEquity = new ArrayList<>();
 	public double analystTargetPrice;
 	public double price;
+
+	public SymbolData(String symbol)
+	{
+		this.symbol = symbol;
+	}
 }

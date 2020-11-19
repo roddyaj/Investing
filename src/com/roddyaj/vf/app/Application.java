@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.roddyaj.vf.api.alphavantage.AlphaVantageAPI;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
@@ -17,88 +18,80 @@ import com.roddyaj.vf.strategy.Strategy;
 
 public class Application
 {
-	private final Path inputFile;
-
-	private final String apiKey;
+	private final String[] args;
 
 	public Application(String[] args)
 	{
-		inputFile = args.length > 0 ? Paths.get(args[0]) : null;
-		apiKey = args.length > 1 ? args[1] : null;
+		this.args = args;
 	}
 
 	public void run()
 	{
-		if (argsValid())
+		try
 		{
-			List<String> symbols = parseInputFile();
-			if (!symbols.isEmpty())
-				processSymbols(symbols);
+			List<SymbolData> stocks = getStocksToCheck(args);
+			populateData(stocks, args);
+			evaluate(stocks);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 
-	private boolean argsValid()
+	private List<SymbolData> getStocksToCheck(String[] args) throws IOException
 	{
-		boolean valid = false;
+		List<SymbolData> stocks = List.of();
+		Path inputFile = args.length > 0 ? Paths.get(args[0]) : null;
 		if (inputFile == null)
 			System.out.println("Error: No file specified");
 		else if (!Files.exists(inputFile))
 			System.out.println(String.format("Error: %s does not exist", inputFile.toString()));
-		else if (apiKey == null)
+		else
+			stocks = SchwabScreenCsv.parseSymbols(inputFile).stream().map(SymbolData::new).collect(Collectors.toList());
+		return stocks;
+	}
+
+	private void populateData(Collection<? extends SymbolData> stocks, String[] args) throws IOException
+	{
+		String apiKey = args.length > 1 ? args[1] : null;
+		if (apiKey == null)
 			System.out.println("Error: No API key specified");
 		else
-			valid = true;
-		return valid;
+		{
+			AlphaVantageAPI avAPI = new AlphaVantageAPI(apiKey);
+			for (SymbolData stock : stocks)
+				populateData(stock, avAPI);
+		}
 	}
 
-	private List<String> parseInputFile()
+	private void populateData(SymbolData stock, AlphaVantageAPI avAPI) throws IOException
 	{
-		List<String> symbols = List.of();
 		try
 		{
-			symbols = SchwabScreenCsv.parseSymbols(inputFile);
+			avAPI.requestData(stock);
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		return symbols;
-	}
-
-	private void processSymbols(Collection<? extends String> symbols)
-	{
-		AlphaVantageAPI avAPI = new AlphaVantageAPI(apiKey);
-		try
-		{
-			for (String symbol : symbols)
-			{
-				try
-				{
-					SymbolData data = avAPI.requestData(symbol);
-					evaluate(symbol, data);
-				}
-				catch (RuntimeException e)
-				{
-					e.printStackTrace();
-				}
-			}
-		}
-		catch (IOException e)
+		catch (RuntimeException e)
 		{
 			e.printStackTrace();
 		}
 	}
 
-	private void evaluate(String symbol, SymbolData data)
+	private void evaluate(Collection<? extends SymbolData> stocks)
 	{
 		List<Strategy> strategies = List.of(new Rule1Strategy(), new AnalystTargetStrategy());
+		for (SymbolData stock : stocks)
+			evaluate(stock, strategies);
+	}
 
+	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies)
+	{
 		boolean allPass = true;
 		StringBuilder message = new StringBuilder();
-		message.append(String.format("%-5s %7.2f", symbol, data.price));
+		message.append(String.format("%-5s %7.2f", stock.symbol, stock.price));
 		for (Strategy strategy : strategies)
 		{
-			Pair<Boolean, String> result = strategy.evaluate(data);
+			Pair<Boolean, String> result = strategy.evaluate(stock);
 			boolean pass = result.first.booleanValue();
 			allPass &= pass;
 			message.append("   ").append(result.second).append(String.format(" %-4s", pass ? "Yes!" : "No"));

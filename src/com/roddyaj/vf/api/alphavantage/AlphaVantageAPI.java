@@ -45,9 +45,12 @@ public class AlphaVantageAPI
 			data.shareholderEquity.add(new Pair<>(periodEnding, equity));
 		}
 
-		json = getQuote(data.symbol);
-		JSONObject quote = (JSONObject)json.get("Global Quote");
-		data.price = Double.parseDouble((String)quote.get("05. price"));
+		if (data.price == 0)
+		{
+			json = getQuote(data.symbol);
+			JSONObject quote = (JSONObject)json.get("Global Quote");
+			data.price = Double.parseDouble((String)quote.get("05. price"));
+		}
 	}
 
 	public JSONObject getOverview(String symbol) throws IOException

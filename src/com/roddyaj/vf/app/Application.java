@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,25 +31,31 @@ public class Application
 		try
 		{
 			List<SymbolData> stocks = getStocksToCheck(args);
-			if (populateData(stocks, args))
-				evaluate(stocks);
+			if (!stocks.isEmpty())
+			{
+				if (populateData(stocks, args))
+					evaluate(stocks);
+			}
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			System.err.println(e);
 		}
 	}
 
 	private List<SymbolData> getStocksToCheck(String[] args) throws IOException
 	{
 		List<SymbolData> stocks = List.of();
-		Path inputFile = args.length > 0 ? Paths.get(args[0]) : null;
-		if (inputFile == null)
-			System.out.println("Error: No file specified");
-		else if (!Files.exists(inputFile))
-			System.out.println(String.format("Error: %s does not exist", inputFile.toString()));
+		if (args.length > 0)
+		{
+			Path inputFile = Paths.get(args[0]);
+			if (Files.exists(inputFile))
+				stocks = SchwabScreenCsv.parseSymbols(inputFile);
+			else
+				stocks = Arrays.stream(args[0].split(",")).map(SymbolData::new).collect(Collectors.toList());
+		}
 		else
-			stocks = SchwabScreenCsv.parseSymbols(inputFile).stream().map(SymbolData::new).collect(Collectors.toList());
+			System.out.println("Usage: TODO");
 		return stocks;
 	}
 

@@ -10,14 +10,16 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import com.roddyaj.vf.model.SymbolData;
+
 // TODO
 // - handle BOM
 // - handle columns in any order
 public class SchwabScreenCsv
 {
-	public static List<String> parseSymbols(Path file) throws IOException
+	public static List<SymbolData> parseSymbols(Path file) throws IOException
 	{
-		List<String> symbols = new ArrayList<>();
+		List<SymbolData> symbols = new ArrayList<>();
 		Charset charset = Charset.forName("UTF-8");
 		CSVFormat format = CSVFormat.DEFAULT;
 		CSVParser parser = CSVParser.parse(file, charset, format);
@@ -25,7 +27,11 @@ public class SchwabScreenCsv
 		for (CSVRecord csvRecord : parser)
 		{
 			if (!isHeader)
-				symbols.add(csvRecord.get(0));
+			{
+				SymbolData stock = new SymbolData(csvRecord.get(0));
+				stock.price = Double.parseDouble(csvRecord.get(2).replace("$", "").replace(",", ""));
+				symbols.add(stock);
+			}
 			isHeader = false;
 		}
 		return symbols;

@@ -29,8 +29,11 @@ public class AlphaVantageAPI
 		JSONObject json;
 
 		json = getOverview(data.symbol);
+		data.name = (String)json.get("Name");
 		data.eps = Double.parseDouble((String)json.get("EPS"));
 		data.analystTargetPrice = Double.parseDouble((String)json.get("AnalystTargetPrice"));
+
+		json = getIncomeStatement(data.symbol);
 
 		json = getBalanceSheet(data.symbol);
 		JSONArray annualReports = (JSONArray)json.get("annualReports");
@@ -50,6 +53,11 @@ public class AlphaVantageAPI
 	public JSONObject getOverview(String symbol) throws IOException
 	{
 		return getAsJSON(symbol, "OVERVIEW");
+	}
+
+	public JSONObject getIncomeStatement(String symbol) throws IOException
+	{
+		return getAsJSON(symbol, "INCOME_STATEMENT");
 	}
 
 	public JSONObject getBalanceSheet(String symbol) throws IOException

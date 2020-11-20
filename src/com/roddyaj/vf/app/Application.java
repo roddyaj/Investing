@@ -30,8 +30,8 @@ public class Application
 		try
 		{
 			List<SymbolData> stocks = getStocksToCheck(args);
-			populateData(stocks, args);
-			evaluate(stocks);
+			if (populateData(stocks, args))
+				evaluate(stocks);
 		}
 		catch (IOException e)
 		{
@@ -52,8 +52,9 @@ public class Application
 		return stocks;
 	}
 
-	private void populateData(Collection<? extends SymbolData> stocks, String[] args) throws IOException
+	private boolean populateData(Collection<? extends SymbolData> stocks, String[] args) throws IOException
 	{
+		boolean populated = false;
 		String apiKey = args.length > 1 ? args[1] : null;
 		if (apiKey == null)
 			System.out.println("Error: No API key specified");
@@ -62,7 +63,9 @@ public class Application
 			AlphaVantageAPI avAPI = new AlphaVantageAPI(apiKey);
 			for (SymbolData stock : stocks)
 				populateData(stock, avAPI);
+			populated = true;
 		}
+		return populated;
 	}
 
 	private void populateData(SymbolData stock, AlphaVantageAPI avAPI) throws IOException
@@ -87,8 +90,8 @@ public class Application
 	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies)
 	{
 		boolean allPass = true;
-		StringBuilder message = new StringBuilder();
-		message.append(String.format("%-5s %7.2f", stock.symbol, stock.price));
+		String name = stock.name.substring(0, Math.min(30, stock.name.length()));
+		StringBuilder message = new StringBuilder(String.format("%-5s %-30s %7.2f", stock.symbol, name, stock.price));
 		for (Strategy strategy : strategies)
 		{
 			Pair<Boolean, String> result = strategy.evaluate(stock);

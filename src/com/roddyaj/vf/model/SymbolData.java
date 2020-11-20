@@ -6,6 +6,7 @@ import java.util.List;
 public class SymbolData
 {
 	public final String symbol;
+	public String name;
 	public double eps;
 	public List<Pair<String, Long>> shareholderEquity = new ArrayList<>();
 	public double analystTargetPrice;

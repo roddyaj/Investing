@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -76,9 +77,10 @@ public class Application
 	{
 		boolean populated = false;
 		String apiKey = (String)settings.get("alphavantage.apiKey");
+		long sleepTime = Duration.parse((String)settings.get("alphavantage.sleep")).toMillis();
 		if (apiKey != null)
 		{
-			AlphaVantageAPI avAPI = new AlphaVantageAPI(apiKey);
+			AlphaVantageAPI avAPI = new AlphaVantageAPI(apiKey, sleepTime);
 			for (SymbolData stock : stocks)
 			{
 				try

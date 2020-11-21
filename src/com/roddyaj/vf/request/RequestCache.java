@@ -22,8 +22,13 @@ public class RequestCache
 
 	private final Path cacheRoot;
 
-	public RequestCache()
+	private final long sleepTime;
+
+	private long lastRequestTime;
+
+	public RequestCache(long sleepTime)
 	{
+		this.sleepTime = sleepTime;
 		client = HttpClient.newHttpClient();
 		requestBuilder = HttpRequest.newBuilder();
 		cacheRoot = Paths.get(System.getProperty("user.home"), ".vf", "cache");
@@ -87,17 +92,22 @@ public class RequestCache
 		}
 		else
 		{
-			try
+			long timeToSleep = sleepTime - (System.currentTimeMillis() - lastRequestTime);
+			if (timeToSleep > 0)
 			{
-				Thread.sleep(21_000);
-			}
-			catch (InterruptedException e)
-			{
-				throw new IOException(e);
+				try
+				{
+					Thread.sleep(timeToSleep);
+				}
+				catch (InterruptedException e)
+				{
+					throw new IOException(e);
+				}
 			}
 
 			System.out.println("Remote: " + uri);
 			HttpRequest request = requestBuilder.uri(uri).build();
+			lastRequestTime = System.currentTimeMillis();
 			return requester.request(request, responseFile);
 		}
 	}

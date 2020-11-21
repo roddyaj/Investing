@@ -19,10 +19,10 @@ public class AlphaVantageAPI
 
 	private final RequestCache cache;
 
-	public AlphaVantageAPI(String apiKey)
+	public AlphaVantageAPI(String apiKey, long sleepTime)
 	{
 		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).toString();
-		cache = new RequestCache();
+		cache = new RequestCache(sleepTime);
 	}
 
 	public void requestData(SymbolData data) throws IOException

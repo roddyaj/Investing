@@ -9,6 +9,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import com.roddyaj.vf.api.alphavantage.AlphaVantageAPI;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
 import com.roddyaj.vf.model.SymbolData;
@@ -18,27 +22,37 @@ import com.roddyaj.vf.strategy.Strategy;
 
 public class Application
 {
-	private final String[] args;
-
-	public Application(String[] args)
-	{
-		this.args = args;
-	}
-
-	public void run()
+	public void run(String[] args)
 	{
 		try
 		{
+			JSONObject settings = readSettings();
+
 			List<SymbolData> stocks = getStocksToCheck(args);
 			if (!stocks.isEmpty())
 			{
-				if (populateData(stocks, args))
+				if (populateData(stocks, settings))
 					evaluate(stocks);
 			}
 		}
 		catch (IOException e)
 		{
-			System.err.println(e);
+			e.printStackTrace();
+		}
+	}
+
+	private JSONObject readSettings() throws IOException
+	{
+		Path settingsFile = Paths.get(System.getProperty("user.home"), ".vf", "settings.json");
+		String json = Files.readString(settingsFile);
+		JSONParser parser = new JSONParser();
+		try
+		{
+			return (JSONObject)parser.parse(json);
+		}
+		catch (ParseException e)
+		{
+			throw new IOException(e);
 		}
 	}
 
@@ -58,13 +72,11 @@ public class Application
 		return stocks;
 	}
 
-	private boolean populateData(Collection<? extends SymbolData> stocks, String[] args) throws IOException
+	private boolean populateData(Collection<? extends SymbolData> stocks, JSONObject settings) throws IOException
 	{
 		boolean populated = false;
-		String apiKey = args.length > 1 ? args[1] : null;
-		if (apiKey == null)
-			System.out.println("Error: No API key specified");
-		else
+		String apiKey = (String)settings.get("alphavantage.apiKey");
+		if (apiKey != null)
 		{
 			AlphaVantageAPI avAPI = new AlphaVantageAPI(apiKey);
 			for (SymbolData stock : stocks)
@@ -80,6 +92,8 @@ public class Application
 			}
 			populated = true;
 		}
+		else
+			System.out.println("Error: No API key specified");
 		return populated;
 	}
 

@@ -6,6 +6,6 @@ public final class Main
 {
 	public static void main(String[] args)
 	{
-		new Application(args).run();
+		new Application().run(args);
 	}
 }

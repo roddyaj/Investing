@@ -2,6 +2,7 @@ package com.roddyaj.vf.api.alphavantage;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -19,10 +20,15 @@ public class AlphaVantageAPI
 
 	private final RequestCache cache;
 
-	public AlphaVantageAPI(String apiKey, long sleepTime)
+	public AlphaVantageAPI(JSONObject settings) throws IOException
 	{
+		String apiKey = (String)settings.get("alphavantage.apiKey");
+		long sleepTime = Duration.parse((String)settings.get("alphavantage.sleep")).toMillis();
+		if (apiKey == null)
+			throw new IOException("Error: No API key specified");
+
 		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).toString();
-		cache = new RequestCache(sleepTime);
+		cache = new RequestCache(sleepTime, settings);
 	}
 
 	public void requestData(SymbolData data) throws IOException

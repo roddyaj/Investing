@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -32,8 +31,8 @@ public class Application
 			List<SymbolData> stocks = getStocksToCheck(args);
 			if (!stocks.isEmpty())
 			{
-				if (populateData(stocks, settings))
-					evaluate(stocks);
+				populateData(stocks, settings);
+				evaluate(stocks);
 			}
 		}
 		catch (IOException e)
@@ -73,30 +72,20 @@ public class Application
 		return stocks;
 	}
 
-	private boolean populateData(Collection<? extends SymbolData> stocks, JSONObject settings) throws IOException
+	private void populateData(Collection<? extends SymbolData> stocks, JSONObject settings) throws IOException
 	{
-		boolean populated = false;
-		String apiKey = (String)settings.get("alphavantage.apiKey");
-		long sleepTime = Duration.parse((String)settings.get("alphavantage.sleep")).toMillis();
-		if (apiKey != null)
+		AlphaVantageAPI avAPI = new AlphaVantageAPI(settings);
+		for (SymbolData stock : stocks)
 		{
-			AlphaVantageAPI avAPI = new AlphaVantageAPI(apiKey, sleepTime);
-			for (SymbolData stock : stocks)
+			try
 			{
-				try
-				{
-					avAPI.requestData(stock);
-				}
-				catch (RuntimeException e)
-				{
-					e.printStackTrace();
-				}
+				avAPI.requestData(stock);
 			}
-			populated = true;
+			catch (RuntimeException e)
+			{
+				e.printStackTrace();
+			}
 		}
-		else
-			System.out.println("Error: No API key specified");
-		return populated;
 	}
 
 	private void evaluate(Collection<? extends SymbolData> stocks)

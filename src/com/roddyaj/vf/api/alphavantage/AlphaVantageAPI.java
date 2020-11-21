@@ -6,8 +6,9 @@ import java.net.URI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.roddyaj.vf.model.Pair;
 import com.roddyaj.vf.model.SymbolData;
+import com.roddyaj.vf.model.SymbolData.BalanceSheet;
+import com.roddyaj.vf.model.SymbolData.IncomeStatement;
 import com.roddyaj.vf.request.RequestCache;
 
 public class AlphaVantageAPI
@@ -29,28 +30,39 @@ public class AlphaVantageAPI
 		JSONObject json;
 
 		json = getOverview(data.symbol);
-		data.name = (String)json.get("Name");
-		data.eps = Double.parseDouble((String)json.get("EPS"));
-		data.analystTargetPrice = Double.parseDouble((String)json.get("AnalystTargetPrice"));
+		data.name = getString(json, "Name");
+		data.eps = getDouble(json, "EPS");
+		data.analystTargetPrice = getDouble(json, "AnalystTargetPrice");
 
 		json = getIncomeStatement(data.symbol);
-
-		json = getBalanceSheet(data.symbol);
 		JSONArray annualReports = (JSONArray)json.get("annualReports");
 		for (Object r : annualReports)
 		{
 			JSONObject report = (JSONObject)r;
-			String periodEnding = (String)report.get("fiscalDateEnding");
-			long equity = Long.parseLong((String)report.get("totalShareholderEquity"));
-			data.shareholderEquity.add(new Pair<>(periodEnding, equity));
+			IncomeStatement incomeStatement = new IncomeStatement();
+			incomeStatement.period = getString(report, "fiscalDateEnding");
+			incomeStatement.incomeBeforeTax = getLong(report, "incomeBeforeTax");
+			incomeStatement.operatingIncome = getLong(report, "operatingIncome");
+			incomeStatement.taxProvision = getLong(report, "taxProvision");
+			data.incomeStatements.add(incomeStatement);
 		}
 
-		if (data.price == 0)
+		json = getBalanceSheet(data.symbol);
+		annualReports = (JSONArray)json.get("annualReports");
+		for (Object r : annualReports)
 		{
-			json = getQuote(data.symbol);
-			JSONObject quote = (JSONObject)json.get("Global Quote");
-			data.price = Double.parseDouble((String)quote.get("05. price"));
+			JSONObject report = (JSONObject)r;
+			BalanceSheet balanceSheet = new BalanceSheet();
+			balanceSheet.period = getString(report, "fiscalDateEnding");
+			balanceSheet.totalShareholderEquity = getLong(report, "totalShareholderEquity");
+			balanceSheet.shortTermDebt = getLong(report, "shortTermDebt");
+			balanceSheet.longTermDebt = getLong(report, "longTermDebt");
+			data.balanceSheets.add(balanceSheet);
 		}
+
+		json = getQuote(data.symbol);
+		JSONObject quote = (JSONObject)json.get("Global Quote");
+		data.price = getDouble(quote, "05. price");
 	}
 
 	public JSONObject getOverview(String symbol) throws IOException
@@ -78,5 +90,21 @@ public class AlphaVantageAPI
 		String url = new StringBuilder(urlBase).append("&function=").append(function).append("&symbol=").append(symbol).toString();
 		String cacheKey = new StringBuilder("AV_").append(symbol).append('_').append(function).toString();
 		return cache.getJson(URI.create(url), cacheKey);
+	}
+
+	private static String getString(JSONObject obj, String key)
+	{
+		return (String)obj.get(key);
+	}
+
+	private static long getLong(JSONObject obj, String key)
+	{
+		String value = (String)obj.get(key);
+		return "None".equals(value) ? 0 : Long.parseLong(value);
+	}
+
+	private static double getDouble(JSONObject obj, String key)
+	{
+		return Double.parseDouble((String)obj.get(key));
 	}
 }

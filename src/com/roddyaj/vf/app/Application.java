@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import com.roddyaj.vf.api.alphavantage.AlphaVantageAPI;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
-import com.roddyaj.vf.model.Pair;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.strategy.AnalystTargetStrategy;
 import com.roddyaj.vf.strategy.Rule1Strategy;
@@ -69,22 +68,19 @@ public class Application
 		{
 			AlphaVantageAPI avAPI = new AlphaVantageAPI(apiKey);
 			for (SymbolData stock : stocks)
-				populateData(stock, avAPI);
+			{
+				try
+				{
+					avAPI.requestData(stock);
+				}
+				catch (RuntimeException e)
+				{
+					e.printStackTrace();
+				}
+			}
 			populated = true;
 		}
 		return populated;
-	}
-
-	private void populateData(SymbolData stock, AlphaVantageAPI avAPI) throws IOException
-	{
-		try
-		{
-			avAPI.requestData(stock);
-		}
-		catch (RuntimeException e)
-		{
-			e.printStackTrace();
-		}
 	}
 
 	private void evaluate(Collection<? extends SymbolData> stocks)
@@ -97,17 +93,15 @@ public class Application
 	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies)
 	{
 		boolean allPass = true;
-		String name = stock.name.substring(0, Math.min(30, stock.name.length()));
-		StringBuilder message = new StringBuilder(String.format("%-5s %-30s %7.2f", stock.symbol, name, stock.price));
 		for (Strategy strategy : strategies)
-		{
-			Pair<Boolean, String> result = strategy.evaluate(stock);
-			boolean pass = result.first.booleanValue();
-			allPass &= pass;
-			message.append("   ").append(result.second).append(String.format(" %-4s", pass ? "Yes!" : "No"));
-		}
+			allPass &= strategy.evaluate(stock);
 
 		if (allPass)
+		{
+			String name = stock.name.substring(0, Math.min(30, stock.name.length()));
+			StringBuilder message = new StringBuilder(String.format("%-5s %-30s %7.2f", stock.symbol, name, stock.price));
+			message.append("  ").append(String.format(" %-4s", allPass ? "Yes!" : "No"));
 			System.out.println(message);
+		}
 	}
 }

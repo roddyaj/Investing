@@ -82,7 +82,6 @@ public class RequestCache
 		Path responseFile = Paths.get(requestDir.toString(), "response");
 		if (Files.exists(responseFile))
 		{
-//			System.out.println("Cache:  " + uri);
 			T cachedBody = reader.read(responseFile);
 			return cachedBody;
 		}

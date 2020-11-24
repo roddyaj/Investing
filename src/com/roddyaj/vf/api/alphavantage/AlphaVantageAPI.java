@@ -3,10 +3,15 @@ package com.roddyaj.vf.api.alphavantage;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import com.roddyaj.vf.model.DateAndDouble;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.BalanceSheet;
 import com.roddyaj.vf.model.SymbolData.IncomeStatement;
@@ -35,12 +40,12 @@ public class AlphaVantageAPI
 	{
 		JSONObject json;
 
-		json = getOverview(data.symbol);
+		json = getAsJSON(data.symbol, "OVERVIEW");
 		data.name = getString(json, "Name");
 		data.eps = getDouble(json, "EPS");
 		data.analystTargetPrice = getDouble(json, "AnalystTargetPrice");
 
-		json = getIncomeStatement(data.symbol);
+		json = getAsJSON(data.symbol, "INCOME_STATEMENT");
 		JSONArray annualReports = (JSONArray)json.get("annualReports");
 		for (Object r : annualReports)
 		{
@@ -53,7 +58,7 @@ public class AlphaVantageAPI
 			data.incomeStatements.add(incomeStatement);
 		}
 
-		json = getBalanceSheet(data.symbol);
+		json = getAsJSON(data.symbol, "BALANCE_SHEET");
 		annualReports = (JSONArray)json.get("annualReports");
 		for (Object r : annualReports)
 		{
@@ -66,29 +71,42 @@ public class AlphaVantageAPI
 			data.balanceSheets.add(balanceSheet);
 		}
 
-		json = getQuote(data.symbol);
+		LocalDate yearsAgo = LocalDate.now().minusYears(6);
+
+		json = getAsJSON(data.symbol, "EARNINGS");
+		JSONArray annualEarnings = (JSONArray)json.get("annualEarnings");
+		if (annualEarnings == null)
+			System.out.println(data.symbol);
+		List<DateAndDouble> earnings = new ArrayList<>();
+		for (Object r : annualEarnings)
+		{
+			JSONObject report = (JSONObject)r;
+			LocalDate date = getDate(report, "fiscalDateEnding");
+			double eps = getDouble(report, "reportedEPS");
+			earnings.add(new DateAndDouble(date, eps));
+		}
+		earnings.stream().filter(e -> e.date.isAfter(yearsAgo)).sorted().forEach(data.earnings::add);
+
+		json = getAsJSON(data.symbol, "TIME_SERIES_MONTHLY_ADJUSTED");
+		JSONObject timeSeries = (JSONObject)json.get("Monthly Adjusted Time Series");
+		List<LocalDate> dates = new ArrayList<>();
+		for (Object key : timeSeries.keySet())
+		{
+			LocalDate date = LocalDate.parse((String)key);
+			if (date.isAfter(yearsAgo))
+				dates.add(date);
+		}
+		Collections.sort(dates);
+		for (LocalDate date : dates)
+		{
+			JSONObject prices = (JSONObject)timeSeries.get(date.toString());
+			double closePrice = getDouble(prices, "5. adjusted close");
+			data.priceHistory.add(new DateAndDouble(date, closePrice));
+		}
+
+		json = getAsJSON(data.symbol, "GLOBAL_QUOTE");
 		JSONObject quote = (JSONObject)json.get("Global Quote");
 		data.price = getDouble(quote, "05. price");
-	}
-
-	public JSONObject getOverview(String symbol) throws IOException
-	{
-		return getAsJSON(symbol, "OVERVIEW");
-	}
-
-	public JSONObject getIncomeStatement(String symbol) throws IOException
-	{
-		return getAsJSON(symbol, "INCOME_STATEMENT");
-	}
-
-	public JSONObject getBalanceSheet(String symbol) throws IOException
-	{
-		return getAsJSON(symbol, "BALANCE_SHEET");
-	}
-
-	public JSONObject getQuote(String symbol) throws IOException
-	{
-		return getAsJSON(symbol, "GLOBAL_QUOTE");
 	}
 
 	private JSONObject getAsJSON(String symbol, String function) throws IOException
@@ -112,5 +130,10 @@ public class AlphaVantageAPI
 	private static double getDouble(JSONObject obj, String key)
 	{
 		return Double.parseDouble((String)obj.get(key));
+	}
+
+	private static LocalDate getDate(JSONObject obj, String key)
+	{
+		return LocalDate.parse((String)obj.get(key));
 	}
 }

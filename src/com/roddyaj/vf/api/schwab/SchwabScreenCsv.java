@@ -22,17 +22,19 @@ public class SchwabScreenCsv
 		List<SymbolData> symbols = new ArrayList<>();
 		Charset charset = Charset.forName("UTF-8");
 		CSVFormat format = CSVFormat.DEFAULT;
-		CSVParser parser = CSVParser.parse(file, charset, format);
 		boolean isHeader = true;
-		for (CSVRecord csvRecord : parser)
+		try (CSVParser parser = CSVParser.parse(file, charset, format))
 		{
-			if (!isHeader)
+			for (CSVRecord csvRecord : parser)
 			{
-				SymbolData stock = new SymbolData(csvRecord.get(0));
-				stock.price = Double.parseDouble(csvRecord.get(2).replace("$", "").replace(",", ""));
-				symbols.add(stock);
+				if (!isHeader)
+				{
+					SymbolData stock = new SymbolData(csvRecord.get(0));
+					stock.price = Double.parseDouble(csvRecord.get(2).replace("$", "").replace(",", ""));
+					symbols.add(stock);
+				}
+				isHeader = false;
 			}
-			isHeader = false;
 		}
 		return symbols;
 	}

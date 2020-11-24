@@ -15,6 +15,10 @@ public class SymbolData
 
 	public final List<BalanceSheet> balanceSheets = new ArrayList<>();
 
+	public final List<DateAndDouble> earnings = new ArrayList<>();
+
+	public final List<DateAndDouble> priceHistory = new ArrayList<>();
+
 	public double price;
 
 	public SymbolData(String symbol)

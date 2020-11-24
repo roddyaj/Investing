@@ -1,5 +1,8 @@
 package com.roddyaj.vf.strategy;
 
+import java.time.LocalDate;
+
+import com.roddyaj.vf.model.DateAndDouble;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.BalanceSheet;
 import com.roddyaj.vf.model.SymbolData.IncomeStatement;
@@ -48,7 +51,7 @@ public class Rule1Strategy implements Strategy
 
 		// Estimated future PE
 		double defaultPE = 2 * (estimatedGrowthRate - 1) * 100;
-		double historicalPE = 1000; // TODO
+		double historicalPE = calcHistoricalPE(data);
 		double estimatedFuturePE = Math.min(defaultPE, historicalPE);
 
 		// Work towards final price
@@ -59,5 +62,40 @@ public class Rule1Strategy implements Strategy
 
 		boolean pass = data.price < mosPrice;
 		return pass;
+	}
+
+	private double calcHistoricalPE(SymbolData data)
+	{
+		double peSum = 0;
+		int peCount = 0;
+
+		LocalDate prevDate = null;
+		for (DateAndDouble earningsElement : data.earnings)
+		{
+			double priceSum = 0;
+			int priceCount = 0;
+			LocalDate prevYear = prevDate != null ? prevDate : earningsElement.date.minusYears(1);
+			prevDate = earningsElement.date;
+			for (DateAndDouble priceElement : data.priceHistory)
+			{
+				if (!priceElement.date.isAfter(earningsElement.date) && priceElement.date.isAfter(prevYear))
+				{
+					priceSum += priceElement.value;
+					++priceCount;
+				}
+			}
+
+			if (priceCount == 12 || earningsElement.date.getYear() == LocalDate.now().getYear())
+			{
+				double averagePrice = priceSum / priceCount;
+				double adjustedEPS = earningsElement.value * (12. / priceCount);
+				double pe = averagePrice / adjustedEPS;
+				peSum += pe;
+				++peCount;
+			}
+		}
+
+		double averagePE = peSum / peCount;
+		return averagePE;
 	}
 }

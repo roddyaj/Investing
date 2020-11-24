@@ -84,7 +84,6 @@ public class RequestCache
 		Path requestDir = Paths.get(cacheRoot.toString(), cacheKey);
 		if (!Files.exists(requestDir))
 			Files.createDirectory(requestDir);
-//		Path propertiesFile = Paths.get(requestDir.toString(), "properties");
 		Path responseFile = Paths.get(requestDir.toString(), "response");
 		if (Files.exists(responseFile))
 		{

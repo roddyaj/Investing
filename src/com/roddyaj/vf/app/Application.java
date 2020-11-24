@@ -15,6 +15,8 @@ import org.json.simple.parser.ParseException;
 
 import com.roddyaj.vf.api.alphavantage.AlphaVantageAPI;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
+import com.roddyaj.vf.model.Report;
+import com.roddyaj.vf.model.Reports;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.strategy.AnalystTargetStrategy;
 import com.roddyaj.vf.strategy.Rule1Strategy;
@@ -90,23 +92,18 @@ public class Application
 
 	private void evaluate(Collection<? extends SymbolData> stocks)
 	{
+		Reports reports = new Reports();
 		List<Strategy> strategies = List.of(new Rule1Strategy(), new AnalystTargetStrategy());
 		for (SymbolData stock : stocks)
-			evaluate(stock, strategies);
+			evaluate(stock, strategies, reports);
+		System.out.println(reports);
 	}
 
-	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies)
+	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies, Reports reports)
 	{
 		boolean allPass = true;
 		for (Strategy strategy : strategies)
 			allPass &= strategy.evaluate(stock);
-
-		if (allPass)
-		{
-			String name = stock.name.substring(0, Math.min(30, stock.name.length()));
-			StringBuilder message = new StringBuilder(String.format("%-5s %-30s %7.2f", stock.symbol, name, stock.price));
-			message.append("  ").append(String.format(" %-4s", allPass ? "Yes!" : "No"));
-			System.out.println(message);
-		}
+		reports.addReport(new Report(stock, allPass));
 	}
 }

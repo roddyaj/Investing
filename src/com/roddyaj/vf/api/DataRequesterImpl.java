@@ -7,8 +7,9 @@ import org.json.simple.JSONObject;
 
 import com.roddyaj.vf.api.alphavantage.AlphaVantageAPI;
 import com.roddyaj.vf.model.DateAndDouble;
-import com.roddyaj.vf.model.SymbolData;
+import com.roddyaj.vf.model.SymbolData.BalanceSheet;
 import com.roddyaj.vf.model.SymbolData.DataRequester;
+import com.roddyaj.vf.model.SymbolData.IncomeStatement;
 
 public class DataRequesterImpl implements DataRequester
 {
@@ -17,11 +18,6 @@ public class DataRequesterImpl implements DataRequester
 	public DataRequesterImpl(JSONObject settings) throws IOException
 	{
 		avAPI = new AlphaVantageAPI(settings);
-	}
-
-	public void requestData(SymbolData data) throws IOException
-	{
-		avAPI.requestData(data);
 	}
 
 	@Override
@@ -40,6 +36,18 @@ public class DataRequesterImpl implements DataRequester
 	public double getAnalystTargetPrice(String symbol) throws IOException
 	{
 		return avAPI.getAnalystTargetPrice(symbol);
+	}
+
+	@Override
+	public List<IncomeStatement> getIncomeStatements(String symbol) throws IOException
+	{
+		return avAPI.getIncomeStatements(symbol);
+	}
+
+	@Override
+	public List<BalanceSheet> getBalanceSheets(String symbol) throws IOException
+	{
+		return avAPI.getBalanceSheets(symbol);
 	}
 
 	@Override

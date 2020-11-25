@@ -1,7 +1,6 @@
 package com.roddyaj.vf.model;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class SymbolData
@@ -12,9 +11,9 @@ public class SymbolData
 	private double eps;
 	private double analystTargetPrice;
 
-	public final List<IncomeStatement> incomeStatements = new ArrayList<>();
+	private List<IncomeStatement> incomeStatements;
 
-	public final List<BalanceSheet> balanceSheets = new ArrayList<>();
+	private List<BalanceSheet> balanceSheets;
 
 	private List<DateAndDouble> earnings;
 
@@ -55,16 +54,18 @@ public class SymbolData
 		return analystTargetPrice;
 	}
 
-	public void setPrice(double price)
+	public List<IncomeStatement> getIncomeStatements() throws IOException
 	{
-		this.price = price;
+		if (incomeStatements == null)
+			incomeStatements = requester.getIncomeStatements(symbol);
+		return incomeStatements;
 	}
 
-	public double getPrice() throws IOException
+	public List<BalanceSheet> getBalanceSheets() throws IOException
 	{
-		if (price == 0)
-			price = requester.getPrice(symbol);
-		return price;
+		if (balanceSheets == null)
+			balanceSheets = requester.getBalanceSheets(symbol);
+		return balanceSheets;
 	}
 
 	public List<DateAndDouble> getEarnings() throws IOException
@@ -79,6 +80,18 @@ public class SymbolData
 		if (priceHistory == null)
 			priceHistory = requester.getPriceHistory(symbol);
 		return priceHistory;
+	}
+
+	public void setPrice(double price)
+	{
+		this.price = price;
+	}
+
+	public double getPrice() throws IOException
+	{
+		if (price == 0)
+			price = requester.getPrice(symbol);
+		return price;
 	}
 
 	public static class IncomeStatement
@@ -104,6 +117,10 @@ public class SymbolData
 		double getEps(String symbol) throws IOException;
 
 		double getAnalystTargetPrice(String symbol) throws IOException;
+
+		List<IncomeStatement> getIncomeStatements(String symbol) throws IOException;
+
+		List<BalanceSheet> getBalanceSheets(String symbol) throws IOException;
 
 		List<DateAndDouble> getEarnings(String symbol) throws IOException;
 

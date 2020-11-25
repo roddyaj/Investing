@@ -20,14 +20,16 @@ public class Rule1Strategy implements Strategy
 		return pass;
 	}
 
-	private boolean testROIC(SymbolData data)
+	private boolean testROIC(SymbolData data) throws IOException
 	{
 		boolean pass = true;
-		int periods = Math.min(data.incomeStatements.size(), data.balanceSheets.size());
+		List<IncomeStatement> incomeStatements = data.getIncomeStatements();
+		List<BalanceSheet> balanceSheets = data.getBalanceSheets();
+		int periods = Math.min(incomeStatements.size(), balanceSheets.size());
 		for (int i = 0; i < periods; i++)
 		{
-			IncomeStatement incomeStatement = data.incomeStatements.get(i);
-			BalanceSheet balanceSheet = data.balanceSheets.get(i);
+			IncomeStatement incomeStatement = incomeStatements.get(i);
+			BalanceSheet balanceSheet = balanceSheets.get(i);
 			double nopat = incomeStatement.operatingIncome * (1 - (double)incomeStatement.taxProvision / incomeStatement.incomeBeforeTax);
 			long investedCapital = balanceSheet.shortTermDebt + balanceSheet.longTermDebt + balanceSheet.totalShareholderEquity;
 			double roic = nopat / investedCapital;
@@ -39,7 +41,8 @@ public class Rule1Strategy implements Strategy
 
 	private boolean testMosPrice(SymbolData data, Report report) throws IOException
 	{
-		if (data.balanceSheets.size() < 2)
+		List<BalanceSheet> balanceSheets = data.getBalanceSheets();
+		if (balanceSheets.size() < 2)
 		{
 			System.out.println("Skipping " + data.symbol + ", missing balance sheets");
 			return false;
@@ -52,9 +55,9 @@ public class Rule1Strategy implements Strategy
 		// Estimated EPS growth rate
 		double pastGrowthRate;
 		{
-			int years = data.balanceSheets.size() - 1;
-			double recentEquity = data.balanceSheets.get(0).totalShareholderEquity;
-			double olderEquity = data.balanceSheets.get(data.balanceSheets.size() - 1).totalShareholderEquity;
+			int years = balanceSheets.size() - 1;
+			double recentEquity = balanceSheets.get(0).totalShareholderEquity;
+			double olderEquity = balanceSheets.get(balanceSheets.size() - 1).totalShareholderEquity;
 			pastGrowthRate = Math.pow(recentEquity / olderEquity, 1. / years);
 		}
 		double analystGrowthRate = 100; // TODO

@@ -18,6 +18,7 @@ import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
 import com.roddyaj.vf.model.Report;
 import com.roddyaj.vf.model.Reports;
 import com.roddyaj.vf.model.SymbolData;
+import com.roddyaj.vf.model.SymbolData.DataRequester;
 import com.roddyaj.vf.strategy.AnalystTargetStrategy;
 import com.roddyaj.vf.strategy.Rule1Strategy;
 import com.roddyaj.vf.strategy.Strategy;
@@ -33,7 +34,10 @@ public class Application
 			List<SymbolData> stocks = getStocksToCheck(args);
 			if (!stocks.isEmpty())
 			{
-				populateData(stocks, settings);
+				DataRequester requester = new DataRequesterImpl(settings);
+				for (SymbolData stock : stocks)
+					stock.setRequester(requester);
+
 				evaluate(stocks);
 			}
 		}
@@ -72,25 +76,6 @@ public class Application
 		else
 			System.out.println("Usage: TODO");
 		return stocks;
-	}
-
-	private void populateData(Collection<? extends SymbolData> stocks, JSONObject settings) throws IOException
-	{
-		DataRequesterImpl requester = new DataRequesterImpl(settings);
-		for (SymbolData stock : stocks)
-		{
-			stock.setRequester(requester);
-
-			// this will eventually go away
-			try
-			{
-				requester.requestData(stock);
-			}
-			catch (RuntimeException e)
-			{
-				System.err.println(e + " requesting " + stock.symbol);
-			}
-		}
 	}
 
 	private void evaluate(Collection<? extends SymbolData> stocks) throws IOException

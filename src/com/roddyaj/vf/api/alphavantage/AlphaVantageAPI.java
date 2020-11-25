@@ -14,7 +14,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.roddyaj.vf.model.DateAndDouble;
-import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.BalanceSheet;
 import com.roddyaj.vf.model.SymbolData.DataRequester;
 import com.roddyaj.vf.model.SymbolData.IncomeStatement;
@@ -29,6 +28,8 @@ public class AlphaVantageAPI implements DataRequester
 	private final Map<String, JSONObject> cache = new HashMap<>();
 
 	private final RequestCache requestor;
+
+	private String lastSymbol;
 
 	public AlphaVantageAPI(JSONObject settings) throws IOException
 	{
@@ -60,6 +61,48 @@ public class AlphaVantageAPI implements DataRequester
 	{
 		JSONObject json = request(symbol, "OVERVIEW");
 		return getDouble(json, "AnalystTargetPrice");
+	}
+
+	@Override
+	public List<IncomeStatement> getIncomeStatements(String symbol) throws IOException
+	{
+		List<IncomeStatement> incomeStatements = new ArrayList<>();
+
+		JSONObject json = request(symbol, "INCOME_STATEMENT");
+		JSONArray annualReports = (JSONArray)json.get("annualReports");
+		for (Object r : annualReports)
+		{
+			JSONObject report = (JSONObject)r;
+			IncomeStatement incomeStatement = new IncomeStatement();
+			incomeStatement.period = getString(report, "fiscalDateEnding");
+			incomeStatement.incomeBeforeTax = getLong(report, "incomeBeforeTax");
+			incomeStatement.operatingIncome = getLong(report, "operatingIncome");
+			incomeStatement.taxProvision = getLong(report, "taxProvision");
+			incomeStatements.add(incomeStatement);
+		}
+
+		return incomeStatements;
+	}
+
+	@Override
+	public List<BalanceSheet> getBalanceSheets(String symbol) throws IOException
+	{
+		List<BalanceSheet> balanceSheets = new ArrayList<>();
+
+		JSONObject json = request(symbol, "BALANCE_SHEET");
+		JSONArray annualReports = (JSONArray)json.get("annualReports");
+		for (Object r : annualReports)
+		{
+			JSONObject report = (JSONObject)r;
+			BalanceSheet balanceSheet = new BalanceSheet();
+			balanceSheet.period = getString(report, "fiscalDateEnding");
+			balanceSheet.totalShareholderEquity = getLong(report, "totalShareholderEquity");
+			balanceSheet.shortTermDebt = getLong(report, "shortTermDebt");
+			balanceSheet.longTermDebt = getLong(report, "longTermDebt");
+			balanceSheets.add(balanceSheet);
+		}
+
+		return balanceSheets;
 	}
 
 	@Override
@@ -119,40 +162,16 @@ public class AlphaVantageAPI implements DataRequester
 		return AlphaVantageAPI.getDouble(quote, "05. price");
 	}
 
-	public void requestData(SymbolData data) throws IOException
-	{
-		JSONObject json;
-
-		json = request(data.symbol, "INCOME_STATEMENT");
-		JSONArray annualReports = (JSONArray)json.get("annualReports");
-		for (Object r : annualReports)
-		{
-			JSONObject report = (JSONObject)r;
-			IncomeStatement incomeStatement = new IncomeStatement();
-			incomeStatement.period = getString(report, "fiscalDateEnding");
-			incomeStatement.incomeBeforeTax = getLong(report, "incomeBeforeTax");
-			incomeStatement.operatingIncome = getLong(report, "operatingIncome");
-			incomeStatement.taxProvision = getLong(report, "taxProvision");
-			data.incomeStatements.add(incomeStatement);
-		}
-
-		json = request(data.symbol, "BALANCE_SHEET");
-		annualReports = (JSONArray)json.get("annualReports");
-		for (Object r : annualReports)
-		{
-			JSONObject report = (JSONObject)r;
-			BalanceSheet balanceSheet = new BalanceSheet();
-			balanceSheet.period = getString(report, "fiscalDateEnding");
-			balanceSheet.totalShareholderEquity = getLong(report, "totalShareholderEquity");
-			balanceSheet.shortTermDebt = getLong(report, "shortTermDebt");
-			balanceSheet.longTermDebt = getLong(report, "longTermDebt");
-			data.balanceSheets.add(balanceSheet);
-		}
-	}
-
 	private JSONObject request(String symbol, String function) throws IOException
 	{
 		JSONObject response;
+
+		if (!symbol.equals(lastSymbol))
+		{
+			cache.clear();
+			lastSymbol = symbol;
+		}
+
 		final String cacheKey = symbol + "/" + function + ".json";
 		response = cache.get(cacheKey);
 		if (response == null)
@@ -161,8 +180,7 @@ public class AlphaVantageAPI implements DataRequester
 			response = requestor.getJson(URI.create(url), cacheKey);
 			cache.put(cacheKey, response);
 		}
-		else
-			System.out.println("Memory: " + cacheKey);
+
 		return response;
 	}
 

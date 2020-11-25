@@ -14,10 +14,11 @@ import org.json.simple.JSONObject;
 import com.roddyaj.vf.model.DateAndDouble;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.BalanceSheet;
+import com.roddyaj.vf.model.SymbolData.DataRequester;
 import com.roddyaj.vf.model.SymbolData.IncomeStatement;
 import com.roddyaj.vf.request.RequestCache;
 
-public class AlphaVantageAPI
+public class AlphaVantageAPI implements DataRequester
 {
 	private static final String urlRoot = "https://www.alphavantage.co/query?";
 
@@ -34,6 +35,14 @@ public class AlphaVantageAPI
 
 		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).toString();
 		cache = new RequestCache(sleepTime, settings);
+	}
+
+	@Override
+	public double getPrice(String symbol) throws IOException
+	{
+		JSONObject json = getAsJSON(symbol, "GLOBAL_QUOTE");
+		JSONObject quote = (JSONObject)json.get("Global Quote");
+		return AlphaVantageAPI.getDouble(quote, "05. price");
 	}
 
 	public void requestData(SymbolData data) throws IOException
@@ -101,10 +110,6 @@ public class AlphaVantageAPI
 			double closePrice = getDouble(prices, "5. adjusted close");
 			data.priceHistory.add(new DateAndDouble(date, closePrice));
 		}
-
-		json = getAsJSON(data.symbol, "GLOBAL_QUOTE");
-		JSONObject quote = (JSONObject)json.get("Global Quote");
-		data.price = getDouble(quote, "05. price");
 	}
 
 	private JSONObject getAsJSON(String symbol, String function) throws IOException

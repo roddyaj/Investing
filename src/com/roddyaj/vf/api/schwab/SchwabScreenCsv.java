@@ -30,7 +30,7 @@ public class SchwabScreenCsv
 				if (!isHeader)
 				{
 					SymbolData stock = new SymbolData(csvRecord.get(0));
-					stock.price = Double.parseDouble(csvRecord.get(2).replace("$", "").replace(",", ""));
+//					stock.setPrice(Double.parseDouble(csvRecord.get(2).replace("$", "").replace(",", "")));
 					symbols.add(stock);
 				}
 				isHeader = false;

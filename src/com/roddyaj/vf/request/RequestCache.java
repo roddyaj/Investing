@@ -90,6 +90,7 @@ public class RequestCache
 		T response = null;
 		if (Files.exists(cacheFile))
 		{
+			System.out.println("Cache: " + cacheFile);
 			response = reader.read(cacheFile);
 		}
 		else if (allowRequest)

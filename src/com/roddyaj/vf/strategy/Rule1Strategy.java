@@ -1,5 +1,6 @@
 package com.roddyaj.vf.strategy;
 
+import java.io.IOException;
 import java.time.LocalDate;
 
 import com.roddyaj.vf.model.DateAndDouble;
@@ -11,7 +12,7 @@ import com.roddyaj.vf.model.SymbolData.IncomeStatement;
 public class Rule1Strategy implements Strategy
 {
 	@Override
-	public boolean evaluate(SymbolData data, Report report)
+	public boolean evaluate(SymbolData data, Report report) throws IOException
 	{
 		boolean pass = testROIC(data) && testMosPrice(data, report);
 		report.addMessage("Rule 1", pass ? "pass" : "fail");
@@ -35,7 +36,7 @@ public class Rule1Strategy implements Strategy
 		return pass;
 	}
 
-	private boolean testMosPrice(SymbolData data, Report report)
+	private boolean testMosPrice(SymbolData data, Report report) throws IOException
 	{
 		if (data.balanceSheets.size() < 2)
 		{
@@ -69,7 +70,7 @@ public class Rule1Strategy implements Strategy
 		double stickerPrice = futureMarketPrice / Math.pow(marr, projectedYears);
 		double mosPrice = stickerPrice * mosFactor;
 
-		boolean pass = data.price < mosPrice;
+		boolean pass = data.getPrice(data.symbol) < mosPrice;
 		report.addMessage("Rule 1.MOS price", String.format("%.2f", mosPrice));
 		return pass;
 	}

@@ -1,5 +1,6 @@
 package com.roddyaj.vf.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +20,30 @@ public class SymbolData
 
 	public final List<DateAndDouble> priceHistory = new ArrayList<>();
 
-	public double price;
+	private double price;
+
+	private DataRequester requester;
 
 	public SymbolData(String symbol)
 	{
 		this.symbol = symbol;
+	}
+
+	public void setRequester(DataRequester requester)
+	{
+		this.requester = requester;
+	}
+
+	public void setPrice(double price)
+	{
+		this.price = price;
+	}
+
+	public double getPrice(String symbol) throws IOException
+	{
+		if (price == 0)
+			price = requester.getPrice(symbol);
+		return price;
 	}
 
 	public static class IncomeStatement
@@ -40,5 +60,10 @@ public class SymbolData
 		public long totalShareholderEquity;
 		public long shortTermDebt;
 		public long longTermDebt;
+	}
+
+	public interface DataRequester
+	{
+		double getPrice(String symbol) throws IOException;
 	}
 }

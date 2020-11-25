@@ -13,7 +13,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import com.roddyaj.vf.api.alphavantage.AlphaVantageAPI;
+import com.roddyaj.vf.api.DataRequesterImpl;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
 import com.roddyaj.vf.model.Report;
 import com.roddyaj.vf.model.Reports;
@@ -76,12 +76,15 @@ public class Application
 
 	private void populateData(Collection<? extends SymbolData> stocks, JSONObject settings) throws IOException
 	{
-		AlphaVantageAPI avAPI = new AlphaVantageAPI(settings);
+		DataRequesterImpl requester = new DataRequesterImpl(settings);
 		for (SymbolData stock : stocks)
 		{
+			stock.setRequester(requester);
+
+			// this will eventually go away
 			try
 			{
-				avAPI.requestData(stock);
+				requester.requestData(stock);
 			}
 			catch (RuntimeException e)
 			{
@@ -90,7 +93,7 @@ public class Application
 		}
 	}
 
-	private void evaluate(Collection<? extends SymbolData> stocks)
+	private void evaluate(Collection<? extends SymbolData> stocks) throws IOException
 	{
 		Reports reports = new Reports();
 		List<Strategy> strategies = List.of(new Rule1Strategy(), new AnalystTargetStrategy());
@@ -99,7 +102,7 @@ public class Application
 		System.out.println(reports);
 	}
 
-	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies, Reports reports)
+	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies, Reports reports) throws IOException
 	{
 		boolean allPass = true;
 		Report report = new Report(stock);

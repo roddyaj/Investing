@@ -102,8 +102,10 @@ public class Application
 	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies, Reports reports)
 	{
 		boolean allPass = true;
+		Report report = new Report(stock);
 		for (Strategy strategy : strategies)
-			allPass &= strategy.evaluate(stock);
-		reports.addReport(new Report(stock, allPass));
+			allPass &= strategy.evaluate(stock, report);
+		report.pass = allPass;
+		reports.addReport(report);
 	}
 }

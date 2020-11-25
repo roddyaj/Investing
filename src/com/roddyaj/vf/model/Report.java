@@ -1,21 +1,36 @@
 package com.roddyaj.vf.model;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 public class Report
 {
 	public final SymbolData symbolData;
 
-	public final boolean pass;
+	public boolean pass;
 
-	public Report(SymbolData symbolData, boolean pass)
+	private final Map<String, String> messages = new LinkedHashMap<>();
+
+	public Report(SymbolData symbolData)
 	{
 		this.symbolData = symbolData;
-		this.pass = pass;
+	}
+
+	public void addMessage(String key, String message)
+	{
+		messages.put(key, message);
 	}
 
 	@Override
 	public String toString()
 	{
+		List<String> lines = new ArrayList<>();
 		String name = symbolData.name.substring(0, Math.min(30, symbolData.name.length()));
-		return String.format("%-5s %-30s %7.2f", symbolData.symbol, name, symbolData.price);
+		lines.add(String.format("%-5s %-30s %7.2f", symbolData.symbol, name, symbolData.price));
+		for (Map.Entry<String, String> entry : messages.entrySet())
+			lines.add("      " + entry.getKey() + ": " + entry.getValue());
+		return String.join("\n", lines);
 	}
 }

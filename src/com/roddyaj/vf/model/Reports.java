@@ -1,6 +1,7 @@
 package com.roddyaj.vf.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Reports
@@ -21,13 +22,19 @@ public class Reports
 	public String toString()
 	{
 		List<String> lines = new ArrayList<>();
-		lines.add("Fail:");
-		for (Report report : fails)
-			lines.add(report.toString());
+		format(fails, "Fail", lines);
 		lines.add("");
-		lines.add("Pass:");
-		for (Report report : passes)
-			lines.add(report.toString());
+		format(passes, "Pass", lines);
 		return String.join("\n", lines);
+	}
+
+	private void format(Collection<? extends Report> reports, String title, Collection<? super String> lines)
+	{
+		lines.add("=================== " + title + " ===================");
+		for (Report report : reports)
+		{
+			lines.add("");
+			lines.add(report.toString());
+		}
 	}
 }

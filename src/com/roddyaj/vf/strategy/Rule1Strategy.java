@@ -3,6 +3,7 @@ package com.roddyaj.vf.strategy;
 import java.time.LocalDate;
 
 import com.roddyaj.vf.model.DateAndDouble;
+import com.roddyaj.vf.model.Report;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.BalanceSheet;
 import com.roddyaj.vf.model.SymbolData.IncomeStatement;
@@ -10,9 +11,12 @@ import com.roddyaj.vf.model.SymbolData.IncomeStatement;
 public class Rule1Strategy implements Strategy
 {
 	@Override
-	public boolean evaluate(SymbolData data)
+	public boolean evaluate(SymbolData data, Report report)
 	{
-		return testROIC(data) & testMosPrice(data);
+		boolean pass = testROIC(data) & testMosPrice(data);
+		String message = (pass ? "pass" : "fail");
+		report.addMessage("Rule 1", message);
+		return pass;
 	}
 
 	private boolean testROIC(SymbolData data)

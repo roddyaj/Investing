@@ -28,6 +28,8 @@ public class RequestCache
 
 	private final boolean allowRequest = true;
 
+	private int tmpCount;
+
 	public RequestCache(long sleepTime, JSONObject settings)
 	{
 		this.sleepTime = sleepTime;
@@ -92,6 +94,8 @@ public class RequestCache
 		{
 			System.out.println("Cache: " + cacheFile);
 			response = reader.read(cacheFile);
+			tmpCount++;
+			System.out.println(tmpCount);
 		}
 		else if (allowRequest)
 		{

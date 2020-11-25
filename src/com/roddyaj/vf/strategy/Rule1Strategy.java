@@ -2,6 +2,7 @@ package com.roddyaj.vf.strategy;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 
 import com.roddyaj.vf.model.DateAndDouble;
 import com.roddyaj.vf.model.Report;
@@ -65,29 +66,32 @@ public class Rule1Strategy implements Strategy
 		double estimatedFuturePE = Math.min(defaultPE, historicalPE);
 
 		// Work towards final price
-		double futureEps = data.eps * Math.pow(estimatedGrowthRate, projectedYears);
+		double futureEps = data.getEps() * Math.pow(estimatedGrowthRate, projectedYears);
 		double futureMarketPrice = futureEps * estimatedFuturePE;
 		double stickerPrice = futureMarketPrice / Math.pow(marr, projectedYears);
 		double mosPrice = stickerPrice * mosFactor;
 
-		boolean pass = data.getPrice(data.symbol) < mosPrice;
+		boolean pass = data.getPrice() < mosPrice;
 		report.addMessage("Rule 1.MOS price", String.format("%.2f", mosPrice));
 		return pass;
 	}
 
-	private double calcHistoricalPE(SymbolData data)
+	private double calcHistoricalPE(SymbolData data) throws IOException
 	{
 		double peSum = 0;
 		int peCount = 0;
 
+		List<DateAndDouble> earnings = data.getEarnings();
+		List<DateAndDouble> priceHistory = data.getPriceHistory();
+
 		LocalDate prevDate = null;
-		for (DateAndDouble earningsElement : data.earnings)
+		for (DateAndDouble earningsElement : earnings)
 		{
 			double priceSum = 0;
 			int priceCount = 0;
 			LocalDate prevYear = prevDate != null ? prevDate : earningsElement.date.minusYears(1);
 			prevDate = earningsElement.date;
-			for (DateAndDouble priceElement : data.priceHistory)
+			for (DateAndDouble priceElement : priceHistory)
 			{
 				if (!priceElement.date.isAfter(earningsElement.date) && priceElement.date.isAfter(prevYear))
 				{

@@ -96,7 +96,7 @@ public class Application
 	private void evaluate(Collection<? extends SymbolData> stocks) throws IOException
 	{
 		Reports reports = new Reports();
-		List<Strategy> strategies = List.of(new Rule1Strategy(), new AnalystTargetStrategy());
+		List<Strategy> strategies = List.of(new AnalystTargetStrategy(), new Rule1Strategy());
 		for (SymbolData stock : stocks)
 			evaluate(stock, strategies, reports);
 		System.out.println(reports);
@@ -107,7 +107,11 @@ public class Application
 		boolean allPass = true;
 		Report report = new Report(stock);
 		for (Strategy strategy : strategies)
+		{
 			allPass &= strategy.evaluate(stock, report);
+			if (!allPass)
+				break;
+		}
 		report.pass = allPass;
 		reports.addReport(report);
 	}

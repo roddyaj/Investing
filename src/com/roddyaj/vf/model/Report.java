@@ -28,10 +28,11 @@ public class Report
 	public String toString()
 	{
 		List<String> lines = new ArrayList<>();
-		String name = symbolData.name != null ? symbolData.name.substring(0, Math.min(30, symbolData.name.length())) : null;
 		try
 		{
-			lines.add(String.format("%-5s %-30s %7.2f", symbolData.symbol, name, symbolData.getPrice(symbolData.symbol)));
+			String name = symbolData.getName();
+			String formattedName = name != null ? name.substring(0, Math.min(30, name.length())) : null;
+			lines.add(String.format("%-5s %-30s %7.2f", symbolData.symbol, formattedName, symbolData.getPrice()));
 		}
 		catch (IOException e)
 		{

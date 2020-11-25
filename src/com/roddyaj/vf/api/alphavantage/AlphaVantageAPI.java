@@ -6,7 +6,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -24,7 +26,9 @@ public class AlphaVantageAPI implements DataRequester
 
 	private final String urlBase;
 
-	private final RequestCache cache;
+	private final Map<String, JSONObject> cache = new HashMap<>();
+
+	private final RequestCache requestor;
 
 	public AlphaVantageAPI(JSONObject settings) throws IOException
 	{
@@ -34,67 +38,60 @@ public class AlphaVantageAPI implements DataRequester
 			throw new IOException("Error: No API key specified");
 
 		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).toString();
-		cache = new RequestCache(sleepTime, settings);
+		requestor = new RequestCache(sleepTime, settings);
 	}
 
 	@Override
-	public double getPrice(String symbol) throws IOException
+	public String getName(String symbol) throws IOException
 	{
-		JSONObject json = getAsJSON(symbol, "GLOBAL_QUOTE");
-		JSONObject quote = (JSONObject)json.get("Global Quote");
-		return AlphaVantageAPI.getDouble(quote, "05. price");
+		JSONObject json = request(symbol, "OVERVIEW");
+		return getString(json, "Name");
 	}
 
-	public void requestData(SymbolData data) throws IOException
+	@Override
+	public double getEps(String symbol) throws IOException
 	{
-		JSONObject json;
+		JSONObject json = request(symbol, "OVERVIEW");
+		return getDouble(json, "EPS");
+	}
 
-		json = getAsJSON(data.symbol, "OVERVIEW");
-		data.name = getString(json, "Name");
-		data.eps = getDouble(json, "EPS");
-		data.analystTargetPrice = getDouble(json, "AnalystTargetPrice");
+	@Override
+	public double getAnalystTargetPrice(String symbol) throws IOException
+	{
+		JSONObject json = request(symbol, "OVERVIEW");
+		return getDouble(json, "AnalystTargetPrice");
+	}
 
-		json = getAsJSON(data.symbol, "INCOME_STATEMENT");
-		JSONArray annualReports = (JSONArray)json.get("annualReports");
-		for (Object r : annualReports)
-		{
-			JSONObject report = (JSONObject)r;
-			IncomeStatement incomeStatement = new IncomeStatement();
-			incomeStatement.period = getString(report, "fiscalDateEnding");
-			incomeStatement.incomeBeforeTax = getLong(report, "incomeBeforeTax");
-			incomeStatement.operatingIncome = getLong(report, "operatingIncome");
-			incomeStatement.taxProvision = getLong(report, "taxProvision");
-			data.incomeStatements.add(incomeStatement);
-		}
-
-		json = getAsJSON(data.symbol, "BALANCE_SHEET");
-		annualReports = (JSONArray)json.get("annualReports");
-		for (Object r : annualReports)
-		{
-			JSONObject report = (JSONObject)r;
-			BalanceSheet balanceSheet = new BalanceSheet();
-			balanceSheet.period = getString(report, "fiscalDateEnding");
-			balanceSheet.totalShareholderEquity = getLong(report, "totalShareholderEquity");
-			balanceSheet.shortTermDebt = getLong(report, "shortTermDebt");
-			balanceSheet.longTermDebt = getLong(report, "longTermDebt");
-			data.balanceSheets.add(balanceSheet);
-		}
+	@Override
+	public List<DateAndDouble> getEarnings(String symbol) throws IOException
+	{
+		List<DateAndDouble> earnings = new ArrayList<>();
 
 		LocalDate yearsAgo = LocalDate.now().minusYears(6);
 
-		json = getAsJSON(data.symbol, "EARNINGS");
+		JSONObject json = request(symbol, "EARNINGS");
 		JSONArray annualEarnings = (JSONArray)json.get("annualEarnings");
-		List<DateAndDouble> earnings = new ArrayList<>();
 		for (Object r : annualEarnings)
 		{
 			JSONObject report = (JSONObject)r;
 			LocalDate date = getDate(report, "fiscalDateEnding");
 			double eps = getDouble(report, "reportedEPS");
-			earnings.add(new DateAndDouble(date, eps));
+			if (date.isAfter(yearsAgo))
+				earnings.add(new DateAndDouble(date, eps));
 		}
-		earnings.stream().filter(e -> e.date.isAfter(yearsAgo)).sorted().forEach(data.earnings::add);
+		Collections.sort(earnings);
 
-		json = getAsJSON(data.symbol, "TIME_SERIES_MONTHLY_ADJUSTED");
+		return earnings;
+	}
+
+	@Override
+	public List<DateAndDouble> getPriceHistory(String symbol) throws IOException
+	{
+		List<DateAndDouble> priceHistory = new ArrayList<>();
+
+		LocalDate yearsAgo = LocalDate.now().minusYears(6);
+
+		JSONObject json = request(symbol, "TIME_SERIES_MONTHLY_ADJUSTED");
 		JSONObject timeSeries = (JSONObject)json.get("Monthly Adjusted Time Series");
 		List<LocalDate> dates = new ArrayList<>();
 		for (Object key : timeSeries.keySet())
@@ -108,15 +105,65 @@ public class AlphaVantageAPI implements DataRequester
 		{
 			JSONObject prices = (JSONObject)timeSeries.get(date.toString());
 			double closePrice = getDouble(prices, "5. adjusted close");
-			data.priceHistory.add(new DateAndDouble(date, closePrice));
+			priceHistory.add(new DateAndDouble(date, closePrice));
+		}
+
+		return priceHistory;
+	}
+
+	@Override
+	public double getPrice(String symbol) throws IOException
+	{
+		JSONObject json = request(symbol, "GLOBAL_QUOTE");
+		JSONObject quote = (JSONObject)json.get("Global Quote");
+		return AlphaVantageAPI.getDouble(quote, "05. price");
+	}
+
+	public void requestData(SymbolData data) throws IOException
+	{
+		JSONObject json;
+
+		json = request(data.symbol, "INCOME_STATEMENT");
+		JSONArray annualReports = (JSONArray)json.get("annualReports");
+		for (Object r : annualReports)
+		{
+			JSONObject report = (JSONObject)r;
+			IncomeStatement incomeStatement = new IncomeStatement();
+			incomeStatement.period = getString(report, "fiscalDateEnding");
+			incomeStatement.incomeBeforeTax = getLong(report, "incomeBeforeTax");
+			incomeStatement.operatingIncome = getLong(report, "operatingIncome");
+			incomeStatement.taxProvision = getLong(report, "taxProvision");
+			data.incomeStatements.add(incomeStatement);
+		}
+
+		json = request(data.symbol, "BALANCE_SHEET");
+		annualReports = (JSONArray)json.get("annualReports");
+		for (Object r : annualReports)
+		{
+			JSONObject report = (JSONObject)r;
+			BalanceSheet balanceSheet = new BalanceSheet();
+			balanceSheet.period = getString(report, "fiscalDateEnding");
+			balanceSheet.totalShareholderEquity = getLong(report, "totalShareholderEquity");
+			balanceSheet.shortTermDebt = getLong(report, "shortTermDebt");
+			balanceSheet.longTermDebt = getLong(report, "longTermDebt");
+			data.balanceSheets.add(balanceSheet);
 		}
 	}
 
-	private JSONObject getAsJSON(String symbol, String function) throws IOException
+	private JSONObject request(String symbol, String function) throws IOException
 	{
-		String url = new StringBuilder(urlBase).append("&function=").append(function).append("&symbol=").append(symbol).toString();
-		String cacheKey = symbol + "/" + function + ".json";
-		return cache.getJson(URI.create(url), cacheKey);
+		JSONObject response;
+		final String cacheKey = symbol + "/" + function + ".json";
+		response = cache.get(cacheKey);
+		if (response == null)
+		{
+			String url = new StringBuilder(urlBase).append("&function=").append(function).append("&symbol=").append(symbol).toString();
+			response = requestor.getJson(URI.create(url), cacheKey);
+			cache.put(cacheKey, response);
+		}
+		else
+			System.out.println("Memory: " + cacheKey);
+		return response;
 	}
 
 	private static String getString(JSONObject obj, String key)

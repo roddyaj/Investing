@@ -13,9 +13,8 @@ public class Rule1Strategy implements Strategy
 	@Override
 	public boolean evaluate(SymbolData data, Report report)
 	{
-		boolean pass = testROIC(data) & testMosPrice(data);
-		String message = (pass ? "pass" : "fail");
-		report.addMessage("Rule 1", message);
+		boolean pass = testROIC(data) && testMosPrice(data, report);
+		report.addMessage("Rule 1", pass ? "pass" : "fail");
 		return pass;
 	}
 
@@ -36,7 +35,7 @@ public class Rule1Strategy implements Strategy
 		return pass;
 	}
 
-	private boolean testMosPrice(SymbolData data)
+	private boolean testMosPrice(SymbolData data, Report report)
 	{
 		if (data.balanceSheets.size() < 2)
 		{
@@ -71,6 +70,7 @@ public class Rule1Strategy implements Strategy
 		double mosPrice = stickerPrice * mosFactor;
 
 		boolean pass = data.price < mosPrice;
+		report.addMessage("Rule 1.MOS price", String.format("%.2f", mosPrice));
 		return pass;
 	}
 

@@ -26,6 +26,8 @@ public class RequestCache
 
 	private long lastRequestTime;
 
+	private final boolean allowRequest = true;
+
 	public RequestCache(long sleepTime, JSONObject settings)
 	{
 		this.sleepTime = sleepTime;
@@ -84,12 +86,13 @@ public class RequestCache
 		Path cacheFile = Paths.get(cacheRoot.toString(), cacheKey);
 		if (!Files.exists(cacheFile.getParent()))
 			Files.createDirectory(cacheFile.getParent());
+
+		T response = null;
 		if (Files.exists(cacheFile))
 		{
-			T cachedBody = reader.read(cacheFile);
-			return cachedBody;
+			response = reader.read(cacheFile);
 		}
-		else
+		else if (allowRequest)
 		{
 			long timeToSleep = sleepTime - (System.currentTimeMillis() - lastRequestTime);
 			if (timeToSleep > 0)
@@ -107,8 +110,9 @@ public class RequestCache
 			System.out.println("Remote: " + uri);
 			HttpRequest request = requestBuilder.uri(uri).build();
 			lastRequestTime = System.currentTimeMillis();
-			return requester.request(request, cacheFile);
+			response = requester.request(request, cacheFile);
 		}
+		return response;
 	}
 
 	@FunctionalInterface

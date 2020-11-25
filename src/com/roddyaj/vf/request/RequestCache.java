@@ -81,13 +81,12 @@ public class RequestCache
 
 	private <T> T get(URI uri, String cacheKey, Requester<T> requester, Reader<T> reader) throws IOException
 	{
-		Path requestDir = Paths.get(cacheRoot.toString(), cacheKey);
-		if (!Files.exists(requestDir))
-			Files.createDirectory(requestDir);
-		Path responseFile = Paths.get(requestDir.toString(), "response");
-		if (Files.exists(responseFile))
+		Path cacheFile = Paths.get(cacheRoot.toString(), cacheKey);
+		if (!Files.exists(cacheFile.getParent()))
+			Files.createDirectory(cacheFile.getParent());
+		if (Files.exists(cacheFile))
 		{
-			T cachedBody = reader.read(responseFile);
+			T cachedBody = reader.read(cacheFile);
 			return cachedBody;
 		}
 		else
@@ -108,7 +107,7 @@ public class RequestCache
 			System.out.println("Remote: " + uri);
 			HttpRequest request = requestBuilder.uri(uri).build();
 			lastRequestTime = System.currentTimeMillis();
-			return requester.request(request, responseFile);
+			return requester.request(request, cacheFile);
 		}
 	}
 

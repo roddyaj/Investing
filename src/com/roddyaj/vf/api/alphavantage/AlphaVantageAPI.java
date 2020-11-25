@@ -112,7 +112,7 @@ public class AlphaVantageAPI
 	private JSONObject getAsJSON(String symbol, String function) throws IOException
 	{
 		String url = new StringBuilder(urlBase).append("&function=").append(function).append("&symbol=").append(symbol).toString();
-		String cacheKey = new StringBuilder("AV_").append(symbol).append('_').append(function).toString();
+		String cacheKey = symbol + "/" + function + ".json";
 		return cache.getJson(URI.create(url), cacheKey);
 	}
 

@@ -38,6 +38,12 @@ public class Rule1Strategy implements Strategy
 
 	private boolean testMosPrice(SymbolData data)
 	{
+		if (data.balanceSheets.size() < 2)
+		{
+			System.out.println("Skipping " + data.symbol + ", missing balance sheets");
+			return false;
+		}
+
 		final double marr = 1.15; // Minimum acceptable rate of return
 		final double mosFactor = 0.5;
 		final int projectedYears = 5;

@@ -27,7 +27,7 @@ public class Report
 	public String toString()
 	{
 		List<String> lines = new ArrayList<>();
-		String name = symbolData.name.substring(0, Math.min(30, symbolData.name.length()));
+		String name = symbolData.name != null ? symbolData.name.substring(0, Math.min(30, symbolData.name.length())) : null;
 		lines.add(String.format("%-5s %-30s %7.2f", symbolData.symbol, name, symbolData.price));
 		for (Map.Entry<String, String> entry : messages.entrySet())
 			lines.add("      " + entry.getKey() + ": " + entry.getValue());

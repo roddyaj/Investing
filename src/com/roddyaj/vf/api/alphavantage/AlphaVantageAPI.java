@@ -75,8 +75,6 @@ public class AlphaVantageAPI
 
 		json = getAsJSON(data.symbol, "EARNINGS");
 		JSONArray annualEarnings = (JSONArray)json.get("annualEarnings");
-		if (annualEarnings == null)
-			System.out.println(data.symbol);
 		List<DateAndDouble> earnings = new ArrayList<>();
 		for (Object r : annualEarnings)
 		{

@@ -22,6 +22,7 @@ public class Reports
 	public String toString()
 	{
 		List<String> lines = new ArrayList<>();
+		lines.add("");
 		format(fails, "Fail", lines);
 		lines.add("");
 		format(passes, "Pass", lines);
@@ -33,7 +34,6 @@ public class Reports
 		lines.add("=================== " + title + " ===================");
 		for (Report report : reports)
 		{
-			lines.add("");
 			lines.add(report.toString());
 		}
 	}

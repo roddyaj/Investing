@@ -85,7 +85,7 @@ public class Application
 			}
 			catch (RuntimeException e)
 			{
-				e.printStackTrace();
+				System.err.println(e + " requesting " + stock.symbol);
 			}
 		}
 	}

@@ -32,7 +32,7 @@ public class Results
 		if (!results.isEmpty())
 		{
 			lines.add("");
-			lines.add("=================== " + title + " ===================");
+			lines.add("======================== " + title + " ========================");
 			for (SymbolResult result : results)
 			{
 				lines.add("");

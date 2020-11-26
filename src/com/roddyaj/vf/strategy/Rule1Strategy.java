@@ -2,7 +2,9 @@ package com.roddyaj.vf.strategy;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.roddyaj.vf.model.DateAndDouble;
 import com.roddyaj.vf.model.Result;
@@ -27,6 +29,7 @@ public class Rule1Strategy implements Strategy
 		List<IncomeStatement> incomeStatements = data.getIncomeStatements();
 		List<BalanceSheet> balanceSheets = data.getBalanceSheets();
 		int periods = Math.min(incomeStatements.size(), balanceSheets.size());
+		double[] roics = new double[periods];
 		for (int i = 0; i < periods; i++)
 		{
 			IncomeStatement incomeStatement = incomeStatements.get(i);
@@ -34,10 +37,12 @@ public class Rule1Strategy implements Strategy
 			double nopat = incomeStatement.operatingIncome * (1 - (double)incomeStatement.taxProvision / incomeStatement.incomeBeforeTax);
 			long investedCapital = balanceSheet.shortTermDebt + balanceSheet.longTermDebt + balanceSheet.totalShareholderEquity;
 			double roic = nopat / investedCapital;
+			roics[i] = roic * 100;
 //			System.out.println(data.symbol + " ROIC " + incomeStatement.period + " " + (roic * 100));
 			pass &= roic >= .1;
 		}
-		result.addResult(new Result("Rule1.ROIC", pass));
+		String roicValues = Arrays.stream(roics).mapToObj(r -> String.format("%.1f", r)).collect(Collectors.joining(","));
+		result.addResult(new Result("Rule1.ROIC " + roicValues, pass));
 		return pass;
 	}
 

@@ -5,22 +5,23 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.roddyaj.vf.model.DateAndDouble;
-import com.roddyaj.vf.model.Report;
+import com.roddyaj.vf.model.Result;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.BalanceSheet;
 import com.roddyaj.vf.model.SymbolData.IncomeStatement;
+import com.roddyaj.vf.model.SymbolResult;
 
 public class Rule1Strategy implements Strategy
 {
 	@Override
-	public boolean evaluate(SymbolData data, Report report) throws IOException
+	public boolean evaluate(SymbolData data, SymbolResult result) throws IOException
 	{
-		boolean pass = testROIC(data) && testMosPrice(data, report);
-		report.addMessage("Rule 1", pass ? "pass" : "fail");
+		boolean pass = testROIC(data, result) && testMosPrice(data, result);
+		result.addResult(new Result("Rule1", pass));
 		return pass;
 	}
 
-	private boolean testROIC(SymbolData data) throws IOException
+	private boolean testROIC(SymbolData data, SymbolResult result) throws IOException
 	{
 		boolean pass = true;
 		List<IncomeStatement> incomeStatements = data.getIncomeStatements();
@@ -36,10 +37,11 @@ public class Rule1Strategy implements Strategy
 //			System.out.println(data.symbol + " ROIC " + incomeStatement.period + " " + (roic * 100));
 			pass &= roic >= .1;
 		}
+		result.addResult(new Result("Rule1.ROIC", pass));
 		return pass;
 	}
 
-	private boolean testMosPrice(SymbolData data, Report report) throws IOException
+	private boolean testMosPrice(SymbolData data, SymbolResult result) throws IOException
 	{
 		List<BalanceSheet> balanceSheets = data.getBalanceSheets();
 		if (balanceSheets.size() < 2)
@@ -58,7 +60,10 @@ public class Rule1Strategy implements Strategy
 			int years = balanceSheets.size() - 1;
 			double recentEquity = balanceSheets.get(0).totalShareholderEquity;
 			double olderEquity = balanceSheets.get(balanceSheets.size() - 1).totalShareholderEquity;
-			pastGrowthRate = Math.pow(recentEquity / olderEquity, 1. / years);
+			if (recentEquity > 0 && olderEquity > 0)
+				pastGrowthRate = Math.pow(recentEquity / olderEquity, 1. / years);
+			else
+				pastGrowthRate = 0;
 		}
 		double analystGrowthRate = 100; // TODO
 		double estimatedGrowthRate = Math.min(pastGrowthRate, analystGrowthRate);
@@ -75,7 +80,7 @@ public class Rule1Strategy implements Strategy
 		double mosPrice = stickerPrice * mosFactor;
 
 		boolean pass = data.getPrice() < mosPrice;
-		report.addMessage("Rule 1.MOS price", String.format("%.2f", mosPrice));
+		result.addResult(new Result("Rule1.mosPrice", pass, mosPrice));
 		return pass;
 	}
 

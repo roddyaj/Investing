@@ -15,10 +15,10 @@ import org.json.simple.parser.ParseException;
 
 import com.roddyaj.vf.api.DataRequesterImpl;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
-import com.roddyaj.vf.model.Report;
-import com.roddyaj.vf.model.Reports;
+import com.roddyaj.vf.model.Results;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.DataRequester;
+import com.roddyaj.vf.model.SymbolResult;
 import com.roddyaj.vf.strategy.AnalystTargetStrategy;
 import com.roddyaj.vf.strategy.Rule1Strategy;
 import com.roddyaj.vf.strategy.Strategy;
@@ -80,24 +80,25 @@ public class Application
 
 	private void evaluate(Collection<? extends SymbolData> stocks) throws IOException
 	{
-		Reports reports = new Reports();
+		Results results = new Results();
 		List<Strategy> strategies = List.of(new AnalystTargetStrategy(), new Rule1Strategy());
 		for (SymbolData stock : stocks)
-			evaluate(stock, strategies, reports);
-		System.out.println(reports);
+			evaluate(stock, strategies, results);
+		System.out.println(results);
 	}
 
-	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies, Reports reports) throws IOException
+	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies, Results results) throws IOException
 	{
 		boolean allPass = true;
-		Report report = new Report(stock);
+		SymbolResult result = new SymbolResult(stock);
 		for (Strategy strategy : strategies)
 		{
-			allPass &= strategy.evaluate(stock, report);
+			allPass &= strategy.evaluate(stock, result);
 			if (!allPass)
 				break;
 		}
-		report.pass = allPass;
-		reports.addReport(report);
+		result.pass = allPass;
+
+		results.addResult(result);
 	}
 }

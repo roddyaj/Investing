@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -81,9 +82,14 @@ public class Application
 	private void evaluate(Collection<? extends SymbolData> stocks) throws IOException
 	{
 		Results results = new Results();
-		List<Strategy> strategies = List.of(new AnalystTargetStrategy(), new Rule1Strategy());
+
+		List<Strategy> strategies = new ArrayList<>();
+		strategies.add(new AnalystTargetStrategy());
+		strategies.add(new Rule1Strategy());
+
 		for (SymbolData stock : stocks)
 			evaluate(stock, strategies, results);
+
 		System.out.println(results);
 	}
 

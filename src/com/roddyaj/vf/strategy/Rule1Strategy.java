@@ -85,7 +85,13 @@ public class Rule1Strategy implements Strategy
 		double mosPrice = stickerPrice * mosFactor;
 
 		boolean pass = data.getPrice() < mosPrice;
+
+		result.addResult(new Result("Rule1.mosPrice.eps " + String.format("%.2f", data.getEps()), true));
+		String grString = String.format("%.1f", (estimatedGrowthRate - 1) * 100);
+		result.addResult(new Result("Rule1.mosPrice.growthRate " + grString, estimatedGrowthRate > 1));
+		result.addResult(new Result("Rule1.mosPrice.historicalPE " + String.format("%.1f", historicalPE), historicalPE > 0));
 		result.addResult(new Result("Rule1.mosPrice", pass, mosPrice));
+
 		return pass;
 	}
 

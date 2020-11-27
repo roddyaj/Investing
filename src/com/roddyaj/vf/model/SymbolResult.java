@@ -36,7 +36,7 @@ public class SymbolResult
 		}
 		catch (IOException e)
 		{
-			rows.add(new String[] { e.getMessage() + ": " + data.symbol });
+			rows.add(new String[] { e.getMessage() + ": " + data.symbol, "" });
 		}
 		for (Result result : results)
 		{

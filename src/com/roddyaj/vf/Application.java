@@ -1,12 +1,10 @@
-package com.roddyaj.vf.app;
+package com.roddyaj.vf;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,13 +14,9 @@ import org.json.simple.parser.ParseException;
 
 import com.roddyaj.vf.api.DataRequesterImpl;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
-import com.roddyaj.vf.model.Results;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.DataRequester;
-import com.roddyaj.vf.model.SymbolResult;
-import com.roddyaj.vf.strategy.AnalystTargetStrategy;
-import com.roddyaj.vf.strategy.Rule1Strategy;
-import com.roddyaj.vf.strategy.Strategy;
+import com.roddyaj.vf.strategy.Strategies;
 
 public class Application
 {
@@ -39,7 +33,8 @@ public class Application
 				for (SymbolData stock : stocks)
 					stock.setRequester(requester);
 
-				evaluate(stocks);
+				Strategies strategies = new Strategies(args);
+				strategies.run(stocks);
 			}
 		}
 		catch (IOException e)
@@ -77,34 +72,5 @@ public class Application
 		else
 			System.out.println("Usage: TODO");
 		return stocks;
-	}
-
-	private void evaluate(Collection<? extends SymbolData> stocks) throws IOException
-	{
-		Results results = new Results();
-
-		List<Strategy> strategies = new ArrayList<>();
-		strategies.add(new AnalystTargetStrategy());
-		strategies.add(new Rule1Strategy());
-
-		for (SymbolData stock : stocks)
-			evaluate(stock, strategies, results);
-
-		System.out.println(results);
-	}
-
-	private void evaluate(SymbolData stock, Collection<? extends Strategy> strategies, Results results) throws IOException
-	{
-		boolean allPass = true;
-		SymbolResult result = new SymbolResult(stock);
-		for (Strategy strategy : strategies)
-		{
-			allPass &= strategy.evaluate(stock, result);
-			if (!allPass)
-				break;
-		}
-		result.pass = allPass;
-
-		results.addResult(result);
 	}
 }

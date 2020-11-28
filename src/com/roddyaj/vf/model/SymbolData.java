@@ -40,6 +40,11 @@ public class SymbolData
 		return name;
 	}
 
+	public String getNameIfPresent()
+	{
+		return name != null ? name : "";
+	}
+
 	public double getEps() throws IOException
 	{
 		if (eps == 0)
@@ -91,6 +96,11 @@ public class SymbolData
 	{
 		if (price == 0)
 			price = requester.getPrice(symbol);
+		return price;
+	}
+
+	public double getPriceIfPresent()
+	{
 		return price;
 	}
 

@@ -16,6 +16,12 @@ import com.roddyaj.vf.model.SymbolResult;
 public class Rule1Strategy implements Strategy
 {
 	@Override
+	public String getName()
+	{
+		return "Rule1";
+	}
+
+	@Override
 	public boolean evaluate(SymbolData data, SymbolResult result) throws IOException
 	{
 		boolean pass = testROIC(data, result) && testMosPrice(data, result);

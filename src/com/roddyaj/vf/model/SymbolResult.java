@@ -1,6 +1,5 @@
 package com.roddyaj.vf.model;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,20 +27,14 @@ public class SymbolResult
 	{
 		List<String[]> rows = new ArrayList<>();
 
-		try
-		{
-			String stockInfo = String.format("%-5s %-40s", data.symbol, limit(data.getName(), 40));
-			String price = formatPrice(data.getPrice());
-			rows.add(new String[] { stockInfo, price });
-		}
-		catch (IOException e)
-		{
-			rows.add(new String[] { e.getMessage() + ": " + data.symbol, "" });
-		}
+		String stockInfo = String.format("%-5s %-40s", data.symbol, limit(data.getNameIfPresent(), 40));
+		String price = formatPrice(data.getPriceIfPresent());
+		rows.add(new String[] { stockInfo, price });
+
 		for (Result result : results)
 		{
 			String message = String.format("  %s %s", result.pass ? "Pass" : "Fail", result.message);
-			String price = result.price != null ? formatPrice(result.price.doubleValue()) : "   ----";
+			price = result.price != null ? formatPrice(result.price.doubleValue()) : "   ----";
 			rows.add(new String[] { message, price });
 		}
 
@@ -50,7 +43,7 @@ public class SymbolResult
 
 	private static String limit(String s, int size)
 	{
-		return size < s.length() ? s.substring(0, size) : s;
+		return s != null && size < s.length() ? s.substring(0, size) : s;
 	}
 
 	private static List<String> formatTable(Collection<? extends Object[]> data)

@@ -13,28 +13,31 @@ import com.roddyaj.vf.model.SymbolResult;
 
 public class Strategies
 {
+	private final List<Strategy> availableStrategies = new ArrayList<>();
+	{
+		availableStrategies.add(new AnalystTargetStrategy());
+		availableStrategies.add(new Rule1Strategy());
+		availableStrategies.add(new ScrapeStrategy());
+	}
+
+	private final String defaultStrategies = "AnalystTarget,Rule1";
+
 	private final List<Strategy> strategies = new ArrayList<>();
 
 	public Strategies(String[] args)
 	{
-		String strategiesArg = null;
+		String strategiesArg = defaultStrategies;
 		for (String arg : args)
 		{
 			if (arg.startsWith("strat="))
 				strategiesArg = arg.split("=")[1];
 		}
-		if (strategiesArg == null)
-			strategiesArg = "AnalystTarget,Rule1";
-
-		List<Strategy> availableStrategies = new ArrayList<>();
-		availableStrategies.add(new AnalystTargetStrategy());
-		availableStrategies.add(new Rule1Strategy());
+		String[] strategyNames = strategiesArg.split(",");
 
 		Map<String, Strategy> map = new HashMap<>();
 		for (Strategy strategy : availableStrategies)
 			map.put(strategy.getName(), strategy);
 
-		String[] strategyNames = strategiesArg.split(",");
 		for (String name : strategyNames)
 		{
 			Strategy strategy = map.get(name);

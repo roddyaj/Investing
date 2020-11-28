@@ -22,6 +22,11 @@ public class SymbolResult
 		results.add(result);
 	}
 
+	public boolean hasResults()
+	{
+		return !results.isEmpty();
+	}
+
 	@Override
 	public String toString()
 	{

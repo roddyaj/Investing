@@ -31,12 +31,12 @@ public class Results
 	{
 		if (!results.isEmpty())
 		{
-			lines.add("");
-			lines.add("======================== " + title + " ========================");
+			lines.add("\n======================== " + title + " ========================\n");
 			for (SymbolResult result : results)
 			{
-				lines.add("");
 				lines.add(result.toString());
+				if (result.hasResults())
+					lines.add("");
 			}
 		}
 	}

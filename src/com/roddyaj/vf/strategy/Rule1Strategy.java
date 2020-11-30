@@ -40,8 +40,8 @@ public class Rule1Strategy implements Strategy
 		{
 			IncomeStatement incomeStatement = incomeStatements.get(i);
 			BalanceSheet balanceSheet = balanceSheets.get(i);
-			double nopat = incomeStatement.operatingIncome * (1 - (double)incomeStatement.taxProvision / incomeStatement.incomeBeforeTax);
-			long investedCapital = balanceSheet.shortTermDebt + balanceSheet.longTermDebt + balanceSheet.totalShareholderEquity;
+			double nopat = incomeStatement.operatingIncome * (1 - incomeStatement.taxProvision / incomeStatement.incomeBeforeTax);
+			double investedCapital = balanceSheet.shortTermDebt + balanceSheet.longTermDebt + balanceSheet.totalShareholderEquity;
 			double roic = nopat / investedCapital;
 			roics[i] = roic * 100;
 //			System.out.println(data.symbol + " ROIC " + incomeStatement.period + " " + (roic * 100));

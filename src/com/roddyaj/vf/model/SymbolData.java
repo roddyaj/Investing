@@ -107,17 +107,17 @@ public class SymbolData
 	public static class IncomeStatement
 	{
 		public String period;
-		public long incomeBeforeTax;
-		public long operatingIncome;
-		public long taxProvision;
+		public double incomeBeforeTax;
+		public double operatingIncome;
+		public double taxProvision;
 	}
 
 	public static class BalanceSheet
 	{
 		public String period;
-		public long totalShareholderEquity;
-		public long shortTermDebt;
-		public long longTermDebt;
+		public double totalShareholderEquity;
+		public double shortTermDebt;
+		public double longTermDebt;
 	}
 
 	public interface DataRequester

@@ -46,8 +46,9 @@ public class Strategies
 		}
 	}
 
-	public void run(Collection<? extends SymbolData> stocks) throws IOException
+	public Results run(Collection<? extends SymbolData> stocks) throws IOException
 	{
+		// Log what we're doing
 		StringBuilder preamble = new StringBuilder();
 		for (Strategy strategy : strategies)
 		{
@@ -58,10 +59,11 @@ public class Strategies
 		preamble.insert(0, "\nRunning strategies: ");
 		System.out.println(preamble);
 
+		// Run the strategies
 		Results results = new Results();
 		for (SymbolData stock : stocks)
 			run(stock, results);
-		System.out.println(results);
+		return results;
 	}
 
 	private void run(SymbolData stock, Results results) throws IOException

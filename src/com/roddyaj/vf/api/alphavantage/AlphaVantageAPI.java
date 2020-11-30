@@ -75,9 +75,9 @@ public class AlphaVantageAPI implements DataRequester
 			JSONObject report = (JSONObject)r;
 			IncomeStatement incomeStatement = new IncomeStatement();
 			incomeStatement.period = getString(report, "fiscalDateEnding");
-			incomeStatement.incomeBeforeTax = getLong(report, "incomeBeforeTax");
-			incomeStatement.operatingIncome = getLong(report, "operatingIncome");
-			incomeStatement.taxProvision = getLong(report, "taxProvision");
+			incomeStatement.incomeBeforeTax = getDouble(report, "incomeBeforeTax");
+			incomeStatement.operatingIncome = getDouble(report, "operatingIncome");
+			incomeStatement.taxProvision = getDouble(report, "taxProvision");
 			incomeStatements.add(incomeStatement);
 		}
 
@@ -96,9 +96,9 @@ public class AlphaVantageAPI implements DataRequester
 			JSONObject report = (JSONObject)r;
 			BalanceSheet balanceSheet = new BalanceSheet();
 			balanceSheet.period = getString(report, "fiscalDateEnding");
-			balanceSheet.totalShareholderEquity = getLong(report, "totalShareholderEquity");
-			balanceSheet.shortTermDebt = getLong(report, "shortTermDebt");
-			balanceSheet.longTermDebt = getLong(report, "longTermDebt");
+			balanceSheet.totalShareholderEquity = getDouble(report, "totalShareholderEquity");
+			balanceSheet.shortTermDebt = getDouble(report, "shortTermDebt");
+			balanceSheet.longTermDebt = getDouble(report, "longTermDebt");
 			balanceSheets.add(balanceSheet);
 		}
 
@@ -197,7 +197,8 @@ public class AlphaVantageAPI implements DataRequester
 
 	private static double getDouble(JSONObject obj, String key)
 	{
-		return Double.parseDouble((String)obj.get(key));
+		String value = (String)obj.get(key);
+		return "None".equals(value) ? 0 : Double.parseDouble(value);
 	}
 
 	private static LocalDate getDate(JSONObject obj, String key)

@@ -14,8 +14,10 @@ import org.json.simple.parser.ParseException;
 
 import com.roddyaj.vf.api.DataRequesterImpl;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
+import com.roddyaj.vf.model.Results;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.DataRequester;
+import com.roddyaj.vf.report.Report;
 import com.roddyaj.vf.strategy.Strategies;
 
 public class Application
@@ -34,7 +36,8 @@ public class Application
 					stock.setRequester(requester);
 
 				Strategies strategies = new Strategies(args);
-				strategies.run(stocks);
+				Results results = strategies.run(stocks);
+				Report.print(results);
 			}
 		}
 		catch (IOException e)

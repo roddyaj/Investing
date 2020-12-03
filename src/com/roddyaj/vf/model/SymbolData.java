@@ -1,7 +1,9 @@
 package com.roddyaj.vf.model;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SymbolData
 {
@@ -22,6 +24,11 @@ public class SymbolData
 	private double price;
 
 	private DataRequester requester;
+
+	public static List<SymbolData> fromSymbols(Collection<? extends String> symbols)
+	{
+		return symbols.stream().map(SymbolData::new).collect(Collectors.toList());
+	}
 
 	public SymbolData(String symbol)
 	{

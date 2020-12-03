@@ -24,7 +24,9 @@ public class Rule1Strategy implements Strategy
 	@Override
 	public boolean evaluate(SymbolData data, SymbolResult result) throws IOException
 	{
-		boolean pass = testROIC(data, result) && testMosPrice(data, result);
+		boolean pass =
+			testROIC(data, result) &&
+			testMosPrice(data, result);
 		result.addResult(new Result("Rule1", pass));
 		return pass;
 	}
@@ -96,7 +98,8 @@ public class Rule1Strategy implements Strategy
 		String grString = String.format("%.1f", (estimatedGrowthRate - 1) * 100);
 		result.addResult(new Result("Rule1.mosPrice.growthRate " + grString, estimatedGrowthRate > 1));
 		result.addResult(new Result("Rule1.mosPrice.historicalPE " + String.format("%.1f", historicalPE), historicalPE > 0));
-		result.addResult(new Result("Rule1.mosPrice", pass, mosPrice));
+		String priceRatio = String.format("%.1f%%", 100 * data.getPrice() / stickerPrice);
+		result.addResult(new Result("Rule1.mosPrice " + priceRatio, pass, mosPrice));
 
 		return pass;
 	}

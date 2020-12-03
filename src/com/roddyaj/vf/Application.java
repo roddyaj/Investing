@@ -6,13 +6,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import com.roddyaj.vf.api.DataRequesterImpl;
+import com.roddyaj.vf.api.misc.SymbolReader;
 import com.roddyaj.vf.api.schwab.SchwabScreenCsv;
 import com.roddyaj.vf.model.Results;
 import com.roddyaj.vf.model.SymbolData;
@@ -66,11 +66,14 @@ public class Application
 		List<SymbolData> stocks = List.of();
 		if (args.length > 0)
 		{
-			Path inputFile = Paths.get(args[0]);
-			if (Files.exists(inputFile))
-				stocks = SchwabScreenCsv.parseSymbols(inputFile);
+			String firstArg = args[0];
+			if (firstArg.equals("sp500"))
+				stocks = SymbolReader.readSymbols(Paths.get("data/sp500_symbols.txt"));
+			else if (Files.exists(Paths.get(firstArg)))
+				stocks = SchwabScreenCsv.parseSymbols(Paths.get(firstArg));
 			else
-				stocks = Arrays.stream(args[0].split(",")).map(SymbolData::new).collect(Collectors.toList());
+				stocks = SymbolData.fromSymbols(Arrays.asList(firstArg.split(",")));
+//			stocks = stocks.subList(230, 230 + 70);
 		}
 		else
 			System.out.println("Usage: TODO");

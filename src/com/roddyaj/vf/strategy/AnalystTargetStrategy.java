@@ -19,7 +19,8 @@ public class AnalystTargetStrategy implements Strategy
 	{
 		double targetPrice = data.getAnalystTargetPrice() * 0.95;
 		boolean pass = data.getPrice() < targetPrice;
-		result.addResult(new Result("AnalystTarget", pass, targetPrice));
+		String priceRatio = String.format("%.1f%%", 100 * data.getPrice() / data.getAnalystTargetPrice());
+		result.addResult(new Result("AnalystTarget " + priceRatio, pass, targetPrice));
 		return pass;
 	}
 }

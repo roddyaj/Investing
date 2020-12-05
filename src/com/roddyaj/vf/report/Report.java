@@ -2,6 +2,7 @@ package com.roddyaj.vf.report;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import com.roddyaj.vf.model.Result;
@@ -18,6 +19,9 @@ public class Report
 
 	private static String toString(Results results)
 	{
+		Collections.sort(results.fails, (a, b) -> Double.compare(a.sortValue, b.sortValue));
+		Collections.sort(results.passes, (a, b) -> Double.compare(a.sortValue, b.sortValue));
+
 		List<String> lines = new ArrayList<>();
 		format(results.fails, "Fail", lines);
 		format(results.passes, "Pass", lines);
@@ -28,7 +32,7 @@ public class Report
 	{
 		if (!results.isEmpty())
 		{
-			lines.add("\n======================== " + title + " ========================\n");
+			lines.add("======================== " + title + " ========================\n");
 			for (SymbolResult result : results)
 			{
 				lines.add(toString(result));

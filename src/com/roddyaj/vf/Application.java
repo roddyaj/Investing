@@ -73,7 +73,6 @@ public class Application
 				stocks = SchwabScreenCsv.parseSymbols(Paths.get(firstArg));
 			else
 				stocks = SymbolData.fromSymbols(Arrays.asList(firstArg.split(",")));
-//			stocks = stocks.subList(230, 230 + 70);
 		}
 		else
 			System.out.println("Usage: TODO");

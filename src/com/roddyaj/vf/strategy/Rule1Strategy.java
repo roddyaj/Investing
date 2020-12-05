@@ -24,9 +24,7 @@ public class Rule1Strategy implements Strategy
 	@Override
 	public boolean evaluate(SymbolData data, SymbolResult result) throws IOException
 	{
-		boolean pass =
-			testROIC(data, result) &&
-			testMosPrice(data, result);
+		boolean pass = testROIC(data, result) && testMosPrice(data, result);
 		result.addResult(new Result("Rule1", pass));
 		return pass;
 	}
@@ -46,7 +44,6 @@ public class Rule1Strategy implements Strategy
 			double investedCapital = balanceSheet.shortTermDebt + balanceSheet.longTermDebt + balanceSheet.totalShareholderEquity;
 			double roic = nopat / investedCapital;
 			roics[i] = roic * 100;
-//			System.out.println(data.symbol + " ROIC " + incomeStatement.period + " " + (roic * 100));
 			pass &= roic >= .1;
 		}
 		String roicValues = Arrays.stream(roics).mapToObj(r -> String.format("%.1f", r)).collect(Collectors.joining(","));
@@ -72,7 +69,7 @@ public class Rule1Strategy implements Strategy
 		{
 			int years = balanceSheets.size() - 1;
 			double recentEquity = balanceSheets.get(0).totalShareholderEquity;
-			double olderEquity = balanceSheets.get(balanceSheets.size() - 1).totalShareholderEquity;
+			double olderEquity = balanceSheets.get(years).totalShareholderEquity;
 			if (recentEquity > 0 && olderEquity > 0)
 				pastGrowthRate = Math.pow(recentEquity / olderEquity, 1. / years);
 			else
@@ -92,14 +89,18 @@ public class Rule1Strategy implements Strategy
 		double stickerPrice = futureMarketPrice / Math.pow(marr, projectedYears);
 		double mosPrice = stickerPrice * mosFactor;
 
-		boolean pass = data.getPrice() < mosPrice;
+		boolean pass = estimatedGrowthRate >= 1.1 && data.getPrice() < mosPrice;
 
 		result.addResult(new Result("Rule1.mosPrice.eps " + String.format("%.2f", data.getEps()), true));
 		String grString = String.format("%.1f", (estimatedGrowthRate - 1) * 100);
-		result.addResult(new Result("Rule1.mosPrice.growthRate " + grString, estimatedGrowthRate > 1));
+		result.addResult(new Result("Rule1.mosPrice.growthRate " + grString, estimatedGrowthRate >= 1.1));
 		result.addResult(new Result("Rule1.mosPrice.historicalPE " + String.format("%.1f", historicalPE), historicalPE > 0));
 		String priceRatio = String.format("%.1f%%", 100 * data.getPrice() / stickerPrice);
-		result.addResult(new Result("Rule1.mosPrice " + priceRatio, pass, mosPrice));
+		result.addResult(new Result("Rule1.mosPrice (" + priceRatio + ")", data.getPrice() < mosPrice, mosPrice));
+
+		double targetPrice = data.getAnalystTargetPrice();
+		result.sortValue = Math.max(mosPrice, targetPrice) / Math.min(mosPrice, targetPrice);
+		result.addResult(new Result("Rule1.sortValue " + String.format("%.2f", result.sortValue), true));
 
 		return pass;
 	}

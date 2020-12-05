@@ -57,12 +57,24 @@ public class Strategies
 			preamble.append(strategy.getName());
 		}
 		preamble.insert(0, "\nRunning strategies: ");
+		preamble.append('\n');
 		System.out.println(preamble);
 
 		// Run the strategies
 		Results results = new Results();
 		for (SymbolData stock : stocks)
-			run(stock, results);
+		{
+			try
+			{
+				run(stock, results);
+			}
+			catch (RuntimeException e)
+			{
+				System.err.println("Error with " + stock.symbol + ":");
+				e.printStackTrace();
+				System.out.println();
+			}
+		}
 		return results;
 	}
 

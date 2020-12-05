@@ -52,8 +52,8 @@ public class AlphaVantageAPI implements DataRequester
 	@Override
 	public double getEps(String symbol) throws IOException
 	{
-		JSONObject json = request(symbol, "OVERVIEW");
-		return getDouble(json, "EPS");
+		List<DateAndDouble> earnings = getEarnings(symbol);
+		return earnings.get(earnings.size() - 1).value;
 	}
 
 	@Override

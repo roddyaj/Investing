@@ -11,6 +11,8 @@ public class SymbolResult
 
 	public final List<Result> results = new ArrayList<>();
 
+	public double sortValue;
+
 	public SymbolResult(SymbolData data)
 	{
 		this.data = data;

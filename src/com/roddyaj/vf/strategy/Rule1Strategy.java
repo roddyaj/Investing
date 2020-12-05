@@ -1,5 +1,7 @@
 package com.roddyaj.vf.strategy;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -7,7 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.roddyaj.vf.model.DateAndDouble;
-import com.roddyaj.vf.model.Result;
 import com.roddyaj.vf.model.SymbolData;
 import com.roddyaj.vf.model.SymbolData.BalanceSheet;
 import com.roddyaj.vf.model.SymbolData.IncomeStatement;
@@ -53,14 +54,20 @@ public class Rule1Strategy extends AndStrategy
 				roics[i] = roic * 100;
 				pass &= roic >= .1;
 			}
-			String roicValues = Arrays.stream(roics).mapToObj(r -> String.format("%.1f", r)).collect(Collectors.joining(", "));
-			result.addResult(new Result(getName(), roicValues, pass));
+			String roicValues = Arrays.stream(roics).mapToObj(r -> format("%.1f", r)).collect(Collectors.joining(", "));
+			result.addResult(getName(), roicValues, pass);
 			return pass;
 		}
 	}
 
 	private static class MosPrice implements Strategy
 	{
+		// Minimum acceptable rate of return
+		private final static double MARR = 1.15;
+		private final static double MOS_FACTOR = 0.5;
+		private final static int PROJECTED_YEARS = 5;
+		private final static double MIN_GROWTH_RATE = 1.1;
+
 		@Override
 		public String getName()
 		{
@@ -77,23 +84,11 @@ public class Rule1Strategy extends AndStrategy
 				return false;
 			}
 
-			final double marr = 1.15; // Minimum acceptable rate of return
-			final double mosFactor = 0.5;
-			final int projectedYears = 5;
-
 			// Estimated EPS growth rate
-			double pastGrowthRate;
-			{
-				int years = balanceSheets.size() - 1;
-				double recentEquity = balanceSheets.get(0).totalShareholderEquity;
-				double olderEquity = balanceSheets.get(years).totalShareholderEquity;
-				if (recentEquity > 0 && olderEquity > 0)
-					pastGrowthRate = Math.pow(recentEquity / olderEquity, 1. / years);
-				else
-					pastGrowthRate = 0;
-			}
-			double analystGrowthRate = 100; // TODO
-			double estimatedGrowthRate = Math.min(pastGrowthRate, analystGrowthRate);
+			double equityGrowthRate = Math.min(getEquityGrowthRate(data, 2), getEquityGrowthRate(data, 4));
+			double estimatedGrowthRate = equityGrowthRate;
+//			double analystGrowthRate = 100; // TODO
+//			double estimatedGrowthRate = Math.min(equityGrowthRate, analystGrowthRate);
 
 			// Estimated future PE
 			double defaultPE = 2 * (estimatedGrowthRate - 1) * 100;
@@ -101,25 +96,36 @@ public class Rule1Strategy extends AndStrategy
 			double estimatedFuturePE = Math.min(defaultPE, historicalPE);
 
 			// Work towards final price
-			double futureEps = data.getEps() * Math.pow(estimatedGrowthRate, projectedYears);
+			double futureEps = data.getEps() * Math.pow(estimatedGrowthRate, PROJECTED_YEARS);
 			double futureMarketPrice = futureEps * estimatedFuturePE;
-			double stickerPrice = futureMarketPrice / Math.pow(marr, projectedYears);
-			double mosPrice = stickerPrice * mosFactor;
+			double stickerPrice = futureMarketPrice / Math.pow(MARR, PROJECTED_YEARS);
+			double mosPrice = stickerPrice * MOS_FACTOR;
 
-			boolean pass = estimatedGrowthRate >= 1.1 && data.getPrice() < mosPrice;
+			boolean pass = estimatedGrowthRate >= MIN_GROWTH_RATE && data.getPrice() < mosPrice;
 
 			String name = getName();
-			result.addResult(new Result(name + ".eps", String.format("%.2f", data.getEps())));
-			result.addResult(new Result(name + ".growthRate", String.format("%.1f", (estimatedGrowthRate - 1) * 100), estimatedGrowthRate >= 1.1));
-			result.addResult(new Result(name + ".historicalPE", String.format("%.1f", historicalPE)));
-			result.addResult(new Result(name + ".priceToSticker", String.format("%.1f%%", 100 * data.getPrice() / stickerPrice)));
-			result.addResult(new Result(name, String.format("%.2f", mosPrice), data.getPrice() < mosPrice));
+			result.addResult(name + ".eps", format("%.2f", data.getEps()));
+			result.addResult(name + ".growthRate", format("%.1f", (estimatedGrowthRate - 1) * 100), estimatedGrowthRate >= MIN_GROWTH_RATE);
+			result.addResult(name + ".historicalPE", format("%.1f", historicalPE));
+			result.addResult(name + ".priceToSticker", format("%.1f%%", 100 * data.getPrice() / stickerPrice));
+			result.addResult(name, format("%.2f", mosPrice), data.getPrice() < mosPrice);
 
 			double targetPrice = data.getAnalystTargetPrice();
 			result.sortValue = Math.max(mosPrice, targetPrice) / Math.min(mosPrice, targetPrice);
-			result.addResult(new Result("Rule1.sortValue", String.format("%.2f", result.sortValue)));
+			result.addResult("Rule1.sortValue", format("%.2f", result.sortValue));
 
 			return pass;
+		}
+
+		private double getEquityGrowthRate(SymbolData data, int years) throws IOException
+		{
+			double rate = 0;
+			List<BalanceSheet> balanceSheets = data.getBalanceSheets();
+			double recentEquity = balanceSheets.get(0).totalShareholderEquity;
+			double olderEquity = balanceSheets.get(years).totalShareholderEquity;
+			if (recentEquity > 0 && olderEquity > 0)
+				rate = Math.pow(recentEquity / olderEquity, 1. / years);
+			return rate;
 		}
 
 		private double calcHistoricalPE(SymbolData data) throws IOException

@@ -23,6 +23,16 @@ public class SymbolResult
 		results.add(result);
 	}
 
+	public void addResult(String property, Object value)
+	{
+		results.add(new Result(property, value));
+	}
+
+	public void addResult(String property, Object value, boolean pass)
+	{
+		results.add(new Result(property, value, pass));
+	}
+
 	public boolean hasResults()
 	{
 		return !results.isEmpty();

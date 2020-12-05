@@ -189,12 +189,6 @@ public class AlphaVantageAPI implements DataRequester
 		return (String)obj.get(key);
 	}
 
-	private static long getLong(JSONObject obj, String key)
-	{
-		String value = (String)obj.get(key);
-		return "None".equals(value) ? 0 : Long.parseLong(value);
-	}
-
 	private static double getDouble(JSONObject obj, String key)
 	{
 		String value = (String)obj.get(key);

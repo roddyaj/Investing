@@ -22,7 +22,7 @@ public class Strategies
 
 	private final String defaultStrategies = "AnalystTarget,Rule1";
 
-	private final List<Strategy> strategies = new ArrayList<>();
+	private final AndStrategy allStrategies = new AndStrategy();
 
 	public Strategies(String[] args)
 	{
@@ -42,7 +42,7 @@ public class Strategies
 		{
 			Strategy strategy = map.get(name);
 			if (strategy != null)
-				strategies.add(strategy);
+				allStrategies.addStrategy(strategy);
 		}
 	}
 
@@ -50,7 +50,7 @@ public class Strategies
 	{
 		// Log what we're doing
 		StringBuilder preamble = new StringBuilder();
-		for (Strategy strategy : strategies)
+		for (Strategy strategy : allStrategies.strategies)
 		{
 			if (preamble.length() > 0)
 				preamble.append(", ");
@@ -80,15 +80,8 @@ public class Strategies
 
 	private void run(SymbolData stock, Results results) throws IOException
 	{
-		boolean allPass = true;
 		SymbolResult result = new SymbolResult(stock);
-		for (Strategy strategy : strategies)
-		{
-			allPass &= strategy.evaluate(stock, result);
-			if (!allPass)
-				break;
-		}
-		result.pass = allPass;
+		result.pass = allStrategies.evaluate(stock, result);
 
 		results.addResult(result);
 	}

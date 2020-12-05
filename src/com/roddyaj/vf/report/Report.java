@@ -47,15 +47,16 @@ public class Report
 		List<String[]> rows = new ArrayList<>();
 
 		SymbolData data = result.data;
-		String stockInfo = String.format("%-5s %-40s", data.symbol, limit(data.getNameIfPresent(), 40));
-		String price = formatPrice(data.getPriceIfPresent());
+		String stockInfo = String.format("%-5s %-35s", data.symbol, limit(data.getNameIfPresent(), 35));
+		String price = String.format("%.2f", data.getPriceIfPresent());
 		rows.add(new String[] { stockInfo, price });
 
 		for (Result subResult : result.results)
 		{
-			String message = String.format("  %s %s", subResult.pass ? "Pass" : "Fail", subResult.message);
-			price = subResult.price != null ? formatPrice(subResult.price.doubleValue()) : "   ----";
-			rows.add(new String[] { message, price });
+			String status = subResult.pass != null ? (subResult.pass ? "Pass" : "Fail") : "";
+			String message = String.format("  %4s %s", status, subResult.property);
+			String value = subResult.value != null ? subResult.value.toString() : "";
+			rows.add(new String[] { message, value });
 		}
 
 		return String.join("\n", formatTable(rows));
@@ -97,10 +98,5 @@ public class Report
 			lines.add(String.format(format, row));
 
 		return lines;
-	}
-
-	private static String formatPrice(double price)
-	{
-		return String.format("%7.2f", price);
 	}
 }

@@ -53,8 +53,8 @@ public class Rule1Strategy extends AndStrategy
 				roics[i] = roic * 100;
 				pass &= roic >= .1;
 			}
-			String roicValues = Arrays.stream(roics).mapToObj(r -> String.format("%.1f", r)).collect(Collectors.joining(","));
-			result.addResult(new Result(getName() + " " + roicValues, pass));
+			String roicValues = Arrays.stream(roics).mapToObj(r -> String.format("%.1f", r)).collect(Collectors.joining(", "));
+			result.addResult(new Result(getName(), roicValues, pass));
 			return pass;
 		}
 	}
@@ -109,16 +109,15 @@ public class Rule1Strategy extends AndStrategy
 			boolean pass = estimatedGrowthRate >= 1.1 && data.getPrice() < mosPrice;
 
 			String name = getName();
-			result.addResult(new Result(name + ".eps " + String.format("%.2f", data.getEps()), true));
-			String grString = String.format("%.1f", (estimatedGrowthRate - 1) * 100);
-			result.addResult(new Result(name + ".growthRate " + grString, estimatedGrowthRate >= 1.1));
-			result.addResult(new Result(name + ".historicalPE " + String.format("%.1f", historicalPE), historicalPE > 0));
-			String priceRatio = String.format("%.1f%%", 100 * data.getPrice() / stickerPrice);
-			result.addResult(new Result(name + " (" + priceRatio + ")", data.getPrice() < mosPrice, mosPrice));
+			result.addResult(new Result(name + ".eps", String.format("%.2f", data.getEps())));
+			result.addResult(new Result(name + ".growthRate", String.format("%.1f", (estimatedGrowthRate - 1) * 100), estimatedGrowthRate >= 1.1));
+			result.addResult(new Result(name + ".historicalPE", String.format("%.1f", historicalPE)));
+			result.addResult(new Result(name + ".priceToSticker", String.format("%.1f%%", 100 * data.getPrice() / stickerPrice)));
+			result.addResult(new Result(name, String.format("%.2f", mosPrice), data.getPrice() < mosPrice));
 
 			double targetPrice = data.getAnalystTargetPrice();
 			result.sortValue = Math.max(mosPrice, targetPrice) / Math.min(mosPrice, targetPrice);
-			result.addResult(new Result("Rule1.sortValue " + String.format("%.2f", result.sortValue), true));
+			result.addResult(new Result("Rule1.sortValue", String.format("%.2f", result.sortValue)));
 
 			return pass;
 		}

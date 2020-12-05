@@ -2,23 +2,23 @@ package com.roddyaj.vf.model;
 
 public class Result
 {
-	public final String message;
+	public final String property;
 
-	public final boolean pass;
+	public final Object value;
 
-	public final Double price;
+	public final Boolean pass;
 
-	public Result(String message, boolean pass)
+	public Result(String property, Object value)
 	{
-		this.message = message;
-		this.pass = pass;
-		this.price = null;
+		this.property = property;
+		this.value = value;
+		this.pass = null;
 	}
 
-	public Result(String message, boolean pass, Double price)
+	public Result(String property, Object value, boolean pass)
 	{
-		this.message = message;
+		this.property = property;
+		this.value = value;
 		this.pass = pass;
-		this.price = price;
 	}
 }

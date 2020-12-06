@@ -19,6 +19,7 @@ public class Rule1Strategy extends AndStrategy
 	public Rule1Strategy()
 	{
 		strategies.add(new RoicIsHigh());
+		strategies.add(new InlineStrategy("Rule1.#BalanceSheets", d -> d.getBalanceSheets().size() >= 5));
 		strategies.add(new MosPrice());
 	}
 
@@ -30,6 +31,8 @@ public class Rule1Strategy extends AndStrategy
 
 	private static class RoicIsHigh implements Strategy
 	{
+		private final static double MIN_ROIC = .1;
+
 		@Override
 		public String getName()
 		{
@@ -52,7 +55,7 @@ public class Rule1Strategy extends AndStrategy
 				double investedCapital = balanceSheet.shortTermDebt + balanceSheet.longTermDebt + balanceSheet.totalShareholderEquity;
 				double roic = nopat / investedCapital;
 				roics[i] = roic * 100;
-				pass &= roic >= .1;
+				pass &= roic >= MIN_ROIC;
 			}
 			String roicValues = Arrays.stream(roics).mapToObj(r -> format("%.1f", r)).collect(Collectors.joining(", "));
 			result.addResult(getName(), roicValues, pass);
@@ -77,13 +80,6 @@ public class Rule1Strategy extends AndStrategy
 		@Override
 		public boolean evaluate(SymbolData data, SymbolResult result) throws IOException
 		{
-			List<BalanceSheet> balanceSheets = data.getBalanceSheets();
-			if (balanceSheets.size() < 2)
-			{
-				System.out.println("Skipping " + data.symbol + ", missing balance sheets");
-				return false;
-			}
-
 			// Estimated EPS growth rate
 			double equityGrowthRate = Math.min(getEquityGrowthRate(data, 2), getEquityGrowthRate(data, 4));
 			double estimatedGrowthRate = equityGrowthRate;

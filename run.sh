@@ -5,4 +5,4 @@ for lib in ${libs[@]}; do
   classpath+="${lib};"
 done
 classpath+='target'
-java -cp $classpath com.roddyaj.vf.Main $@
+java -cp $classpath com.roddyaj.invest.Main $@

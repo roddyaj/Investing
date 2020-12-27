@@ -2,6 +2,7 @@ package com.roddyaj.invest.vf.api.alphavantage;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class AlphaVantageAPI implements DataRequester
 
 	private String lastSymbol;
 
-	public AlphaVantageAPI(JSONObject settings) throws IOException
+	public AlphaVantageAPI(JSONObject settings, Path dataDir) throws IOException
 	{
 		String apiKey = (String)settings.get("alphavantage.apiKey");
 		long sleepTime = Duration.parse((String)settings.get("alphavantage.sleep")).toMillis();
@@ -39,7 +40,7 @@ public class AlphaVantageAPI implements DataRequester
 			throw new IOException("Error: No API key specified");
 
 		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).toString();
-		requestor = new RequestCache(sleepTime, settings);
+		requestor = new RequestCache(sleepTime, settings, dataDir);
 	}
 
 	@Override

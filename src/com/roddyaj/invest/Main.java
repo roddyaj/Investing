@@ -1,5 +1,7 @@
 package com.roddyaj.invest;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,6 +11,7 @@ import java.util.Map;
 import com.roddyaj.invest.commands.ListCommand;
 import com.roddyaj.invest.commands.RunCommand;
 import com.roddyaj.invest.model.Program;
+import com.roddyaj.invest.va.ValueAverager;
 import com.roddyaj.invest.vf.ValueFinder;
 
 public final class Main
@@ -24,7 +27,8 @@ public final class Main
 
 	public Main()
 	{
-		populateMap(programs, List.of(new ValueFinder()));
+		Path dataDir = Paths.get(System.getProperty("user.home"), ".invest");
+		populateMap(programs, List.of(new ValueFinder(dataDir), new ValueAverager(dataDir)));
 		populateMap(commands, List.of(new ListCommand(programs), new RunCommand(programs)));
 	}
 

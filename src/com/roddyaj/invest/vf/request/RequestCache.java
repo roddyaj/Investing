@@ -28,13 +28,13 @@ public class RequestCache
 
 	private final boolean allowRequest = true;
 
-	public RequestCache(long sleepTime, JSONObject settings)
+	public RequestCache(long sleepTime, JSONObject settings, Path dataDir)
 	{
 		this.sleepTime = sleepTime;
 		client = HttpClient.newHttpClient();
 		requestBuilder = HttpRequest.newBuilder();
 		String cacheLocation = (String)settings.get("cacheLocation");
-		cacheRoot = cacheLocation != null ? Paths.get(cacheLocation) : Paths.get(System.getProperty("user.home"), ".vf", "cache");
+		cacheRoot = cacheLocation != null ? Paths.get(cacheLocation) : Paths.get(dataDir.toString(), "cache");
 		if (!Files.exists(cacheRoot))
 		{
 			try

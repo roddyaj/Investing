@@ -23,6 +23,13 @@ import com.roddyaj.invest.vf.strategy.Strategies;
 
 public class ValueFinder implements Program
 {
+	private final Path dataDir;
+
+	public ValueFinder(Path dataDir)
+	{
+		this.dataDir = dataDir;
+	}
+
 	@Override
 	public String getName()
 	{
@@ -39,7 +46,7 @@ public class ValueFinder implements Program
 			List<SymbolData> stocks = getStocksToCheck(args);
 			if (!stocks.isEmpty())
 			{
-				DataRequester requester = new DataRequesterImpl(settings);
+				DataRequester requester = new DataRequesterImpl(settings, dataDir);
 				for (SymbolData stock : stocks)
 					stock.setRequester(requester);
 
@@ -56,7 +63,7 @@ public class ValueFinder implements Program
 
 	private JSONObject readSettings() throws IOException
 	{
-		Path settingsFile = Paths.get(System.getProperty("user.home"), ".vf", "settings.json");
+		Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
 		String json = Files.readString(settingsFile);
 		JSONParser parser = new JSONParser();
 		try

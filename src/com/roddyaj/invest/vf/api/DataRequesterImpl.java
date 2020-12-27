@@ -1,6 +1,7 @@
 package com.roddyaj.invest.vf.api;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.json.simple.JSONObject;
@@ -15,9 +16,9 @@ public class DataRequesterImpl implements DataRequester
 {
 	private final AlphaVantageAPI avAPI;
 
-	public DataRequesterImpl(JSONObject settings) throws IOException
+	public DataRequesterImpl(JSONObject settings, Path dataDir) throws IOException
 	{
-		avAPI = new AlphaVantageAPI(settings);
+		avAPI = new AlphaVantageAPI(settings, dataDir);
 	}
 
 	@Override

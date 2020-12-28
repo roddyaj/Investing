@@ -1,12 +1,21 @@
 package com.roddyaj.invest.va;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import com.roddyaj.invest.model.Program;
+import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
 
 public class ValueAverager implements Program
 {
@@ -40,45 +49,93 @@ public class ValueAverager implements Program
 	@Override
 	public void run(String[] args)
 	{
-//		Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
-
-		LocalDate startDate = LocalDate.of(2021, 1, 1);
-		LocalDate endDate = LocalDate.of(2021, 12, 31);
-
-		int numTradingDays = 0;
-		for (LocalDate date = startDate; date.compareTo(endDate) <= 0; date = date.plusDays(1))
+		Path accountFile = Paths.get(args[0]);
+		try
 		{
-			if (isTradingDay(date))
-				numTradingDays++;
+			run(accountFile);
 		}
-
-		LocalDate today = LocalDate.now();
-		evaluate("", startDate, today, numTradingDays);
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
-	private void evaluate(String ticker, LocalDate startDate, LocalDate today, int numTradingDays)
+	private void run(Path accountFile) throws IOException
 	{
-		double day0Value = 0.;
-		double dailyContrib = 0.;
-		double growthRate = 0.;
+		JSONObject settings = readSettings();
+		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
+		JSONObject config = (JSONObject)settings.get(accountKey);
+
+		Map<String, Map<String, String>> accountMap = SchwabAccountCsv.parse(accountFile);
+
+		TemporalInfo temporalInfo = new TemporalInfo(LocalDate.of(2021, 1, 1).minusDays(4), LocalDate.of(2021, 12, 31));
+
+		for (Object symbol : config.keySet())
+			evaluate((String)symbol, config, accountMap, temporalInfo);
+	}
+
+	private JSONObject readSettings() throws IOException
+	{
+		Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
+		String json = Files.readString(settingsFile);
+		JSONParser parser = new JSONParser();
+		try
+		{
+			return (JSONObject)parser.parse(json);
+		}
+		catch (ParseException e)
+		{
+			throw new IOException(e);
+		}
+	}
+
+	private void evaluate(String symbol, JSONObject config, Map<String, Map<String, String>> accountMap, TemporalInfo temporalInfo)
+	{
+		JSONObject symbolConfig = (JSONObject)config.get(symbol);
+		double day0Value = ((Number)symbolConfig.get("day0Value")).doubleValue();
+		double dailyContrib = ((Number)symbolConfig.get("dailyContrib")).doubleValue();
+		double growthRate = ((Number)symbolConfig.get("growthRate")).doubleValue();
 
 		double expectedAmount = day0Value;
-		for (LocalDate date = startDate; date.compareTo(today) <= 0; date = date.plusDays(1))
+		for (LocalDate date = temporalInfo.startDate; date.compareTo(temporalInfo.today) <= 0; date = date.plusDays(1))
 		{
 			if (isTradingDay(date))
-				expectedAmount = expectedAmount * (1 + growthRate / numTradingDays) + dailyContrib;
+				expectedAmount = expectedAmount * (1 + growthRate / temporalInfo.numTradingDays) + dailyContrib;
 		}
 
-		double actualAmount = 0.;
-		double sharePrice = 0.;
+		Map<String, String> symbolMap = accountMap.get(symbol);
+		double actualAmount = SchwabAccountCsv.parsePrice(symbolMap.get("Market Value"));
+		double sharePrice = SchwabAccountCsv.parsePrice(symbolMap.get("Price"));
 		double delta = expectedAmount - actualAmount;
 		long sharesToBuy = Math.round(delta / sharePrice);
-		System.out.println(String.format("%s: Buy %d of %s", today.toString(), sharesToBuy, ticker));
+
+		System.out.println(String.format("%s: Buy %d of %s", temporalInfo.today.toString(), sharesToBuy, symbol));
 	}
 
 	private static boolean isTradingDay(LocalDate date)
 	{
 		DayOfWeek day = date.getDayOfWeek();
 		return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !HOLIDAYS.contains(date);
+	}
+
+	private static class TemporalInfo
+	{
+		public final LocalDate startDate;
+
+		public final LocalDate today = LocalDate.now();
+
+		public final int numTradingDays;
+
+		public TemporalInfo(LocalDate startDate, LocalDate endDate)
+		{
+			this.startDate = startDate;
+			int numTradingDays = 0;
+			for (LocalDate date = startDate; date.compareTo(endDate) <= 0; date = date.plusDays(1))
+			{
+				if (isTradingDay(date))
+					numTradingDays++;
+			}
+			this.numTradingDays = numTradingDays;
+		}
 	}
 }

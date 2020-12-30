@@ -35,6 +35,8 @@ public class ValueAverager implements Program
 		HOLIDAYS.add(LocalDate.of(2021, 12, 24));
 	}
 
+	private static final int ANNUAL_TRADING_DAYS = 252;
+
 	public ValueAverager(Path dataDir)
 	{
 		this.dataDir = dataDir;
@@ -68,10 +70,8 @@ public class ValueAverager implements Program
 
 		Map<String, Map<String, String>> accountMap = SchwabAccountCsv.parse(accountFile);
 
-		TemporalInfo temporalInfo = new TemporalInfo(LocalDate.of(2021, 1, 1).minusDays(4), LocalDate.of(2021, 12, 31));
-
 		for (Object symbol : config.keySet())
-			evaluate((String)symbol, config, accountMap, temporalInfo);
+			evaluate((String)symbol, config, accountMap);
 	}
 
 	private JSONObject readSettings() throws IOException
@@ -89,18 +89,22 @@ public class ValueAverager implements Program
 		}
 	}
 
-	private void evaluate(String symbol, JSONObject config, Map<String, Map<String, String>> accountMap, TemporalInfo temporalInfo)
+	private void evaluate(String symbol, JSONObject config, Map<String, Map<String, String>> accountMap)
 	{
 		JSONObject symbolConfig = (JSONObject)config.get(symbol);
+		LocalDate day0 = LocalDate.parse((String)symbolConfig.get("day0"));
 		double day0Value = ((Number)symbolConfig.get("day0Value")).doubleValue();
 		double dailyContrib = ((Number)symbolConfig.get("dailyContrib")).doubleValue();
-		double growthRate = ((Number)symbolConfig.get("growthRate")).doubleValue();
+		double annualGrowth = ((Number)symbolConfig.get("annualGrowthPct")).doubleValue() / 100;
+
+		final LocalDate today = LocalDate.now();
 
 		double expectedAmount = day0Value;
-		for (LocalDate date = temporalInfo.startDate; date.compareTo(temporalInfo.today) <= 0; date = date.plusDays(1))
+		double dailyGrowthRate = 1 + annualGrowth / ANNUAL_TRADING_DAYS;
+		for (LocalDate date = day0; date.compareTo(today) <= 0; date = date.plusDays(1))
 		{
 			if (isTradingDay(date))
-				expectedAmount = expectedAmount * (1 + growthRate / temporalInfo.numTradingDays) + dailyContrib;
+				expectedAmount = expectedAmount * dailyGrowthRate + dailyContrib;
 		}
 
 		Map<String, String> symbolMap = accountMap.get(symbol);
@@ -109,33 +113,12 @@ public class ValueAverager implements Program
 		double delta = expectedAmount - actualAmount;
 		long sharesToBuy = Math.round(delta / sharePrice);
 
-		System.out.println(String.format("%s: Buy %d of %s", temporalInfo.today.toString(), sharesToBuy, symbol));
+		System.out.println(String.format("%s: Buy %d of %s", today.toString(), sharesToBuy, symbol));
 	}
 
 	private static boolean isTradingDay(LocalDate date)
 	{
 		DayOfWeek day = date.getDayOfWeek();
 		return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !HOLIDAYS.contains(date);
-	}
-
-	private static class TemporalInfo
-	{
-		public final LocalDate startDate;
-
-		public final LocalDate today = LocalDate.now();
-
-		public final int numTradingDays;
-
-		public TemporalInfo(LocalDate startDate, LocalDate endDate)
-		{
-			this.startDate = startDate;
-			int numTradingDays = 0;
-			for (LocalDate date = startDate; date.compareTo(endDate) <= 0; date = date.plusDays(1))
-			{
-				if (isTradingDay(date))
-					numTradingDays++;
-			}
-			this.numTradingDays = numTradingDays;
-		}
 	}
 }

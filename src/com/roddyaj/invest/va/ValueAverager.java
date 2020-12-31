@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +37,15 @@ public class ValueAverager implements Program
 	}
 
 	private static final int ANNUAL_TRADING_DAYS = 252;
+
+	private static final Map<String, Integer> PERIODS = new HashMap<>();
+	static
+	{
+		PERIODS.put("day", 1);
+		PERIODS.put("week", 5);
+		PERIODS.put("month", 21);
+		PERIODS.put("year", ANNUAL_TRADING_DAYS);
+	}
 
 	public ValueAverager(Path dataDir)
 	{
@@ -94,13 +104,16 @@ public class ValueAverager implements Program
 		JSONObject symbolConfig = (JSONObject)config.get(symbol);
 		LocalDate day0 = LocalDate.parse((String)symbolConfig.get("day0"));
 		double day0Value = ((Number)symbolConfig.get("day0Value")).doubleValue();
-		double dailyContrib = ((Number)symbolConfig.get("dailyContrib")).doubleValue();
+		double contrib = ((Number)symbolConfig.get("contrib")).doubleValue();
 		double annualGrowth = ((Number)symbolConfig.get("annualGrowthPct")).doubleValue() / 100;
+		double minOrderAmount = ((Number)symbolConfig.get("minOrderAmount")).doubleValue();
+		double daysPerPeriod = PERIODS.get(symbolConfig.get("period")).intValue();
 
+		double dailyContrib = contrib / daysPerPeriod;
+		double dailyGrowthRate = 1 + annualGrowth / ANNUAL_TRADING_DAYS;
 		final LocalDate today = LocalDate.now();
 
 		double expectedAmount = day0Value;
-		double dailyGrowthRate = 1 + annualGrowth / ANNUAL_TRADING_DAYS;
 		for (LocalDate date = day0; date.compareTo(today) <= 0; date = date.plusDays(1))
 		{
 			if (isTradingDay(date))
@@ -112,8 +125,10 @@ public class ValueAverager implements Program
 		double sharePrice = SchwabAccountCsv.parsePrice(symbolMap.get("Price"));
 		double delta = expectedAmount - actualAmount;
 		long sharesToBuy = Math.round(delta / sharePrice);
+		double buyAmount = sharesToBuy * sharePrice;
 
-		System.out.println(String.format("%s: Buy %d of %s", today.toString(), sharesToBuy, symbol));
+		if (Math.abs(buyAmount) > minOrderAmount)
+			System.out.println(String.format("%s: Buy %d of %s", today.toString(), sharesToBuy, symbol));
 	}
 
 	private static boolean isTradingDay(LocalDate date)

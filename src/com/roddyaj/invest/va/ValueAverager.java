@@ -128,7 +128,7 @@ public class ValueAverager implements Program
 		double buyAmount = sharesToBuy * sharePrice;
 
 		if (Math.abs(buyAmount) > minOrderAmount)
-			System.out.println(String.format("%s: Buy %d of %s", today.toString(), sharesToBuy, symbol));
+			System.out.println(String.format("Buy %d of %s at ~%.2f for ~%.0f", sharesToBuy, symbol, sharePrice, buyAmount));
 	}
 
 	private static boolean isTradingDay(LocalDate date)

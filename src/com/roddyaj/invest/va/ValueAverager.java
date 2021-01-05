@@ -115,7 +115,7 @@ public class ValueAverager implements Program
 		double dailyContrib = contrib / daysPerPeriod;
 		double dailyGrowthRate = 1 + annualGrowth / ANNUAL_TRADING_DAYS;
 		double expectedAmount = day0Value;
-		final LocalDate today = LocalDate.now().plusDays(3);
+		final LocalDate today = LocalDate.now();
 		for (LocalDate date = day0; date.compareTo(today) <= 0; date = date.plusDays(1))
 		{
 			if (isTradingDay(date))

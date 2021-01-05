@@ -123,17 +123,24 @@ public class ValueAverager implements Program
 		}
 
 		Map<String, String> symbolMap = accountMap.get(symbol);
-		double actualAmount = SchwabAccountCsv.parsePrice(symbolMap.get("Market Value"));
-		double sharePrice = SchwabAccountCsv.parsePrice(symbolMap.get("Price"));
+		if (symbolMap != null)
+		{
+			double actualAmount = SchwabAccountCsv.parsePrice(symbolMap.get("Market Value"));
+			double sharePrice = SchwabAccountCsv.parsePrice(symbolMap.get("Price"));
 
-		double delta = expectedAmount - actualAmount;
-		long sharesToBuy = Math.round(delta / sharePrice);
-		double buyAmount = sharesToBuy * sharePrice;
-		if (sharesToBuy < 0)
-			minOrderAmount *= 2;
+			double delta = expectedAmount - actualAmount;
+			long sharesToBuy = Math.round(delta / sharePrice);
+			double buyAmount = sharesToBuy * sharePrice;
+			if (sharesToBuy < 0)
+				minOrderAmount *= 2;
 
-		if (Math.abs(buyAmount) > minOrderAmount)
-			System.out.println(String.format("Buy %d of %s at ~%.2f for ~%.0f", sharesToBuy, symbol, sharePrice, buyAmount));
+			if (Math.abs(buyAmount) > minOrderAmount)
+				System.out.println(String.format("Buy %d of %s at ~%.2f for ~%.0f", sharesToBuy, symbol, sharePrice, buyAmount));
+		}
+		else
+		{
+			System.out.println(String.format("Initiate new position in %s", symbol));
+		}
 	}
 
 	private static boolean isTradingDay(LocalDate date)

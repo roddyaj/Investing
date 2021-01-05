@@ -80,8 +80,12 @@ public class ValueAverager implements Program
 
 		Map<String, Map<String, String>> accountMap = SchwabAccountCsv.parse(accountFile);
 
-		for (Object symbol : config.keySet())
-			evaluate((String)symbol, config, accountMap);
+		for (Object key : config.keySet())
+		{
+			String symbol = (String)key;
+			if (!symbol.startsWith("_"))
+				evaluate(symbol, config, accountMap);
+		}
 	}
 
 	private JSONObject readSettings() throws IOException
@@ -101,19 +105,17 @@ public class ValueAverager implements Program
 
 	private void evaluate(String symbol, JSONObject config, Map<String, Map<String, String>> accountMap)
 	{
-		JSONObject symbolConfig = (JSONObject)config.get(symbol);
-		LocalDate day0 = LocalDate.parse((String)symbolConfig.get("day0"));
-		double day0Value = ((Number)symbolConfig.get("day0Value")).doubleValue();
-		double contrib = ((Number)symbolConfig.get("contrib")).doubleValue();
-		double annualGrowth = ((Number)symbolConfig.get("annualGrowthPct")).doubleValue() / 100;
-		double minOrderAmount = ((Number)symbolConfig.get("minOrderAmount")).doubleValue();
-		double daysPerPeriod = PERIODS.get(symbolConfig.get("period")).intValue();
+		LocalDate day0 = LocalDate.parse((String)getValue(config, symbol, "day0"));
+		double day0Value = getDouble(config, symbol, "day0Value");
+		double contrib = getDouble(config, symbol, "contrib");
+		double annualGrowth = getDouble(config, symbol, "annualGrowthPct") / 100;
+		double minOrderAmount = getDouble(config, symbol, "minOrderAmount");
+		double daysPerPeriod = PERIODS.get(getValue(config, symbol, "period")).intValue();
 
 		double dailyContrib = contrib / daysPerPeriod;
 		double dailyGrowthRate = 1 + annualGrowth / ANNUAL_TRADING_DAYS;
-		final LocalDate today = LocalDate.now();
-
 		double expectedAmount = day0Value;
+		final LocalDate today = LocalDate.now().plusDays(3);
 		for (LocalDate date = day0; date.compareTo(today) <= 0; date = date.plusDays(1))
 		{
 			if (isTradingDay(date))
@@ -123,9 +125,12 @@ public class ValueAverager implements Program
 		Map<String, String> symbolMap = accountMap.get(symbol);
 		double actualAmount = SchwabAccountCsv.parsePrice(symbolMap.get("Market Value"));
 		double sharePrice = SchwabAccountCsv.parsePrice(symbolMap.get("Price"));
+
 		double delta = expectedAmount - actualAmount;
 		long sharesToBuy = Math.round(delta / sharePrice);
 		double buyAmount = sharesToBuy * sharePrice;
+		if (sharesToBuy < 0)
+			minOrderAmount *= 2;
 
 		if (Math.abs(buyAmount) > minOrderAmount)
 			System.out.println(String.format("Buy %d of %s at ~%.2f for ~%.0f", sharesToBuy, symbol, sharePrice, buyAmount));
@@ -135,5 +140,22 @@ public class ValueAverager implements Program
 	{
 		DayOfWeek day = date.getDayOfWeek();
 		return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !HOLIDAYS.contains(date);
+	}
+
+	private static double getDouble(JSONObject config, String symbol, String key)
+	{
+		return ((Number)getValue(config, symbol, key)).doubleValue();
+	}
+
+	private static Object getValue(JSONObject config, String symbol, String key)
+	{
+		JSONObject symbolConfig = (JSONObject)config.get(symbol);
+		Object value = symbolConfig.get(key);
+		if (value == null)
+		{
+			JSONObject defaultConfig = (JSONObject)config.get("_default");
+			value = defaultConfig.get(key);
+		}
+		return value;
 	}
 }

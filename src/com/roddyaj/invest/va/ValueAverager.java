@@ -111,6 +111,7 @@ public class ValueAverager implements Program
 		double annualGrowth = getDouble(config, symbol, "annualGrowthPct") / 100;
 		double minOrderAmount = getDouble(config, symbol, "minOrderAmount");
 		double daysPerPeriod = PERIODS.get(getValue(config, symbol, "period")).intValue();
+		boolean allowSell = getBoolean(config, symbol, "sell");
 
 		double dailyContrib = contrib / daysPerPeriod;
 		double dailyGrowthRate = 1 + annualGrowth / ANNUAL_TRADING_DAYS;
@@ -134,8 +135,11 @@ public class ValueAverager implements Program
 			if (sharesToBuy < 0)
 				minOrderAmount *= 2;
 
-			if (Math.abs(buyAmount) > minOrderAmount)
-				System.out.println(String.format("Buy %d of %s at ~%.2f for ~%.0f", sharesToBuy, symbol, sharePrice, buyAmount));
+			if (Math.abs(buyAmount) > minOrderAmount && (sharesToBuy > 0 || allowSell))
+			{
+				String action = sharesToBuy >= 0 ? "Buy " : "Sell";
+				System.out.println(String.format("%s %s %d  (@ %.2f = %.0f)", symbol, action, Math.abs(sharesToBuy), sharePrice, buyAmount));
+			}
 		}
 		else
 		{
@@ -152,6 +156,11 @@ public class ValueAverager implements Program
 	private static double getDouble(JSONObject config, String symbol, String key)
 	{
 		return ((Number)getValue(config, symbol, key)).doubleValue();
+	}
+
+	private static boolean getBoolean(JSONObject config, String symbol, String key)
+	{
+		return ((Boolean)getValue(config, symbol, key)).booleanValue();
 	}
 
 	private static Object getValue(JSONObject config, String symbol, String key)

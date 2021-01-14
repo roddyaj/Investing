@@ -170,7 +170,8 @@ public class ValueAverager implements Program
 		if (value == null)
 		{
 			JSONObject defaultConfig = (JSONObject)config.get("_default");
-			value = defaultConfig.get(key);
+			if (defaultConfig != null)
+				value = defaultConfig.get(key);
 		}
 		return value;
 	}

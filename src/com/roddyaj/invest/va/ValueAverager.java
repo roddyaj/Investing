@@ -110,7 +110,7 @@ public class ValueAverager implements Program
 		double contrib = getDouble(config, symbol, "contrib");
 		double annualGrowth = getDouble(config, symbol, "annualGrowthPct") / 100;
 		double minOrderAmount = getDouble(config, symbol, "minOrderAmount");
-		double daysPerPeriod = PERIODS.get(getValue(config, symbol, "period")).intValue();
+		double daysPerPeriod = getDaysPerPeriod(symbol, config);
 		boolean allowSell = getBoolean(config, symbol, "sell");
 
 		double dailyContrib = contrib / daysPerPeriod;
@@ -151,6 +151,19 @@ public class ValueAverager implements Program
 	{
 		DayOfWeek day = date.getDayOfWeek();
 		return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !HOLIDAYS.contains(date);
+	}
+
+	private static double getDaysPerPeriod(String symbol, JSONObject config)
+	{
+		String period = (String)getValue(config, symbol, "period");
+		int multiplier = 1;
+		if (period.contains(" "))
+		{
+			String[] tokens = period.split("\\s+");
+			period = tokens[1];
+			multiplier = Integer.parseInt(tokens[0]);
+		}
+		return PERIODS.get(period).intValue() * multiplier;
 	}
 
 	private static double getDouble(JSONObject config, String symbol, String key)

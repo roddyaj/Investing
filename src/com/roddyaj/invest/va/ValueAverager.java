@@ -129,6 +129,9 @@ public class ValueAverager implements Program
 			double actualAmount = SchwabAccountCsv.parsePrice(symbolMap.get("Market Value"));
 			double sharePrice = SchwabAccountCsv.parsePrice(symbolMap.get("Price"));
 
+			if (minOrderAmount == 0)
+				minOrderAmount = getMinOrderAmount(actualAmount, dailyContrib);
+
 			double delta = expectedAmount - actualAmount;
 			long sharesToBuy = Math.round(delta / sharePrice);
 			double buyAmount = sharesToBuy * sharePrice;
@@ -153,6 +156,11 @@ public class ValueAverager implements Program
 		return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !HOLIDAYS.contains(date);
 	}
 
+	private static double getMinOrderAmount(double currentValue, double dailyContrib)
+	{
+		return Math.max(0.006 * Math.min(currentValue, Math.abs(dailyContrib) * ANNUAL_TRADING_DAYS), 20);
+	}
+
 	private static double getDaysPerPeriod(String symbol, JSONObject config)
 	{
 		String period = (String)getValue(config, symbol, "period");
@@ -168,7 +176,8 @@ public class ValueAverager implements Program
 
 	private static double getDouble(JSONObject config, String symbol, String key)
 	{
-		return ((Number)getValue(config, symbol, key)).doubleValue();
+		Object value = getValue(config, symbol, key);
+		return value instanceof Number ? ((Number)value).doubleValue() : 0;
 	}
 
 	private static boolean getBoolean(JSONObject config, String symbol, String key)

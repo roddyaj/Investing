@@ -20,6 +20,7 @@ import com.roddyaj.invest.model.Program;
 import com.roddyaj.invest.util.JSONUtils;
 import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
 import com.roddyaj.invest.va.model.Account;
+import com.roddyaj.invest.va.model.Point;
 import com.roddyaj.invest.va.model.Position;
 
 public class ValueAverager implements Program
@@ -57,7 +58,7 @@ public class ValueAverager implements Program
 		REAL_PERIODS.put("day", 1.);
 		REAL_PERIODS.put("week", 7.);
 		REAL_PERIODS.put("month", 30.44);
-		REAL_PERIODS.put("year", (double)ANNUAL_TRADING_DAYS);
+		REAL_PERIODS.put("year", 365.);
 	}
 
 	public ValueAverager(Path dataDir)
@@ -126,69 +127,63 @@ public class ValueAverager implements Program
 
 	private void evaluate(String symbol, JSONObject accountConfig, Account account, Allocation allocation)
 	{
-		Position position = account.getPosition(symbol);
-		double actualAmount = position.getMarketValue();
-		double sharePrice = position.getPrice();
-
 		JSONObject positionsConfig = (JSONObject)accountConfig.get("positions");
-		LocalDate day0 = LocalDate.parse((String)getValue(positionsConfig, symbol, "t0"));
-		double day0Value = getDouble(positionsConfig, symbol, "v0");
-		Object contribOverride = getValue(positionsConfig, symbol, "contrib");
-		double annualGrowth = getDouble(positionsConfig, symbol, "annualGrowthPct") / 100;
-		double minOrderAmount = getDouble(positionsConfig, symbol, "minOrderAmount");
-		double tradingDaysPerPeriod = getDaysPerPeriod(symbol, positionsConfig, TRADING_PERIODS);
-		boolean allowSell = getBoolean(positionsConfig, symbol, "sell");
+		Position position = account.getPosition(symbol);
 
-		double contrib;
-		if (contribOverride instanceof Number)
-		{
-			contrib = ((Number)contribOverride).doubleValue();
-		}
-		else
-		{
-			double estPortfolioBalance = getEstPortfolioBalance(symbol, accountConfig, day0, account.getTotalValue());
-			contrib = allocation.getAllocation(symbol) * estPortfolioBalance - actualAmount;
-		}
+		Point p0 = getP0(symbol, positionsConfig);
+		Point p1 = getP1(symbol, accountConfig, account, allocation, p0.date);
+		double targetValue = getTargetValue(symbol, positionsConfig, p0, p1);
 
-		double dailyContrib = contrib / tradingDaysPerPeriod;
-		double dailyGrowthRate = 1 + annualGrowth / ANNUAL_TRADING_DAYS;
-		double expectedAmount = day0Value;
-		final LocalDate today = LocalDate.now();
-		for (LocalDate date = day0; date.compareTo(today) <= 0; date = date.plusDays(1))
-		{
-			if (isTradingDay(date))
-				expectedAmount = expectedAmount * dailyGrowthRate + dailyContrib;
-		}
+		double delta = targetValue - position.getMarketValue();
+		long sharesToBuy = Math.round(delta / position.getPrice());
+		double buyAmount = sharesToBuy * position.getPrice();
 
-		if (minOrderAmount == 0)
-			minOrderAmount = getMinOrderAmount(actualAmount, dailyContrib);
-
-		double delta = expectedAmount - actualAmount;
-		long sharesToBuy = Math.round(delta / sharePrice);
-		double buyAmount = sharesToBuy * sharePrice;
+		double minOrderAmount = Math.max(position.getMarketValue() * 0.006, 20);
 		if (sharesToBuy < 0)
 			minOrderAmount *= 2;
-
+		boolean allowSell = getBoolean(positionsConfig, symbol, "sell");
 		if (Math.abs(buyAmount) > minOrderAmount && (sharesToBuy > 0 || allowSell))
 		{
 			String action = sharesToBuy >= 0 ? "Buy " : "Sell";
-			System.out.println(String.format("%s %s %d  (@ %.2f = %.0f)", symbol, action, Math.abs(sharesToBuy), sharePrice, buyAmount));
+			System.out.println(String.format("%s %s %d  (@ %.2f = %.0f)", symbol, action, Math.abs(sharesToBuy), position.getPrice(), buyAmount));
 		}
-
-//		double percent = (actualAmount / account.getTotalValue()) * 100;
-//		System.out.println(symbol + " Current: " + percent + " Desired: " + (allocation.getAllocation(symbol) * 100));
 	}
 
-	private static double getEstPortfolioBalance(String symbol, JSONObject accountConfig, LocalDate day0, double accountTotal)
+	private Point getP0(String symbol, JSONObject positionsConfig)
+	{
+		LocalDate t0 = LocalDate.parse((String)getValue(positionsConfig, symbol, "t0"));
+		double v0 = getDouble(positionsConfig, symbol, "v0");
+		return new Point(t0, v0);
+	}
+
+	private Point getP1(String symbol, JSONObject accountConfig, Account account, Allocation allocation, LocalDate t0)
 	{
 		JSONObject positionsConfig = (JSONObject)accountConfig.get("positions");
-		double realDaysPerPeriod = getDaysPerPeriod(symbol, positionsConfig, REAL_PERIODS);
-		LocalDate futureDate = day0.plusDays(Math.round(realDaysPerPeriod));
-		long numDays = ChronoUnit.DAYS.between(LocalDate.now(), futureDate);
-		double accountContrib = JSONUtils.getDouble(accountConfig, "annualContrib");
-		double dailyContrib = accountContrib / 365;
+		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, positionsConfig, REAL_PERIODS));
+		double dailyAccountContrib = JSONUtils.getDouble(accountConfig, "annualContrib") / ANNUAL_TRADING_DAYS;
+		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, dailyAccountContrib);
+		double v1 = futureAccountTotal * allocation.getAllocation(symbol);
+		return new Point(t1, v1);
+	}
 
-		return accountTotal + numDays * dailyContrib;
+	private double getTargetValue(String symbol, JSONObject positionsConfig, Point p0, Point p1)
+	{
+		double annualGrowth = getDouble(positionsConfig, symbol, "annualGrowthPct") / 100;
+		int numTradingDaysP0ToP1 = (int)ChronoUnit.DAYS.between(p0.date, p1.date) * ANNUAL_TRADING_DAYS / 365;
+		double dailyContrib = (p1.value - getFutureValue(p0, p1.date, annualGrowth, 0)) / numTradingDaysP0ToP1;
+		return getFutureValue(p0, LocalDate.now(), annualGrowth, dailyContrib);
+	}
+
+	private static double getFutureValue(Point startPoint, LocalDate futureDate, double annualGrowthRate, double dailyContrib)
+	{
+		double futureValue = startPoint.value;
+		double dailyGrowthRate = 1 + annualGrowthRate / ANNUAL_TRADING_DAYS;
+		for (LocalDate date = startPoint.date; date.compareTo(futureDate) < 0; date = date.plusDays(1))
+		{
+			if (isTradingDay(date))
+				futureValue = futureValue * dailyGrowthRate + dailyContrib;
+		}
+		return futureValue;
 	}
 
 	private static boolean isTradingDay(LocalDate date)
@@ -197,12 +192,7 @@ public class ValueAverager implements Program
 		return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !HOLIDAYS.contains(date);
 	}
 
-	private static double getMinOrderAmount(double currentValue, double dailyContrib)
-	{
-		return Math.max(0.006 * Math.min(currentValue, Math.abs(dailyContrib) * ANNUAL_TRADING_DAYS), 20);
-	}
-
-	private static double getDaysPerPeriod(String symbol, JSONObject config, Map<String, ? extends Number> periods)
+	private static int getDaysPerPeriod(String symbol, JSONObject config, Map<String, ? extends Number> periods)
 	{
 		String period = (String)getValue(config, symbol, "period");
 		double multiplier = 1;
@@ -212,7 +202,7 @@ public class ValueAverager implements Program
 			period = tokens[1];
 			multiplier = Double.parseDouble(tokens[0]);
 		}
-		return periods.get(period).doubleValue() * multiplier;
+		return (int)Math.round(periods.get(period).doubleValue() * multiplier);
 	}
 
 	private static double getDouble(JSONObject config, String symbol, String key)

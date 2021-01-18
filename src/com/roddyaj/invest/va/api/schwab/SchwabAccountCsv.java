@@ -10,11 +10,14 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import com.roddyaj.invest.va.model.Account;
+import com.roddyaj.invest.va.model.Position;
+
 public class SchwabAccountCsv
 {
-	public static Map<String, Map<String, String>> parse(Path file) throws IOException
+	public static Account parse(Path file) throws IOException
 	{
-		Map<String, Map<String, String>> map = new HashMap<>();
+		Account account = new Account();
 
 		Charset charset = Charset.forName("UTF-8");
 		CSVFormat format = CSVFormat.DEFAULT;
@@ -51,16 +54,25 @@ public class SchwabAccountCsv
 						symbolMap.put(column, value);
 //						System.out.println(symbol + "|" + column + "|" + value);
 					}
-					map.put(symbol, symbolMap);
+
+					Position position = new Position();
+					position.setMarketValue(parsePrice(symbolMap.get("Market Value")));
+					position.setPrice(parsePrice(symbolMap.get("Price")));
+					position.setValues(symbolMap);
+					account.addPosition(symbol, position);
 				}
 			}
 		}
 
-		return map;
+		account.setTotalValue(parsePrice(account.getPosition("Account Total").getValue("Market Value")));
+
+		return account;
 	}
 
 	public static double parsePrice(String text)
 	{
+		if ("--".equals(text))
+			return 0;
 		return Double.parseDouble(text.replace("$", "").replace(",", ""));
 	}
 }

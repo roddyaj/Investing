@@ -19,6 +19,8 @@ import org.json.simple.parser.ParseException;
 import com.roddyaj.invest.model.Program;
 import com.roddyaj.invest.util.JSONUtils;
 import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
+import com.roddyaj.invest.va.model.Account;
+import com.roddyaj.invest.va.model.Position;
 
 public class ValueAverager implements Program
 {
@@ -85,8 +87,7 @@ public class ValueAverager implements Program
 
 	private void run(Path accountFile) throws IOException
 	{
-		Map<String, Map<String, String>> accountMap = SchwabAccountCsv.parse(accountFile);
-		double accountTotal = SchwabAccountCsv.parsePrice(accountMap.get("Account Total").get("Market Value"));
+		Account account = SchwabAccountCsv.parse(accountFile);
 
 		JSONObject settings = readSettings();
 		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
@@ -100,9 +101,8 @@ public class ValueAverager implements Program
 			String symbol = (String)key;
 			if (!symbol.startsWith("_"))
 			{
-				Map<String, String> symbolMap = accountMap.get(symbol);
-				if (symbolMap != null)
-					evaluate(symbol, accountConfig, symbolMap, accountTotal, allocation);
+				if (account.hasSymbol(symbol))
+					evaluate(symbol, accountConfig, account, allocation);
 				else
 					System.out.println(String.format("Initiate new position in %s", symbol));
 			}
@@ -124,10 +124,11 @@ public class ValueAverager implements Program
 		}
 	}
 
-	private void evaluate(String symbol, JSONObject accountConfig, Map<String, String> symbolMap, double accountTotal, Allocation allocation)
+	private void evaluate(String symbol, JSONObject accountConfig, Account account, Allocation allocation)
 	{
-		double actualAmount = SchwabAccountCsv.parsePrice(symbolMap.get("Market Value"));
-		double sharePrice = SchwabAccountCsv.parsePrice(symbolMap.get("Price"));
+		Position position = account.getPosition(symbol);
+		double actualAmount = position.getMarketValue();
+		double sharePrice = position.getPrice();
 
 		JSONObject positionsConfig = (JSONObject)accountConfig.get("positions");
 		LocalDate day0 = LocalDate.parse((String)getValue(positionsConfig, symbol, "t0"));
@@ -145,7 +146,7 @@ public class ValueAverager implements Program
 		}
 		else
 		{
-			double estPortfolioBalance = getEstPortfolioBalance(symbol, accountConfig, day0, accountTotal);
+			double estPortfolioBalance = getEstPortfolioBalance(symbol, accountConfig, day0, account.getTotalValue());
 			contrib = allocation.getAllocation(symbol) * estPortfolioBalance - actualAmount;
 		}
 
@@ -174,7 +175,7 @@ public class ValueAverager implements Program
 			System.out.println(String.format("%s %s %d  (@ %.2f = %.0f)", symbol, action, Math.abs(sharesToBuy), sharePrice, buyAmount));
 		}
 
-//		double percent = (actualAmount / accountTotal) * 100;
+//		double percent = (actualAmount / account.getTotalValue()) * 100;
 //		System.out.println(symbol + " Current: " + percent + " Desired: " + (allocation.getAllocation(symbol) * 100));
 	}
 

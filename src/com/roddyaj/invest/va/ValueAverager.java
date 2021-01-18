@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import com.roddyaj.invest.model.Program;
+import com.roddyaj.invest.util.JSONUtils;
 import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
 
 public class ValueAverager implements Program
@@ -38,13 +40,22 @@ public class ValueAverager implements Program
 
 	private static final int ANNUAL_TRADING_DAYS = 252;
 
-	private static final Map<String, Integer> PERIODS = new HashMap<>();
+	private static final Map<String, Integer> TRADING_PERIODS = new HashMap<>();
 	static
 	{
-		PERIODS.put("day", 1);
-		PERIODS.put("week", 5);
-		PERIODS.put("month", 21);
-		PERIODS.put("year", ANNUAL_TRADING_DAYS);
+		TRADING_PERIODS.put("day", 1);
+		TRADING_PERIODS.put("week", 5);
+		TRADING_PERIODS.put("month", 21);
+		TRADING_PERIODS.put("year", ANNUAL_TRADING_DAYS);
+	}
+
+	private static final Map<String, Double> REAL_PERIODS = new HashMap<>();
+	static
+	{
+		REAL_PERIODS.put("day", 1.);
+		REAL_PERIODS.put("week", 7.);
+		REAL_PERIODS.put("month", 30.44);
+		REAL_PERIODS.put("year", (double)ANNUAL_TRADING_DAYS);
 	}
 
 	public ValueAverager(Path dataDir)
@@ -74,17 +85,27 @@ public class ValueAverager implements Program
 
 	private void run(Path accountFile) throws IOException
 	{
+		Map<String, Map<String, String>> accountMap = SchwabAccountCsv.parse(accountFile);
+		double accountTotal = SchwabAccountCsv.parsePrice(accountMap.get("Account Total").get("Market Value"));
+
 		JSONObject settings = readSettings();
 		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
-		JSONObject config = (JSONObject)settings.get(accountKey);
+		JSONObject accountConfig = (JSONObject)settings.get(accountKey);
+		JSONObject positionsConfig = (JSONObject)accountConfig.get("positions");
 
-		Map<String, Map<String, String>> accountMap = SchwabAccountCsv.parse(accountFile);
+		Allocation allocation = new Allocation((JSONObject)accountConfig.get("allocation"));
 
-		for (Object key : config.keySet())
+		for (Object key : positionsConfig.keySet())
 		{
 			String symbol = (String)key;
 			if (!symbol.startsWith("_"))
-				evaluate(symbol, config, accountMap);
+			{
+				Map<String, String> symbolMap = accountMap.get(symbol);
+				if (symbolMap != null)
+					evaluate(symbol, accountConfig, symbolMap, accountTotal, allocation);
+				else
+					System.out.println(String.format("Initiate new position in %s", symbol));
+			}
 		}
 	}
 
@@ -103,17 +124,32 @@ public class ValueAverager implements Program
 		}
 	}
 
-	private void evaluate(String symbol, JSONObject config, Map<String, Map<String, String>> accountMap)
+	private void evaluate(String symbol, JSONObject accountConfig, Map<String, String> symbolMap, double accountTotal, Allocation allocation)
 	{
-		LocalDate day0 = LocalDate.parse((String)getValue(config, symbol, "day0"));
-		double day0Value = getDouble(config, symbol, "day0Value");
-		double contrib = getDouble(config, symbol, "contrib");
-		double annualGrowth = getDouble(config, symbol, "annualGrowthPct") / 100;
-		double minOrderAmount = getDouble(config, symbol, "minOrderAmount");
-		double daysPerPeriod = getDaysPerPeriod(symbol, config);
-		boolean allowSell = getBoolean(config, symbol, "sell");
+		double actualAmount = SchwabAccountCsv.parsePrice(symbolMap.get("Market Value"));
+		double sharePrice = SchwabAccountCsv.parsePrice(symbolMap.get("Price"));
 
-		double dailyContrib = contrib / daysPerPeriod;
+		JSONObject positionsConfig = (JSONObject)accountConfig.get("positions");
+		LocalDate day0 = LocalDate.parse((String)getValue(positionsConfig, symbol, "t0"));
+		double day0Value = getDouble(positionsConfig, symbol, "v0");
+		Object contribOverride = getValue(positionsConfig, symbol, "contrib");
+		double annualGrowth = getDouble(positionsConfig, symbol, "annualGrowthPct") / 100;
+		double minOrderAmount = getDouble(positionsConfig, symbol, "minOrderAmount");
+		double tradingDaysPerPeriod = getDaysPerPeriod(symbol, positionsConfig, TRADING_PERIODS);
+		boolean allowSell = getBoolean(positionsConfig, symbol, "sell");
+
+		double contrib;
+		if (contribOverride instanceof Number)
+		{
+			contrib = ((Number)contribOverride).doubleValue();
+		}
+		else
+		{
+			double estPortfolioBalance = getEstPortfolioBalance(symbol, accountConfig, day0, accountTotal);
+			contrib = allocation.getAllocation(symbol) * estPortfolioBalance - actualAmount;
+		}
+
+		double dailyContrib = contrib / tradingDaysPerPeriod;
 		double dailyGrowthRate = 1 + annualGrowth / ANNUAL_TRADING_DAYS;
 		double expectedAmount = day0Value;
 		final LocalDate today = LocalDate.now();
@@ -123,31 +159,35 @@ public class ValueAverager implements Program
 				expectedAmount = expectedAmount * dailyGrowthRate + dailyContrib;
 		}
 
-		Map<String, String> symbolMap = accountMap.get(symbol);
-		if (symbolMap != null)
+		if (minOrderAmount == 0)
+			minOrderAmount = getMinOrderAmount(actualAmount, dailyContrib);
+
+		double delta = expectedAmount - actualAmount;
+		long sharesToBuy = Math.round(delta / sharePrice);
+		double buyAmount = sharesToBuy * sharePrice;
+		if (sharesToBuy < 0)
+			minOrderAmount *= 2;
+
+		if (Math.abs(buyAmount) > minOrderAmount && (sharesToBuy > 0 || allowSell))
 		{
-			double actualAmount = SchwabAccountCsv.parsePrice(symbolMap.get("Market Value"));
-			double sharePrice = SchwabAccountCsv.parsePrice(symbolMap.get("Price"));
-
-			if (minOrderAmount == 0)
-				minOrderAmount = getMinOrderAmount(actualAmount, dailyContrib);
-
-			double delta = expectedAmount - actualAmount;
-			long sharesToBuy = Math.round(delta / sharePrice);
-			double buyAmount = sharesToBuy * sharePrice;
-			if (sharesToBuy < 0)
-				minOrderAmount *= 2;
-
-			if (Math.abs(buyAmount) > minOrderAmount && (sharesToBuy > 0 || allowSell))
-			{
-				String action = sharesToBuy >= 0 ? "Buy " : "Sell";
-				System.out.println(String.format("%s %s %d  (@ %.2f = %.0f)", symbol, action, Math.abs(sharesToBuy), sharePrice, buyAmount));
-			}
+			String action = sharesToBuy >= 0 ? "Buy " : "Sell";
+			System.out.println(String.format("%s %s %d  (@ %.2f = %.0f)", symbol, action, Math.abs(sharesToBuy), sharePrice, buyAmount));
 		}
-		else
-		{
-			System.out.println(String.format("Initiate new position in %s", symbol));
-		}
+
+//		double percent = (actualAmount / accountTotal) * 100;
+//		System.out.println(symbol + " Current: " + percent + " Desired: " + (allocation.getAllocation(symbol) * 100));
+	}
+
+	private static double getEstPortfolioBalance(String symbol, JSONObject accountConfig, LocalDate day0, double accountTotal)
+	{
+		JSONObject positionsConfig = (JSONObject)accountConfig.get("positions");
+		double realDaysPerPeriod = getDaysPerPeriod(symbol, positionsConfig, REAL_PERIODS);
+		LocalDate futureDate = day0.plusDays(Math.round(realDaysPerPeriod));
+		long numDays = ChronoUnit.DAYS.between(LocalDate.now(), futureDate);
+		double accountContrib = JSONUtils.getDouble(accountConfig, "annualContrib");
+		double dailyContrib = accountContrib / 365;
+
+		return accountTotal + numDays * dailyContrib;
 	}
 
 	private static boolean isTradingDay(LocalDate date)
@@ -161,17 +201,17 @@ public class ValueAverager implements Program
 		return Math.max(0.006 * Math.min(currentValue, Math.abs(dailyContrib) * ANNUAL_TRADING_DAYS), 20);
 	}
 
-	private static double getDaysPerPeriod(String symbol, JSONObject config)
+	private static double getDaysPerPeriod(String symbol, JSONObject config, Map<String, ? extends Number> periods)
 	{
 		String period = (String)getValue(config, symbol, "period");
-		int multiplier = 1;
+		double multiplier = 1;
 		if (period.contains(" "))
 		{
 			String[] tokens = period.split("\\s+");
 			period = tokens[1];
-			multiplier = Integer.parseInt(tokens[0]);
+			multiplier = Double.parseDouble(tokens[0]);
 		}
-		return PERIODS.get(period).intValue() * multiplier;
+		return periods.get(period).doubleValue() * multiplier;
 	}
 
 	private static double getDouble(JSONObject config, String symbol, String key)

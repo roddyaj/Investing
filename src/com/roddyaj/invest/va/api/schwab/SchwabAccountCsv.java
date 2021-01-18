@@ -49,6 +49,7 @@ public class SchwabAccountCsv
 						String column = header.get(i);
 						String value = record.get(i);
 						symbolMap.put(column, value);
+//						System.out.println(symbol + "|" + column + "|" + value);
 					}
 					map.put(symbol, symbolMap);
 				}

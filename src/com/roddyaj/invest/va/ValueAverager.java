@@ -1,16 +1,16 @@
 package com.roddyaj.invest.va;
 
+import static com.roddyaj.invest.va.TemporalUtil.ANNUAL_TRADING_DAYS;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -21,46 +21,14 @@ import com.roddyaj.invest.model.Program;
 import com.roddyaj.invest.util.JSONUtils;
 import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
 import com.roddyaj.invest.va.model.Account;
+import com.roddyaj.invest.va.model.Allocation;
+import com.roddyaj.invest.va.model.Order;
 import com.roddyaj.invest.va.model.Point;
 import com.roddyaj.invest.va.model.Position;
 
 public class ValueAverager implements Program
 {
 	private final Path dataDir;
-
-	private static final Set<LocalDate> HOLIDAYS = new HashSet<>();
-	static
-	{
-		HOLIDAYS.add(LocalDate.of(2021, 1, 1));
-		HOLIDAYS.add(LocalDate.of(2021, 1, 18));
-		HOLIDAYS.add(LocalDate.of(2021, 2, 15));
-		HOLIDAYS.add(LocalDate.of(2021, 4, 2));
-		HOLIDAYS.add(LocalDate.of(2021, 5, 31));
-		HOLIDAYS.add(LocalDate.of(2021, 7, 5));
-		HOLIDAYS.add(LocalDate.of(2021, 9, 6));
-		HOLIDAYS.add(LocalDate.of(2021, 11, 25));
-		HOLIDAYS.add(LocalDate.of(2021, 12, 24));
-	}
-
-	private static final int ANNUAL_TRADING_DAYS = 252;
-
-	private static final Map<String, Integer> TRADING_PERIODS = new HashMap<>();
-	static
-	{
-		TRADING_PERIODS.put("day", 1);
-		TRADING_PERIODS.put("week", 5);
-		TRADING_PERIODS.put("month", 21);
-		TRADING_PERIODS.put("year", ANNUAL_TRADING_DAYS);
-	}
-
-	private static final Map<String, Double> REAL_PERIODS = new HashMap<>();
-	static
-	{
-		REAL_PERIODS.put("day", 1.);
-		REAL_PERIODS.put("week", 7.);
-		REAL_PERIODS.put("month", 30.44);
-		REAL_PERIODS.put("year", 365.);
-	}
 
 	public ValueAverager(Path dataDir)
 	{
@@ -98,6 +66,7 @@ public class ValueAverager implements Program
 
 		Allocation allocation = new Allocation((JSONObject)accountConfig.get("allocation"));
 
+		List<Order> orders = new ArrayList<>();
 		for (Object positionObj : positionsConfig)
 		{
 			JSONObject position = (JSONObject)positionObj;
@@ -105,11 +74,19 @@ public class ValueAverager implements Program
 			if (!symbol.startsWith("_"))
 			{
 				if (account.hasSymbol(symbol))
-					evaluate(symbol, accountConfig, account, allocation);
+				{
+					Order order = evaluate(symbol, accountConfig, account, allocation);
+					if (order != null)
+						orders.add(order);
+				}
 				else
+				{
 					System.out.println(String.format("Initiate new position in %s", symbol));
+				}
 			}
 		}
+
+		orders.stream().sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).forEach(System.out::println);
 	}
 
 	private JSONObject readSettings() throws IOException
@@ -127,7 +104,7 @@ public class ValueAverager implements Program
 		}
 	}
 
-	private void evaluate(String symbol, JSONObject accountConfig, Account account, Allocation allocation)
+	private Order evaluate(String symbol, JSONObject accountConfig, Account account, Allocation allocation)
 	{
 		JSONArray positionsConfig = (JSONArray)accountConfig.get("positions");
 		Position position = account.getPosition(symbol);
@@ -138,17 +115,11 @@ public class ValueAverager implements Program
 
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
-		double buyAmount = sharesToBuy * position.getPrice();
+		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice());
 
-		double minOrderAmount = Math.max(position.getMarketValue() * 0.006, 20);
-		if (sharesToBuy < 0)
-			minOrderAmount *= 2;
-		boolean allowSell = getBoolean(positionsConfig, symbol, "sell");
-		if (Math.abs(buyAmount) > minOrderAmount && (sharesToBuy > 0 || allowSell))
-		{
-			String action = sharesToBuy >= 0 ? "Buy " : "Sell";
-			System.out.println(String.format("%s %s %d  (@ %.2f = %.0f)", symbol, action, Math.abs(sharesToBuy), position.getPrice(), buyAmount));
-		}
+		if (allowOrder(order, position, positionsConfig))
+			return order;
+		return null;
 	}
 
 	private Point getP0(String symbol, JSONArray positionsConfig)
@@ -161,7 +132,7 @@ public class ValueAverager implements Program
 	private Point getP1(String symbol, JSONObject accountConfig, Account account, Allocation allocation, LocalDate t0)
 	{
 		JSONArray positionsConfig = (JSONArray)accountConfig.get("positions");
-		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, positionsConfig, REAL_PERIODS));
+		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, positionsConfig, TemporalUtil.REAL_PERIODS));
 		double dailyAccountContrib = JSONUtils.getDouble(accountConfig, "annualContrib") / ANNUAL_TRADING_DAYS;
 		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, dailyAccountContrib);
 		double v1 = futureAccountTotal * allocation.getAllocation(symbol);
@@ -182,16 +153,19 @@ public class ValueAverager implements Program
 		double dailyGrowthRate = 1 + annualGrowthRate / ANNUAL_TRADING_DAYS;
 		for (LocalDate date = startPoint.date; date.compareTo(futureDate) < 0; date = date.plusDays(1))
 		{
-			if (isTradingDay(date))
+			if (TemporalUtil.isTradingDay(date))
 				futureValue = futureValue * dailyGrowthRate + dailyContrib;
 		}
 		return futureValue;
 	}
 
-	private static boolean isTradingDay(LocalDate date)
+	private static boolean allowOrder(Order order, Position position, JSONArray positionsConfig)
 	{
-		DayOfWeek day = date.getDayOfWeek();
-		return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !HOLIDAYS.contains(date);
+		double minOrderAmount = Math.max(position.getMarketValue() * 0.006, 20);
+		if (order.shareCount < 0)
+			minOrderAmount *= 2;
+		boolean allowSell = getBoolean(positionsConfig, order.symbol, "sell");
+		return Math.abs(order.getAmount()) > minOrderAmount && (order.shareCount > 0 || allowSell);
 	}
 
 	private static int getDaysPerPeriod(String symbol, JSONArray config, Map<String, ? extends Number> periods)

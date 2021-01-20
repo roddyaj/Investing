@@ -1,4 +1,4 @@
-package com.roddyaj.invest.va;
+package com.roddyaj.invest.va.model;
 
 import java.util.Arrays;
 import java.util.HashMap;

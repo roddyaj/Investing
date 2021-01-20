@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -93,13 +94,14 @@ public class ValueAverager implements Program
 		JSONObject settings = readSettings();
 		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
 		JSONObject accountConfig = (JSONObject)settings.get(accountKey);
-		JSONObject positionsConfig = (JSONObject)accountConfig.get("positions");
+		JSONArray positionsConfig = (JSONArray)accountConfig.get("positions");
 
 		Allocation allocation = new Allocation((JSONObject)accountConfig.get("allocation"));
 
-		for (Object key : positionsConfig.keySet())
+		for (Object positionObj : positionsConfig)
 		{
-			String symbol = (String)key;
+			JSONObject position = (JSONObject)positionObj;
+			String symbol = (String)position.get("symbol");
 			if (!symbol.startsWith("_"))
 			{
 				if (account.hasSymbol(symbol))
@@ -127,7 +129,7 @@ public class ValueAverager implements Program
 
 	private void evaluate(String symbol, JSONObject accountConfig, Account account, Allocation allocation)
 	{
-		JSONObject positionsConfig = (JSONObject)accountConfig.get("positions");
+		JSONArray positionsConfig = (JSONArray)accountConfig.get("positions");
 		Position position = account.getPosition(symbol);
 
 		Point p0 = getP0(symbol, positionsConfig);
@@ -149,7 +151,7 @@ public class ValueAverager implements Program
 		}
 	}
 
-	private Point getP0(String symbol, JSONObject positionsConfig)
+	private Point getP0(String symbol, JSONArray positionsConfig)
 	{
 		LocalDate t0 = LocalDate.parse((String)getValue(positionsConfig, symbol, "t0"));
 		double v0 = getDouble(positionsConfig, symbol, "v0");
@@ -158,7 +160,7 @@ public class ValueAverager implements Program
 
 	private Point getP1(String symbol, JSONObject accountConfig, Account account, Allocation allocation, LocalDate t0)
 	{
-		JSONObject positionsConfig = (JSONObject)accountConfig.get("positions");
+		JSONArray positionsConfig = (JSONArray)accountConfig.get("positions");
 		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, positionsConfig, REAL_PERIODS));
 		double dailyAccountContrib = JSONUtils.getDouble(accountConfig, "annualContrib") / ANNUAL_TRADING_DAYS;
 		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, dailyAccountContrib);
@@ -166,7 +168,7 @@ public class ValueAverager implements Program
 		return new Point(t1, v1);
 	}
 
-	private double getTargetValue(String symbol, JSONObject positionsConfig, Point p0, Point p1)
+	private double getTargetValue(String symbol, JSONArray positionsConfig, Point p0, Point p1)
 	{
 		double annualGrowth = getDouble(positionsConfig, symbol, "annualGrowthPct") / 100;
 		int numTradingDaysP0ToP1 = (int)ChronoUnit.DAYS.between(p0.date, p1.date) * ANNUAL_TRADING_DAYS / 365;
@@ -192,7 +194,7 @@ public class ValueAverager implements Program
 		return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !HOLIDAYS.contains(date);
 	}
 
-	private static int getDaysPerPeriod(String symbol, JSONObject config, Map<String, ? extends Number> periods)
+	private static int getDaysPerPeriod(String symbol, JSONArray config, Map<String, ? extends Number> periods)
 	{
 		String period = (String)getValue(config, symbol, "period");
 		double multiplier = 1;
@@ -205,27 +207,39 @@ public class ValueAverager implements Program
 		return (int)Math.round(periods.get(period).doubleValue() * multiplier);
 	}
 
-	private static double getDouble(JSONObject config, String symbol, String key)
+	private static double getDouble(JSONArray config, String symbol, String key)
 	{
 		Object value = getValue(config, symbol, key);
 		return value instanceof Number ? ((Number)value).doubleValue() : 0;
 	}
 
-	private static boolean getBoolean(JSONObject config, String symbol, String key)
+	private static boolean getBoolean(JSONArray config, String symbol, String key)
 	{
 		return ((Boolean)getValue(config, symbol, key)).booleanValue();
 	}
 
-	private static Object getValue(JSONObject config, String symbol, String key)
+	private static Object getValue(JSONArray config, String symbol, String key)
 	{
-		JSONObject symbolConfig = (JSONObject)config.get(symbol);
-		Object value = symbolConfig.get(key);
+		JSONObject position = getPosition(config, symbol);
+		Object value = position.get(key);
 		if (value == null)
 		{
-			JSONObject defaultConfig = (JSONObject)config.get("_default");
+			JSONObject defaultConfig = getPosition(config, "_default");
 			if (defaultConfig != null)
 				value = defaultConfig.get(key);
 		}
 		return value;
+	}
+
+	private static JSONObject getPosition(JSONArray config, String symbol)
+	{
+		JSONObject match = null;
+		for (Object positionObj : config)
+		{
+			JSONObject position = (JSONObject)positionObj;
+			if (symbol.equals(position.get("symbol")))
+				match = position;
+		}
+		return match;
 	}
 }

@@ -64,7 +64,7 @@ public class ValueAverager implements Program
 		JSONObject accountConfig = (JSONObject)settings.get(accountKey);
 		JSONArray positionsConfig = (JSONArray)accountConfig.get("positions");
 
-		Allocation allocation = new Allocation((JSONObject)accountConfig.get("allocation"));
+		Allocation allocation = new Allocation((JSONArray)accountConfig.get("allocations"));
 
 		List<Order> orders = new ArrayList<>();
 		for (Object positionObj : positionsConfig)

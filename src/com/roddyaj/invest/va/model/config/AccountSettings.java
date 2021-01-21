@@ -2,12 +2,12 @@ package com.roddyaj.invest.va.model.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Account
+public class AccountSettings
 {
 	private String name;
 	private double annualContrib;
 	private Allocation[] allocations;
-	private Position[] positions;
+	private PositionSettings[] positions;
 
 	@JsonProperty("name")
 	public String getName()
@@ -46,13 +46,13 @@ public class Account
 	}
 
 	@JsonProperty("positions")
-	public Position[] getPositions()
+	public PositionSettings[] getPositions()
 	{
 		return positions;
 	}
 
 	@JsonProperty("positions")
-	public void setPositions(Position[] positions)
+	public void setPositions(PositionSettings[] positions)
 	{
 		this.positions = positions;
 	}

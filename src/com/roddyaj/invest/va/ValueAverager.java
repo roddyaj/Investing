@@ -27,6 +27,8 @@ import com.roddyaj.invest.va.model.Allocation;
 import com.roddyaj.invest.va.model.Order;
 import com.roddyaj.invest.va.model.Point;
 import com.roddyaj.invest.va.model.Position;
+import com.roddyaj.invest.va.model.config.AccountSettings;
+import com.roddyaj.invest.va.model.config.PositionSettings;
 import com.roddyaj.invest.va.model.config.Settings;
 
 public class ValueAverager implements Program
@@ -61,23 +63,22 @@ public class ValueAverager implements Program
 	private void run(Path accountFile) throws IOException
 	{
 		Account account = SchwabAccountCsv.parse(accountFile);
+		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
 
-//		Settings settings = readSettingsJackson();
+		Settings settingsJ = readSettingsJackson();
+		AccountSettings accountSettings = settingsJ.getAccount(accountKey);
 
 		JSONObject settings = readSettings();
-		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
 		JSONArray accountsConfig = (JSONArray)settings.get("accounts");
 		Optional<JSONObject> accountConfig = accountsConfig.stream().filter(a -> ((JSONObject)a).get("name").equals(accountKey))
 				.map(a -> (JSONObject)a).findAny();
-		JSONArray positionsConfig = (JSONArray)accountConfig.get().get("positions");
 
-		Allocation allocation = new Allocation((JSONArray)accountConfig.get().get("allocations"));
+		Allocation allocation = new Allocation(accountSettings.getAllocations());
 
 		List<Order> orders = new ArrayList<>();
-		for (Object positionObj : positionsConfig)
+		for (PositionSettings position : accountSettings.getPositions())
 		{
-			JSONObject position = (JSONObject)positionObj;
-			String symbol = (String)position.get("symbol");
+			String symbol = position.getSymbol();
 			if (!symbol.startsWith("_"))
 			{
 				if (account.hasSymbol(symbol))

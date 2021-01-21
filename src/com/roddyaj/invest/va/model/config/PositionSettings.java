@@ -2,7 +2,7 @@ package com.roddyaj.invest.va.model.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Position
+public class PositionSettings
 {
 	private String symbol;
 	private String t0;

@@ -4,23 +4,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
-import com.roddyaj.invest.util.JSONUtils;
-
 public class Allocation
 {
-	private final Map<String, Double> allocations = new HashMap<>();
+	private final Map<String, Double> allocationMap = new HashMap<>();
 
-	public Allocation(JSONArray config)
+	public Allocation(com.roddyaj.invest.va.model.config.Allocation[] allocations)
 	{
 		Map<String, Double> map = new HashMap<>();
-		for (Object allocationObj : config)
-		{
-			JSONObject allocation = (JSONObject)allocationObj;
-			map.put((String)allocation.get("cat"), JSONUtils.getPercent(allocation, "percent"));
-		}
+		for (var allocation : allocations)
+			map.put(allocation.getCat(), allocation.getPercent() / 100);
 
 		for (Map.Entry<String, Double> entry : map.entrySet())
 		{
@@ -36,16 +28,16 @@ public class Allocation
 					String partialKey = String.join(".", Arrays.copyOfRange(tokens, 0, i));
 					allocation *= map.get(partialKey);
 				}
-				allocations.put(symbol, allocation);
+				allocationMap.put(symbol, allocation);
 			}
 		}
 
-//		for (Map.Entry<String, Double> entry : allocations.entrySet())
+//		for (Map.Entry<String, Double> entry : allocationMap.entrySet())
 //			System.out.println(entry.getKey() + " " + entry.getValue());
 	}
 
 	public double getAllocation(String symbol)
 	{
-		return allocations.getOrDefault(symbol, 0.);
+		return allocationMap.getOrDefault(symbol, 0.);
 	}
 }

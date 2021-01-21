@@ -11,12 +11,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.model.Program;
 import com.roddyaj.invest.util.JSONUtils;
 import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
@@ -25,6 +27,7 @@ import com.roddyaj.invest.va.model.Allocation;
 import com.roddyaj.invest.va.model.Order;
 import com.roddyaj.invest.va.model.Point;
 import com.roddyaj.invest.va.model.Position;
+import com.roddyaj.invest.va.model.config.Settings;
 
 public class ValueAverager implements Program
 {
@@ -59,12 +62,16 @@ public class ValueAverager implements Program
 	{
 		Account account = SchwabAccountCsv.parse(accountFile);
 
+//		Settings settings = readSettingsJackson();
+
 		JSONObject settings = readSettings();
 		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
-		JSONObject accountConfig = (JSONObject)settings.get(accountKey);
-		JSONArray positionsConfig = (JSONArray)accountConfig.get("positions");
+		JSONArray accountsConfig = (JSONArray)settings.get("accounts");
+		Optional<JSONObject> accountConfig = accountsConfig.stream().filter(a -> ((JSONObject)a).get("name").equals(accountKey))
+				.map(a -> (JSONObject)a).findAny();
+		JSONArray positionsConfig = (JSONArray)accountConfig.get().get("positions");
 
-		Allocation allocation = new Allocation((JSONArray)accountConfig.get("allocations"));
+		Allocation allocation = new Allocation((JSONArray)accountConfig.get().get("allocations"));
 
 		List<Order> orders = new ArrayList<>();
 		for (Object positionObj : positionsConfig)
@@ -75,7 +82,7 @@ public class ValueAverager implements Program
 			{
 				if (account.hasSymbol(symbol))
 				{
-					Order order = evaluate(symbol, accountConfig, account, allocation);
+					Order order = evaluate(symbol, accountConfig.get(), account, allocation);
 					if (order != null)
 						orders.add(order);
 				}
@@ -102,6 +109,13 @@ public class ValueAverager implements Program
 		{
 			throw new IOException(e);
 		}
+	}
+
+	private Settings readSettingsJackson() throws IOException
+	{
+		Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
+		Settings settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
+		return settings;
 	}
 
 	private Order evaluate(String symbol, JSONObject accountConfig, Account account, Allocation allocation)

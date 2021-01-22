@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.model.Program;
 import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
 import com.roddyaj.invest.va.model.Account;
-import com.roddyaj.invest.va.model.Allocation;
 import com.roddyaj.invest.va.model.Order;
 import com.roddyaj.invest.va.model.Point;
 import com.roddyaj.invest.va.model.Position;
@@ -54,13 +53,8 @@ public class ValueAverager implements Program
 
 	private void run(Path accountFile) throws IOException
 	{
+		AccountSettings accountSettings = readSettings(accountFile);
 		Account account = SchwabAccountCsv.parse(accountFile);
-		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
-
-		Settings settingsJ = readSettingsJackson();
-		AccountSettings accountSettings = settingsJ.getAccount(accountKey);
-
-		Allocation allocation = new Allocation(accountSettings.getAllocations());
 
 		List<Order> orders = new ArrayList<>();
 		for (PositionSettings position : accountSettings.getPositions())
@@ -70,7 +64,7 @@ public class ValueAverager implements Program
 			{
 				if (account.hasSymbol(symbol))
 				{
-					Order order = evaluate(symbol, accountSettings, allocation, account);
+					Order order = evaluate(symbol, accountSettings, account);
 					if (order != null)
 						orders.add(order);
 				}
@@ -84,20 +78,21 @@ public class ValueAverager implements Program
 		orders.stream().sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).forEach(System.out::println);
 	}
 
-	private Settings readSettingsJackson() throws IOException
+	private AccountSettings readSettings(Path accountFile) throws IOException
 	{
 		Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
 		Settings settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
-		return settings;
+		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
+		return settings.getAccount(accountKey);
 	}
 
-	private Order evaluate(String symbol, AccountSettings accountSettings, Allocation allocation, Account account)
+	private Order evaluate(String symbol, AccountSettings accountSettings, Account account)
 	{
 		PositionSettings positionSettings = accountSettings.getPosition(symbol);
 		Position position = account.getPosition(symbol);
 
-		Point p0 = getP0(positionSettings);
-		Point p1 = getP1(symbol, accountSettings, allocation, account, p0.date);
+		Point p0 = new Point(LocalDate.parse(positionSettings.getT0()), positionSettings.getV0());
+		Point p1 = getP1(symbol, accountSettings, account, p0.date);
 		double targetValue = getTargetValue(positionSettings, p0, p1);
 
 		double delta = targetValue - position.getMarketValue();
@@ -109,17 +104,12 @@ public class ValueAverager implements Program
 		return null;
 	}
 
-	private Point getP0(PositionSettings position)
-	{
-		return new Point(LocalDate.parse(position.getT0()), position.getV0());
-	}
-
-	private Point getP1(String symbol, AccountSettings accountSettings, Allocation allocation, Account account, LocalDate t0)
+	private Point getP1(String symbol, AccountSettings accountSettings, Account account, LocalDate t0)
 	{
 		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, accountSettings, TemporalUtil.REAL_PERIODS));
 		double dailyAccountContrib = accountSettings.getAnnualContrib() / ANNUAL_TRADING_DAYS;
 		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, dailyAccountContrib);
-		double v1 = futureAccountTotal * allocation.getAllocation(symbol);
+		double v1 = futureAccountTotal * accountSettings.getAllocation().getAllocation(symbol);
 		return new Point(t1, v1);
 	}
 

@@ -10,6 +10,7 @@ public class AccountSettings
 	private double annualContrib;
 	private Allocation[] allocations;
 	private PositionSettings[] positions;
+	private com.roddyaj.invest.va.model.Allocation allocation = null;
 
 	@JsonProperty("name")
 	public String getName()
@@ -57,6 +58,13 @@ public class AccountSettings
 	public void setPositions(PositionSettings[] positions)
 	{
 		this.positions = positions;
+	}
+
+	public com.roddyaj.invest.va.model.Allocation getAllocation()
+	{
+		if (allocation == null)
+			allocation = new com.roddyaj.invest.va.model.Allocation(allocations);
+		return allocation;
 	}
 
 	public PositionSettings getPosition(String symbol)

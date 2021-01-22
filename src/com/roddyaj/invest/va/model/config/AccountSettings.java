@@ -1,6 +1,7 @@
 package com.roddyaj.invest.va.model.config;
 
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -67,9 +68,14 @@ public class AccountSettings
 		return allocation.getAllocation(symbol);
 	}
 
+	public Stream<PositionSettings> getRealPositions()
+	{
+		return Arrays.stream(positions).filter(p -> !p.getSymbol().startsWith("_"));
+	}
+
 	public PositionSettings getPosition(String symbol)
 	{
-		return Arrays.stream(positions).filter(a -> a.getSymbol().equals(symbol)).findAny().orElse(null);
+		return Arrays.stream(positions).filter(p -> p.getSymbol().equals(symbol)).findAny().orElse(null);
 	}
 
 	public boolean getSell(String symbol)

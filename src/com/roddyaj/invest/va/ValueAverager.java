@@ -3,16 +3,13 @@ package com.roddyaj.invest.va;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.model.Program;
 import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
 import com.roddyaj.invest.va.model.Account;
-import com.roddyaj.invest.va.model.Order;
 import com.roddyaj.invest.va.model.config.AccountSettings;
-import com.roddyaj.invest.va.model.config.PositionSettings;
 import com.roddyaj.invest.va.model.config.Settings;
 
 public class ValueAverager implements Program
@@ -50,26 +47,11 @@ public class ValueAverager implements Program
 		Account account = SchwabAccountCsv.parse(accountFile);
 		Algorithm algorithm = new Algorithm();
 
-		List<Order> orders = new ArrayList<>();
-		for (PositionSettings position : accountSettings.getPositions())
-		{
-			String symbol = position.getSymbol();
-			if (!symbol.startsWith("_"))
-			{
-				if (account.hasSymbol(symbol))
-				{
-					Order order = algorithm.evaluate(symbol, accountSettings, account);
-					if (order != null)
-						orders.add(order);
-				}
-				else
-				{
-					System.out.println(String.format("Initiate new position in %s", symbol));
-				}
-			}
-		}
-
-		orders.stream().sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).forEach(System.out::println);
+		accountSettings.getRealPositions()
+			.map(position -> algorithm.evaluate(position.getSymbol(), accountSettings, account))
+			.filter(Objects::nonNull)
+			.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount()))
+			.forEach(System.out::println);
 	}
 
 	private AccountSettings readSettings(Path accountFile) throws IOException

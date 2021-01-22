@@ -17,6 +17,12 @@ public class Algorithm
 {
 	public Order evaluate(String symbol, AccountSettings accountSettings, Account account)
 	{
+		if (!account.hasSymbol(symbol))
+		{
+			System.out.println(String.format("Initiate new position in %s", symbol));
+			return null;
+		}
+
 		PositionSettings positionSettings = accountSettings.getPosition(symbol);
 		Position position = account.getPosition(symbol);
 

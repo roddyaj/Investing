@@ -8,7 +8,7 @@ public class PositionSettings
 	private String t0;
 	private double v0;
 	private double annualGrowthPct;
-	private boolean sell;
+	private Boolean sell;
 	private String period;
 
 	@JsonProperty("symbol")
@@ -60,13 +60,13 @@ public class PositionSettings
 	}
 
 	@JsonProperty("sell")
-	public boolean getSell()
+	public Boolean getSell()
 	{
 		return sell;
 	}
 
 	@JsonProperty("sell")
-	public void setSell(boolean sell)
+	public void setSell(Boolean sell)
 	{
 		this.sell = sell;
 	}

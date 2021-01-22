@@ -3,7 +3,6 @@ package com.roddyaj.invest.va;
 import static com.roddyaj.invest.va.TemporalUtil.ANNUAL_TRADING_DAYS;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -11,16 +10,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.model.Program;
-import com.roddyaj.invest.util.JSONUtils;
 import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
 import com.roddyaj.invest.va.model.Account;
 import com.roddyaj.invest.va.model.Allocation;
@@ -68,11 +60,6 @@ public class ValueAverager implements Program
 		Settings settingsJ = readSettingsJackson();
 		AccountSettings accountSettings = settingsJ.getAccount(accountKey);
 
-		JSONObject settings = readSettings();
-		JSONArray accountsConfig = (JSONArray)settings.get("accounts");
-		Optional<JSONObject> accountConfig = accountsConfig.stream().filter(a -> ((JSONObject)a).get("name").equals(accountKey))
-				.map(a -> (JSONObject)a).findAny();
-
 		Allocation allocation = new Allocation(accountSettings.getAllocations());
 
 		List<Order> orders = new ArrayList<>();
@@ -83,7 +70,7 @@ public class ValueAverager implements Program
 			{
 				if (account.hasSymbol(symbol))
 				{
-					Order order = evaluate(symbol, accountConfig.get(), account, allocation);
+					Order order = evaluate(symbol, accountSettings, allocation, account);
 					if (order != null)
 						orders.add(order);
 				}
@@ -97,21 +84,6 @@ public class ValueAverager implements Program
 		orders.stream().sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).forEach(System.out::println);
 	}
 
-	private JSONObject readSettings() throws IOException
-	{
-		Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
-		String json = Files.readString(settingsFile);
-		JSONParser parser = new JSONParser();
-		try
-		{
-			return (JSONObject)parser.parse(json);
-		}
-		catch (ParseException e)
-		{
-			throw new IOException(e);
-		}
-	}
-
 	private Settings readSettingsJackson() throws IOException
 	{
 		Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
@@ -119,44 +91,41 @@ public class ValueAverager implements Program
 		return settings;
 	}
 
-	private Order evaluate(String symbol, JSONObject accountConfig, Account account, Allocation allocation)
+	private Order evaluate(String symbol, AccountSettings accountSettings, Allocation allocation, Account account)
 	{
-		JSONArray positionsConfig = (JSONArray)accountConfig.get("positions");
+		PositionSettings positionSettings = accountSettings.getPosition(symbol);
 		Position position = account.getPosition(symbol);
 
-		Point p0 = getP0(symbol, positionsConfig);
-		Point p1 = getP1(symbol, accountConfig, account, allocation, p0.date);
-		double targetValue = getTargetValue(symbol, positionsConfig, p0, p1);
+		Point p0 = getP0(positionSettings);
+		Point p1 = getP1(symbol, accountSettings, allocation, account, p0.date);
+		double targetValue = getTargetValue(positionSettings, p0, p1);
 
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice());
 
-		if (allowOrder(order, position, positionsConfig))
+		if (allowOrder(order, position, accountSettings))
 			return order;
 		return null;
 	}
 
-	private Point getP0(String symbol, JSONArray positionsConfig)
+	private Point getP0(PositionSettings position)
 	{
-		LocalDate t0 = LocalDate.parse((String)getValue(positionsConfig, symbol, "t0"));
-		double v0 = getDouble(positionsConfig, symbol, "v0");
-		return new Point(t0, v0);
+		return new Point(LocalDate.parse(position.getT0()), position.getV0());
 	}
 
-	private Point getP1(String symbol, JSONObject accountConfig, Account account, Allocation allocation, LocalDate t0)
+	private Point getP1(String symbol, AccountSettings accountSettings, Allocation allocation, Account account, LocalDate t0)
 	{
-		JSONArray positionsConfig = (JSONArray)accountConfig.get("positions");
-		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, positionsConfig, TemporalUtil.REAL_PERIODS));
-		double dailyAccountContrib = JSONUtils.getDouble(accountConfig, "annualContrib") / ANNUAL_TRADING_DAYS;
+		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, accountSettings, TemporalUtil.REAL_PERIODS));
+		double dailyAccountContrib = accountSettings.getAnnualContrib() / ANNUAL_TRADING_DAYS;
 		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, dailyAccountContrib);
 		double v1 = futureAccountTotal * allocation.getAllocation(symbol);
 		return new Point(t1, v1);
 	}
 
-	private double getTargetValue(String symbol, JSONArray positionsConfig, Point p0, Point p1)
+	private double getTargetValue(PositionSettings positionSettings, Point p0, Point p1)
 	{
-		double annualGrowth = getDouble(positionsConfig, symbol, "annualGrowthPct") / 100;
+		double annualGrowth = positionSettings.getAnnualGrowthPct() / 100;
 		int numTradingDaysP0ToP1 = (int)ChronoUnit.DAYS.between(p0.date, p1.date) * ANNUAL_TRADING_DAYS / 365;
 		double dailyContrib = (p1.value - getFutureValue(p0, p1.date, annualGrowth, 0)) / numTradingDaysP0ToP1;
 		return getFutureValue(p0, LocalDate.now(), annualGrowth, dailyContrib);
@@ -174,18 +143,18 @@ public class ValueAverager implements Program
 		return futureValue;
 	}
 
-	private static boolean allowOrder(Order order, Position position, JSONArray positionsConfig)
+	private static boolean allowOrder(Order order, Position position, AccountSettings accountSettings)
 	{
 		double minOrderAmount = Math.max(position.getMarketValue() * 0.006, 20);
 		if (order.shareCount < 0)
 			minOrderAmount *= 2;
-		boolean allowSell = getBoolean(positionsConfig, order.symbol, "sell");
+		boolean allowSell = accountSettings.getSell(order.symbol);
 		return Math.abs(order.getAmount()) > minOrderAmount && (order.shareCount > 0 || allowSell);
 	}
 
-	private static int getDaysPerPeriod(String symbol, JSONArray config, Map<String, ? extends Number> periods)
+	private static int getDaysPerPeriod(String symbol, AccountSettings accountSettings, Map<String, ? extends Number> periods)
 	{
-		String period = (String)getValue(config, symbol, "period");
+		String period = accountSettings.getPeriod(symbol);
 		double multiplier = 1;
 		if (period.contains(" "))
 		{
@@ -194,41 +163,5 @@ public class ValueAverager implements Program
 			multiplier = Double.parseDouble(tokens[0]);
 		}
 		return (int)Math.round(periods.get(period).doubleValue() * multiplier);
-	}
-
-	private static double getDouble(JSONArray config, String symbol, String key)
-	{
-		Object value = getValue(config, symbol, key);
-		return value instanceof Number ? ((Number)value).doubleValue() : 0;
-	}
-
-	private static boolean getBoolean(JSONArray config, String symbol, String key)
-	{
-		return ((Boolean)getValue(config, symbol, key)).booleanValue();
-	}
-
-	private static Object getValue(JSONArray config, String symbol, String key)
-	{
-		JSONObject position = getPosition(config, symbol);
-		Object value = position.get(key);
-		if (value == null)
-		{
-			JSONObject defaultConfig = getPosition(config, "_default");
-			if (defaultConfig != null)
-				value = defaultConfig.get(key);
-		}
-		return value;
-	}
-
-	private static JSONObject getPosition(JSONArray config, String symbol)
-	{
-		JSONObject match = null;
-		for (Object positionObj : config)
-		{
-			JSONObject position = (JSONObject)positionObj;
-			if (symbol.equals(position.get("symbol")))
-				match = position;
-		}
-		return match;
 	}
 }

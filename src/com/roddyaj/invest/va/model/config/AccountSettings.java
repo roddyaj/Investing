@@ -1,5 +1,7 @@
 package com.roddyaj.invest.va.model.config;
 
+import java.util.Arrays;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AccountSettings
@@ -55,5 +57,43 @@ public class AccountSettings
 	public void setPositions(PositionSettings[] positions)
 	{
 		this.positions = positions;
+	}
+
+	public PositionSettings getPosition(String symbol)
+	{
+		return Arrays.stream(positions).filter(a -> a.getSymbol().equals(symbol)).findAny().orElse(null);
+	}
+
+	public boolean getSell(String symbol)
+	{
+		boolean sell = false;
+		PositionSettings position = getPosition(symbol);
+		if (position.getSell() != null)
+		{
+			sell = position.getSell().booleanValue();
+		}
+		else
+		{
+			position = getPosition("_default");
+			if (position.getSell() != null)
+				sell = position.getSell().booleanValue();
+		}
+		return sell;
+	}
+
+	public String getPeriod(String symbol)
+	{
+		String period = null;
+		PositionSettings position = getPosition(symbol);
+		if (position.getPeriod() != null)
+		{
+			period = position.getPeriod();
+		}
+		else
+		{
+			position = getPosition("_default");
+			period = position.getPeriod();
+		}
+		return period;
 	}
 }

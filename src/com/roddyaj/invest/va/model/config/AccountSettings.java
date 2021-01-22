@@ -10,7 +10,7 @@ public class AccountSettings
 	private double annualContrib;
 	private Allocation[] allocations;
 	private PositionSettings[] positions;
-	private com.roddyaj.invest.va.model.Allocation allocation = null;
+	private AllocationMap allocation = null;
 
 	@JsonProperty("name")
 	public String getName()
@@ -60,11 +60,11 @@ public class AccountSettings
 		this.positions = positions;
 	}
 
-	public com.roddyaj.invest.va.model.Allocation getAllocation()
+	public double getAllocation(String symbol)
 	{
 		if (allocation == null)
-			allocation = new com.roddyaj.invest.va.model.Allocation(allocations);
-		return allocation;
+			allocation = new AllocationMap(allocations);
+		return allocation.getAllocation(symbol);
 	}
 
 	public PositionSettings getPosition(String symbol)

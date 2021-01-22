@@ -1,17 +1,17 @@
-package com.roddyaj.invest.va.model;
+package com.roddyaj.invest.va.model.config;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Allocation
+public class AllocationMap
 {
 	private final Map<String, Double> allocationMap = new HashMap<>();
 
-	public Allocation(com.roddyaj.invest.va.model.config.Allocation[] allocations)
+	public AllocationMap(Allocation[] allocations)
 	{
 		Map<String, Double> map = new HashMap<>();
-		for (var allocation : allocations)
+		for (Allocation allocation : allocations)
 			map.put(allocation.getCat(), allocation.getPercent() / 100);
 
 		for (Map.Entry<String, Double> entry : map.entrySet())

@@ -65,7 +65,7 @@ public class Algorithm
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice());
 
-		reports.add(new Report(symbol, p0, p1, targetValue, position.getMarketValue()));
+		reports.add(new Report(symbol, p0, p1, targetValue, position.getMarketValue(), accountSettings.getAllocation(symbol)));
 
 		if (allowOrder(order, position))
 			return order;
@@ -75,8 +75,7 @@ public class Algorithm
 	private Point getP1(String symbol, LocalDate t0)
 	{
 		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, TemporalUtil.REAL_PERIODS));
-		double dailyAccountContrib = accountSettings.getAnnualContrib() / ANNUAL_TRADING_DAYS;
-		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, dailyAccountContrib);
+		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, accountSettings.getAnnualContrib());
 		double v1 = futureAccountTotal * accountSettings.getAllocation(symbol);
 		return new Point(t1, v1);
 	}
@@ -84,15 +83,17 @@ public class Algorithm
 	private static double getTargetValue(PositionSettings positionSettings, Point p0, Point p1)
 	{
 		double annualGrowth = positionSettings.getAnnualGrowthPct() / 100;
-		int numTradingDaysP0ToP1 = (int)ChronoUnit.DAYS.between(p0.date, p1.date) * ANNUAL_TRADING_DAYS / 365;
-		double dailyContrib = (p1.value - getFutureValue(p0, p1.date, annualGrowth, 0)) / numTradingDaysP0ToP1;
-		return getFutureValue(p0, LocalDate.now(), annualGrowth, dailyContrib);
+		double valueDelta = p1.value - getFutureValue(p0, p1.date, annualGrowth, 0);
+		long daysBetween = ChronoUnit.DAYS.between(p0.date, p1.date);
+		double annualContrib = (valueDelta / daysBetween) * 365;
+		return getFutureValue(p0, LocalDate.now(), annualGrowth, annualContrib);
 	}
 
-	private static double getFutureValue(Point startPoint, LocalDate futureDate, double annualGrowthRate, double dailyContrib)
+	private static double getFutureValue(Point startPoint, LocalDate futureDate, double annualGrowthRate, double annualContrib)
 	{
 		double futureValue = startPoint.value;
 		double dailyGrowthRate = 1 + annualGrowthRate / ANNUAL_TRADING_DAYS;
+		double dailyContrib = annualContrib / ANNUAL_TRADING_DAYS;
 		for (LocalDate date = startPoint.date; date.compareTo(futureDate) < 0; date = date.plusDays(1))
 		{
 			if (TemporalUtil.isTradingDay(date))

@@ -23,13 +23,13 @@ public class Report
 
 	public static String getHeader()
 	{
-		return "\n      -------- From --------  --------- To ---------  TodayTgt   Current    Delta";
+		return "\n      ------ From -------  ------- To --------   Curr  Target  Delta";
 	}
 
 	@Override
 	public String toString()
 	{
 		double delta = actualValue - targetValue;
-		return String.format("%-5s %s  %s  %8.2f  %8.2f  %7.2f", symbol, p0, p1, targetValue, actualValue, delta);
+		return String.format("%-5s %s  %s  %5.0f  %6.0f  %5.0f", symbol, p0, p1, actualValue, targetValue, delta);
 	}
 }

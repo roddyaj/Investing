@@ -5,6 +5,7 @@ import static com.roddyaj.invest.va.TemporalUtil.ANNUAL_TRADING_DAYS;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Objects;
 
 import com.roddyaj.invest.va.model.Account;
 import com.roddyaj.invest.va.model.Order;
@@ -15,7 +16,26 @@ import com.roddyaj.invest.va.model.config.PositionSettings;
 
 public class Algorithm
 {
-	public Order evaluate(String symbol, AccountSettings accountSettings, Account account)
+	private final AccountSettings accountSettings;
+
+	private final Account account;
+
+	public Algorithm(AccountSettings accountSettings, Account account)
+	{
+		this.accountSettings = accountSettings;
+		this.account = account;
+	}
+
+	public void run()
+	{
+		accountSettings.getRealPositions()
+			.map(position -> evaluate(position.getSymbol()))
+			.filter(Objects::nonNull)
+			.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount()))
+			.forEach(System.out::println);
+	}
+
+	private Order evaluate(String symbol)
 	{
 		if (!account.hasSymbol(symbol))
 		{
@@ -27,21 +47,21 @@ public class Algorithm
 		Position position = account.getPosition(symbol);
 
 		Point p0 = new Point(LocalDate.parse(positionSettings.getT0()), positionSettings.getV0());
-		Point p1 = getP1(symbol, accountSettings, account, p0.date);
+		Point p1 = getP1(symbol, p0.date);
 		double targetValue = getTargetValue(positionSettings, p0, p1);
 
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice());
 
-		if (allowOrder(order, position, accountSettings))
+		if (allowOrder(order, position))
 			return order;
 		return null;
 	}
 
-	private static Point getP1(String symbol, AccountSettings accountSettings, Account account, LocalDate t0)
+	private Point getP1(String symbol, LocalDate t0)
 	{
-		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, accountSettings, TemporalUtil.REAL_PERIODS));
+		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, TemporalUtil.REAL_PERIODS));
 		double dailyAccountContrib = accountSettings.getAnnualContrib() / ANNUAL_TRADING_DAYS;
 		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, dailyAccountContrib);
 		double v1 = futureAccountTotal * accountSettings.getAllocation(symbol);
@@ -68,7 +88,7 @@ public class Algorithm
 		return futureValue;
 	}
 
-	private static boolean allowOrder(Order order, Position position, AccountSettings accountSettings)
+	private boolean allowOrder(Order order, Position position)
 	{
 		double minOrderAmount = Math.max(position.getMarketValue() * 0.006, 20);
 		if (order.shareCount < 0)
@@ -77,7 +97,7 @@ public class Algorithm
 		return Math.abs(order.getAmount()) > minOrderAmount && (order.shareCount > 0 || allowSell);
 	}
 
-	private static int getDaysPerPeriod(String symbol, AccountSettings accountSettings, Map<String, ? extends Number> periods)
+	private int getDaysPerPeriod(String symbol, Map<String, ? extends Number> periods)
 	{
 		String period = accountSettings.getPeriod(symbol);
 		double multiplier = 1;

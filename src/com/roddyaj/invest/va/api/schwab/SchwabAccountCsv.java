@@ -43,7 +43,7 @@ public class SchwabAccountCsv
 						}
 					}
 				}
-				else
+				else if (symbolIndex != -1)
 				{
 					String symbol = record.get(symbolIndex);
 					Map<String, String> symbolMap = new HashMap<>();
@@ -64,7 +64,9 @@ public class SchwabAccountCsv
 			}
 		}
 
-		account.setTotalValue(parsePrice(account.getPosition("Account Total").getValue("Market Value")));
+		Position accountTotal = account.getPosition("Account Total");
+		if (accountTotal != null)
+			account.setTotalValue(parsePrice(accountTotal.getValue("Market Value")));
 
 		return account;
 	}

@@ -1,9 +1,9 @@
 package com.roddyaj.invest.va;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.model.Program;
@@ -30,7 +30,19 @@ public class ValueAverager implements Program
 	@Override
 	public void run(String[] args)
 	{
+		if (args.length == 0)
+		{
+			System.out.println("No account file specified");
+			return;
+		}
+
 		Path accountFile = Paths.get(args[0]);
+		if (!Files.exists(accountFile))
+		{
+			System.out.println("File does not exist: " + accountFile);
+			return;
+		}
+
 		try
 		{
 			run(accountFile);
@@ -45,13 +57,9 @@ public class ValueAverager implements Program
 	{
 		AccountSettings accountSettings = readSettings(accountFile);
 		Account account = SchwabAccountCsv.parse(accountFile);
-		Algorithm algorithm = new Algorithm();
 
-		accountSettings.getRealPositions()
-			.map(position -> algorithm.evaluate(position.getSymbol(), accountSettings, account))
-			.filter(Objects::nonNull)
-			.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount()))
-			.forEach(System.out::println);
+		if (accountSettings != null)
+			new Algorithm(accountSettings, account).run();
 	}
 
 	private AccountSettings readSettings(Path accountFile) throws IOException
@@ -59,6 +67,9 @@ public class ValueAverager implements Program
 		Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
 		Settings settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
 		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
-		return settings.getAccount(accountKey);
+		AccountSettings accountSettings = settings.getAccount(accountKey);
+		if (accountSettings == null)
+			System.out.println("No account settings found for '" + accountKey + "' in " + settingsFile);
+		return accountSettings;
 	}
 }

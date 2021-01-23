@@ -4,6 +4,8 @@ import static com.roddyaj.invest.va.TemporalUtil.ANNUAL_TRADING_DAYS;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -11,6 +13,7 @@ import com.roddyaj.invest.va.model.Account;
 import com.roddyaj.invest.va.model.Order;
 import com.roddyaj.invest.va.model.Point;
 import com.roddyaj.invest.va.model.Position;
+import com.roddyaj.invest.va.model.Report;
 import com.roddyaj.invest.va.model.config.AccountSettings;
 import com.roddyaj.invest.va.model.config.PositionSettings;
 
@@ -20,19 +23,27 @@ public class Algorithm
 
 	private final Account account;
 
+	private final List<Report> reports = new ArrayList<>();
+
 	public Algorithm(AccountSettings accountSettings, Account account)
 	{
 		this.accountSettings = accountSettings;
 		this.account = account;
 	}
 
-	public void run()
+	public void run(boolean report)
 	{
 		accountSettings.getRealPositions()
 			.map(position -> evaluate(position.getSymbol()))
 			.filter(Objects::nonNull)
 			.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount()))
 			.forEach(System.out::println);
+
+		if (report)
+		{
+			System.out.println(Report.getHeader());
+			reports.forEach(System.out::println);
+		}
 	}
 
 	private Order evaluate(String symbol)
@@ -53,6 +64,8 @@ public class Algorithm
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice());
+
+		reports.add(new Report(symbol, p0, p1, targetValue, position.getMarketValue()));
 
 		if (allowOrder(order, position))
 			return order;
@@ -90,7 +103,7 @@ public class Algorithm
 
 	private boolean allowOrder(Order order, Position position)
 	{
-		double minOrderAmount = Math.max(position.getMarketValue() * 0.006, 20);
+		double minOrderAmount = Math.max(position.getMarketValue() * 0.005, 35);
 		if (order.shareCount < 0)
 			minOrderAmount *= 2;
 		boolean allowSell = accountSettings.getSell(order.symbol);

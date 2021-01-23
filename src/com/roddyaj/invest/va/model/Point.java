@@ -17,6 +17,6 @@ public class Point
 	@Override
 	public String toString()
 	{
-		return "Point [" + date + ", " + value + "]";
+		return String.format("%8.2f on %s", value, date);
 	}
 }

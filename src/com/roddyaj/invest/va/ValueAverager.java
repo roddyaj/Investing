@@ -43,9 +43,11 @@ public class ValueAverager implements Program
 			return;
 		}
 
+		boolean report = args.length > 1 && args[1].equals("-report");
+
 		try
 		{
-			run(accountFile);
+			run(accountFile, report);
 		}
 		catch (IOException e)
 		{
@@ -53,13 +55,13 @@ public class ValueAverager implements Program
 		}
 	}
 
-	private void run(Path accountFile) throws IOException
+	private void run(Path accountFile, boolean report) throws IOException
 	{
 		AccountSettings accountSettings = readSettings(accountFile);
 		Account account = SchwabAccountCsv.parse(accountFile);
 
 		if (accountSettings != null)
-			new Algorithm(accountSettings, account).run();
+			new Algorithm(accountSettings, account).run(report);
 	}
 
 	private AccountSettings readSettings(Path accountFile) throws IOException

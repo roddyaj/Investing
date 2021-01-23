@@ -3,10 +3,10 @@ package com.roddyaj.invest.va;
 import static com.roddyaj.invest.va.TemporalUtil.ANNUAL_TRADING_DAYS;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import com.roddyaj.invest.va.model.Account;
@@ -74,7 +74,9 @@ public class Algorithm
 
 	private Point getP1(String symbol, LocalDate t0)
 	{
-		LocalDate t1 = t0.plusDays(getDaysPerPeriod(symbol, TemporalUtil.REAL_PERIODS));
+		Period period = Period.parse(accountSettings.getPeriod(symbol));
+		long daysInPeriod = TemporalUtil.getDaysApprox(period);
+		LocalDate t1 = t0.plusDays(daysInPeriod);
 		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, accountSettings.getAnnualContrib());
 		double v1 = futureAccountTotal * accountSettings.getAllocation(symbol);
 		return new Point(t1, v1);
@@ -109,18 +111,5 @@ public class Algorithm
 			minOrderAmount *= 2;
 		boolean allowSell = accountSettings.getSell(order.symbol);
 		return Math.abs(order.getAmount()) > minOrderAmount && (order.shareCount > 0 || allowSell);
-	}
-
-	private int getDaysPerPeriod(String symbol, Map<String, ? extends Number> periods)
-	{
-		String period = accountSettings.getPeriod(symbol);
-		double multiplier = 1;
-		if (period.contains(" "))
-		{
-			String[] tokens = period.split("\\s+");
-			period = tokens[1];
-			multiplier = Double.parseDouble(tokens[0]);
-		}
-		return (int)Math.round(periods.get(period).doubleValue() * multiplier);
 	}
 }

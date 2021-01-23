@@ -2,9 +2,8 @@ package com.roddyaj.invest.va;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.time.Period;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public final class TemporalUtil
@@ -25,27 +24,32 @@ public final class TemporalUtil
 
 	public static final int ANNUAL_TRADING_DAYS = 252;
 
-	public static final Map<String, Integer> TRADING_PERIODS = new HashMap<>();
-	static
-	{
-		TRADING_PERIODS.put("day", 1);
-		TRADING_PERIODS.put("week", 5);
-		TRADING_PERIODS.put("month", 21);
-		TRADING_PERIODS.put("year", ANNUAL_TRADING_DAYS);
-	}
-
-	public static final Map<String, Double> REAL_PERIODS = new HashMap<>();
-	static
-	{
-		REAL_PERIODS.put("day", 1.);
-		REAL_PERIODS.put("week", 7.);
-		REAL_PERIODS.put("month", 30.44);
-		REAL_PERIODS.put("year", 365.);
-	}
+//	public static final Map<String, Integer> TRADING_PERIODS = new HashMap<>();
+//	static
+//	{
+//		TRADING_PERIODS.put("day", 1);
+//		TRADING_PERIODS.put("week", 5);
+//		TRADING_PERIODS.put("month", 21);
+//		TRADING_PERIODS.put("year", ANNUAL_TRADING_DAYS);
+//	}
+//
+//	public static final Map<String, Double> REAL_PERIODS = new HashMap<>();
+//	static
+//	{
+//		REAL_PERIODS.put("day", 1.);
+//		REAL_PERIODS.put("week", 7.);
+//		REAL_PERIODS.put("month", 30.44);
+//		REAL_PERIODS.put("year", 365.);
+//	}
 
 	public static boolean isTradingDay(LocalDate date)
 	{
 		DayOfWeek day = date.getDayOfWeek();
 		return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY && !HOLIDAYS.contains(date);
+	}
+
+	public static long getDaysApprox(Period period)
+	{
+		return Math.round(period.getYears() * 365 + period.getMonths() * 30.44 + period.getDays());
 	}
 }

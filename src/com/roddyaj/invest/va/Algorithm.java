@@ -65,7 +65,7 @@ public class Algorithm
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice());
 
-		reports.add(new Report(symbol, p0, p1, targetValue, position.getMarketValue(), accountSettings.getAllocation(symbol)));
+		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 
 		if (allowOrder(order, position))
 			return order;

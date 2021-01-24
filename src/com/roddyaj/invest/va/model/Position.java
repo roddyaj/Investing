@@ -4,11 +4,18 @@ import java.util.Map;
 
 public class Position
 {
+	public final String symbol;
+
 	private double value;
 
 	private double price;
 
 	private Map<String, String> data;
+
+	public Position(String symbol)
+	{
+		this.symbol = symbol;
+	}
 
 	public double getMarketValue()
 	{
@@ -38,5 +45,11 @@ public class Position
 	public String getValue(String key)
 	{
 		return data.get(key);
+	}
+
+	@Override
+	public String toString()
+	{
+		return "Position [symbol=" + symbol + ", value=" + value + ", price=" + price + ", data=" + data + "]";
 	}
 }

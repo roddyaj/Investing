@@ -23,7 +23,7 @@ public class Order
 	@Override
 	public String toString()
 	{
-		String action = shareCount >= 0 ? "Buy" : "Sell";
-		return String.format("%-4s %-4s %2d  (@ %6.2f = %4.0f)", symbol, action, Math.abs(shareCount), price, getAmount());
+		String action = shareCount >= 0 ? "\033[32mBuy \033[0m" : "\033[31mSell\033[0m";
+		return String.format("%-4s %s %2d  (@ %6.2f = %4.0f)", symbol, action, Math.abs(shareCount), price, getAmount());
 	}
 }

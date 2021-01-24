@@ -1,5 +1,6 @@
 package com.roddyaj.invest.va.model;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +28,11 @@ public class Account
 	public Position getPosition(String symbol)
 	{
 		return positions.get(symbol);
+	}
+
+	public Collection<Position> getPositions()
+	{
+		return positions.values();
 	}
 
 	public void addPosition(String symbol, Position position)

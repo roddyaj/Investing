@@ -55,7 +55,7 @@ public class SchwabAccountCsv
 //						System.out.println(symbol + "|" + column + "|" + value);
 					}
 
-					Position position = new Position();
+					Position position = new Position(symbol);
 					position.setMarketValue(parsePrice(symbolMap.get("Market Value")));
 					position.setPrice(parsePrice(symbolMap.get("Price")));
 					position.setValues(symbolMap);

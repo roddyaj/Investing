@@ -25,6 +25,8 @@ public class Algorithm
 
 	private final List<Report> reports = new ArrayList<>();
 
+	private final List<String> warnings = new ArrayList<>();
+
 	public Algorithm(AccountSettings accountSettings, Account account)
 	{
 		this.accountSettings = accountSettings;
@@ -33,16 +35,25 @@ public class Algorithm
 
 	public void run(boolean report)
 	{
-		accountSettings.getRealPositions()
-			.map(position -> evaluate(position.getSymbol()))
-			.filter(Objects::nonNull)
-			.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount()))
-			.forEach(System.out::println);
+		accountSettings.getRealPositions().map(position -> evaluate(position.getSymbol())).filter(Objects::nonNull)
+				.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).forEach(System.out::println);
 
 		if (report)
 		{
+			for (Position position : account.getPositions())
+			{
+				if (startsWith(position.getValue("Security Type"), "ETF") && accountSettings.getPosition(position.symbol) == null)
+					warnings.add("Position " + position.symbol + " is not being tracked");
+			}
+
 			System.out.println(Report.getHeader());
 			reports.forEach(System.out::println);
+
+			if (!warnings.isEmpty())
+			{
+				System.out.println("\nWarnings:");
+				warnings.forEach(System.out::println);
+			}
 		}
 	}
 
@@ -66,6 +77,9 @@ public class Algorithm
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice());
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
+
+		if (p1.value < p0.value && !accountSettings.getSell(symbol))
+			warnings.add("Sell not enabled for " + symbol);
 
 		if (allowOrder(order, position))
 			return order;
@@ -111,5 +125,10 @@ public class Algorithm
 			minOrderAmount *= 2;
 		boolean allowSell = accountSettings.getSell(order.symbol);
 		return Math.abs(order.getAmount()) > minOrderAmount && (order.shareCount > 0 || allowSell);
+	}
+
+	private static boolean startsWith(String s1, String s2)
+	{
+		return s1 != null && s1.startsWith(s2);
 	}
 }

@@ -26,7 +26,7 @@ public class Report
 
 	public static String getHeader()
 	{
-		return "\n      ------ From -------  ------- To --------   Curr  Target  Delta  Cur %  Tgt %";
+		return "\n      ------ From -------   ------- To --------   Curr  Target  Delta  Cur %  Tgt %";
 	}
 
 	@Override
@@ -34,7 +34,9 @@ public class Report
 	{
 		double delta = position.getMarketValue() - targetValue;
 		double currentPct = Double.parseDouble(position.getValue("% Of Account").replace("%", ""));
-		return String.format("%-5s %s  %s  %5.0f  %6.0f  %5.0f  %5.2f  %5.2f", symbol, p0, p1, position.getMarketValue(), targetValue, delta,
-				currentPct, (targetPct * 100));
+		boolean up = p1.value > p0.value;
+		String dirText = up ? "\033[32m↗\033[0m" : "\033[31m↘\033[0m";
+		return String.format("%-5s %s %s %s  %5.0f  %6.0f  %5.0f  %5.2f  %5.2f", symbol, p0, dirText, p1, position.getMarketValue(), targetValue,
+				delta, currentPct, (targetPct * 100));
 	}
 }

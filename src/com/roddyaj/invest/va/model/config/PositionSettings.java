@@ -82,4 +82,13 @@ public class PositionSettings
 	{
 		this.period = period;
 	}
+
+	@Override
+	public String toString()
+	{
+		String symbolText = "\"" + symbol + "\",";
+		String sellText = sell != null && sell.booleanValue() ? ", \"sell\": true" : "";
+		return String.format("        { \"symbol\": %-7s \"t0\": \"%s\", \"v0\": %5.0f, \"annualGrowthPct\": %2.0f%s },", symbolText, t0, v0,
+				annualGrowthPct, sellText);
+	}
 }

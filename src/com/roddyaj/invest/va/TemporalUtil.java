@@ -24,6 +24,8 @@ public final class TemporalUtil
 
 	public static final int ANNUAL_TRADING_DAYS = 252;
 
+	public static final LocalDate END_OF_YEAR = LocalDate.of(2021, 12, 31);
+
 //	public static final Map<String, Integer> TRADING_PERIODS = new HashMap<>();
 //	static
 //	{

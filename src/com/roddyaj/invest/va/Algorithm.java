@@ -54,6 +54,9 @@ public class Algorithm
 
 	private void report()
 	{
+		double eoyAccountValue = getFutureAccountValue(TemporalUtil.END_OF_YEAR);
+		System.out.println(String.format("\nEstimated EOY account value: %6.0f", eoyAccountValue));
+
 		System.out.println(Report.getHeader());
 		reports.forEach(System.out::println);
 
@@ -68,6 +71,19 @@ public class Algorithm
 			System.out.println("\nWarnings:");
 			warnings.forEach(System.out::println);
 		}
+
+		System.out.println("\nCurrent snapshot of positions:");
+		// TODO copy before modifying
+		for (PositionSettings positionSetting : accountSettings.getPositions())
+		{
+			Position position = account.getPosition(positionSetting.getSymbol());
+			if (position != null)
+			{
+				positionSetting.setT0(LocalDate.now().toString());
+				positionSetting.setV0(position.getMarketValue());
+			}
+		}
+		accountSettings.getRealPositions().forEach(System.out::println);
 	}
 
 	private Order evaluate(String symbol)
@@ -104,9 +120,13 @@ public class Algorithm
 		Period period = Period.parse(accountSettings.getPeriod(symbol));
 		long daysInPeriod = TemporalUtil.getDaysApprox(period);
 		LocalDate t1 = t0.plusDays(daysInPeriod);
-		double futureAccountTotal = getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t1, 0.06, accountSettings.getAnnualContrib());
-		double v1 = futureAccountTotal * accountSettings.getAllocation(symbol);
+		double v1 = getFutureAccountValue(t1) * accountSettings.getAllocation(symbol);
 		return new Point(t1, v1);
+	}
+
+	private double getFutureAccountValue(LocalDate t)
+	{
+		return getFutureValue(new Point(LocalDate.now(), account.getTotalValue()), t, 0.06, accountSettings.getAnnualContrib());
 	}
 
 	private static double getTargetValue(PositionSettings positionSettings, Point p0, Point p1)

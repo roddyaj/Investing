@@ -35,25 +35,38 @@ public class Algorithm
 
 	public void run(boolean report)
 	{
-		accountSettings.getRealPositions().map(position -> evaluate(position.getSymbol())).filter(Objects::nonNull)
-				.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).forEach(System.out::println);
+		determineAndPrintOrders();
 
 		if (report)
+			report();
+	}
+
+	private void determineAndPrintOrders()
+	{
+		// @formatter:off
+		accountSettings.getRealPositions()
+			.map(position -> evaluate(position.getSymbol()))
+			.filter(Objects::nonNull)
+			.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount()))
+			.forEach(System.out::println);
+		// @formatter:on
+	}
+
+	private void report()
+	{
+		System.out.println(Report.getHeader());
+		reports.forEach(System.out::println);
+
+		for (Position position : account.getPositions())
 		{
-			for (Position position : account.getPositions())
-			{
-				if (startsWith(position.getValue("Security Type"), "ETF") && accountSettings.getPosition(position.symbol) == null)
-					warnings.add("Position " + position.symbol + " is not being tracked");
-			}
+			if (startsWith(position.getValue("Security Type"), "ETF") && accountSettings.getPosition(position.symbol) == null)
+				warnings.add("Position " + position.symbol + " is not being tracked");
+		}
 
-			System.out.println(Report.getHeader());
-			reports.forEach(System.out::println);
-
-			if (!warnings.isEmpty())
-			{
-				System.out.println("\nWarnings:");
-				warnings.forEach(System.out::println);
-			}
+		if (!warnings.isEmpty())
+		{
+			System.out.println("\nWarnings:");
+			warnings.forEach(System.out::println);
 		}
 	}
 

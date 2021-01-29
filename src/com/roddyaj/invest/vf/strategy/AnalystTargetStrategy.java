@@ -22,7 +22,9 @@ public class AnalystTargetStrategy implements Strategy
 		boolean pass = data.getPrice() < buyPrice;
 		String name = getName();
 		result.addResult(name + ".buyPrice", format("%.2f", buyPrice), pass);
-		result.addResult(name + ".priceToTarget", format("%.1f%%", 100 * data.getPrice() / data.getAnalystTargetPrice()));
+		double priceToTargetPct = 100 * data.getPrice() / data.getAnalystTargetPrice();
+		result.addResult(name + ".priceToTarget", format("%.1f%%", priceToTargetPct));
+		result.sortValue = priceToTargetPct;
 		return pass;
 	}
 }

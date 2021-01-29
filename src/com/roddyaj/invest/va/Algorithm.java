@@ -6,7 +6,9 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.roddyaj.invest.va.model.Account;
@@ -15,6 +17,7 @@ import com.roddyaj.invest.va.model.Point;
 import com.roddyaj.invest.va.model.Position;
 import com.roddyaj.invest.va.model.Report;
 import com.roddyaj.invest.va.model.config.AccountSettings;
+import com.roddyaj.invest.va.model.config.Allocation;
 import com.roddyaj.invest.va.model.config.PositionSettings;
 
 public class Algorithm
@@ -64,6 +67,21 @@ public class Algorithm
 		{
 			if (startsWith(position.getValue("Security Type"), "ETF") && accountSettings.getPosition(position.symbol) == null)
 				warnings.add("Position " + position.symbol + " is not being tracked");
+		}
+
+		Map<String, Double> validationMap = new HashMap<>();
+		for (Allocation allocation : accountSettings.getAllocations())
+		{
+			int i = allocation.getCat().lastIndexOf(".");
+			String categoryParent = i != -1 ? allocation.getCat().substring(0, i) : "_root";
+			Double val = validationMap.getOrDefault(categoryParent, 0.);
+			val += allocation.getPercent();
+			validationMap.put(categoryParent, val);
+		}
+		for (Map.Entry<String, Double> entry : validationMap.entrySet())
+		{
+			if (entry.getValue() != 100)
+				warnings.add("Category '" + entry.getKey() + "' doesn't add up to 100%: " + entry.getValue());
 		}
 
 		if (!warnings.isEmpty())

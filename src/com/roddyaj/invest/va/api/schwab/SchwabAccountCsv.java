@@ -3,8 +3,11 @@ package com.roddyaj.invest.va.api.schwab;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -67,6 +70,11 @@ public class SchwabAccountCsv
 		Position accountTotal = account.getPosition("Account Total");
 		if (accountTotal != null)
 			account.setTotalValue(parsePrice(accountTotal.getValue("Market Value")));
+
+		final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
+		Matcher matcher = datePattern.matcher(file.getFileName().toString());
+		if (matcher.find())
+			account.date = LocalDate.parse(matcher.group(1));
 
 		return account;
 	}

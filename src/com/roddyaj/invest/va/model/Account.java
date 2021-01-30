@@ -1,11 +1,14 @@
 package com.roddyaj.invest.va.model;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Account
 {
+	public LocalDate date;
+
 	private double totalValue;
 
 	private final Map<String, Position> positions = new HashMap<>();

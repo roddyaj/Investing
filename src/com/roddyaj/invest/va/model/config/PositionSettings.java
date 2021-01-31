@@ -83,6 +83,11 @@ public class PositionSettings
 		this.period = period;
 	}
 
+	public double getAnnualGrowth()
+	{
+		return annualGrowthPct / 100;
+	}
+
 	@Override
 	public String toString()
 	{

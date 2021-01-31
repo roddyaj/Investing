@@ -120,7 +120,16 @@ public class Algorithm
 
 		Point p0 = new Point(LocalDate.parse(positionSettings.getT0()), positionSettings.getV0());
 		Point p1 = getP1(symbol, p0.date);
-		double targetValue = getTargetValue(p0, p1, account.date, positionSettings.getAnnualGrowthPct() / 100);
+		double targetValue;
+		if (account.date.isBefore(p1.date))
+		{
+			targetValue = getTargetValue(p0, p1, account.date, positionSettings.getAnnualGrowth());
+		}
+		else
+		{
+			double annualContrib = accountSettings.getAnnualContrib() * accountSettings.getAllocation(symbol);
+			targetValue = getFutureValue(p1, account.date, positionSettings.getAnnualGrowth(), annualContrib);
+		}
 
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());

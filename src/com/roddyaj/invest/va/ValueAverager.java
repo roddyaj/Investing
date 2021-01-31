@@ -36,18 +36,21 @@ public class ValueAverager implements Program
 			return;
 		}
 
-		Path accountFile = Paths.get(args[0]);
-		if (!Files.exists(accountFile))
-		{
-			System.out.println("File does not exist: " + accountFile);
-			return;
-		}
-
-		boolean report = args.length > 1 && args[1].equals("-report");
-
 		try
 		{
-			run(accountFile, report);
+			Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
+			Settings settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
+
+			Path accountFile = getAccountFile(args, settings);
+			if (accountFile == null)
+			{
+				System.out.println("Account file not found");
+				return;
+			}
+
+			boolean report = args.length > 1 && args[1].equals("-report");
+
+			run(settings, accountFile, report);
 		}
 		catch (IOException e)
 		{
@@ -55,23 +58,36 @@ public class ValueAverager implements Program
 		}
 	}
 
-	private void run(Path accountFile, boolean report) throws IOException
+	private Path getAccountFile(String[] args, Settings settings) throws IOException
 	{
-		AccountSettings accountSettings = readSettings(accountFile);
-		Account account = SchwabAccountCsv.parse(accountFile);
-
-		if (accountSettings != null)
-			new Algorithm(accountSettings, account).run(report);
+		Path argFile = Paths.get(args[0]);
+		Path defaultDataDir = Paths.get(settings.getDefaultDataDir());
+		Path accountFile = null;
+		if (Files.exists(argFile))
+		{
+			accountFile = argFile;
+		}
+		else if (Files.exists(defaultDataDir))
+		{
+			accountFile = Files.list(defaultDataDir).filter(p -> p.getFileName().toString().startsWith(argFile.toString()))
+					.sorted((o1, o2) -> o2.getFileName().compareTo(o1.getFileName())).findFirst().orElse(null);
+		}
+		return accountFile;
 	}
 
-	private AccountSettings readSettings(Path accountFile) throws IOException
+	private void run(Settings settings, Path accountFile, boolean report) throws IOException
 	{
-		Path settingsFile = Paths.get(dataDir.toString(), "settings.json");
-		Settings settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
 		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
 		AccountSettings accountSettings = settings.getAccount(accountKey);
-		if (accountSettings == null)
-			System.out.println("No account settings found for '" + accountKey + "' in " + settingsFile);
-		return accountSettings;
+
+		if (accountSettings != null)
+		{
+			Account account = SchwabAccountCsv.parse(accountFile);
+			new Algorithm(accountSettings, account).run(report);
+		}
+		else
+		{
+			System.out.println("No account settings found for '" + accountKey + "' in settings.");
+		}
 	}
 }

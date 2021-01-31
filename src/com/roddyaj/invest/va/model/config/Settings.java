@@ -8,7 +8,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Settings
 {
+	private String defaultDataDir;
+
 	private AccountSettings[] accounts;
+
+	@JsonProperty("defaultDataDir")
+	public String getDefaultDataDir()
+	{
+		return defaultDataDir;
+	}
+
+	@JsonProperty("defaultDataDir")
+	public void setDefaultDataDir(String defaultDataDir)
+	{
+		this.defaultDataDir = defaultDataDir;
+	}
 
 	@JsonProperty("accounts")
 	public AccountSettings[] getAccounts()

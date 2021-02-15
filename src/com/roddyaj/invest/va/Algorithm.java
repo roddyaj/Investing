@@ -58,63 +58,8 @@ public class Algorithm
 		// @formatter:on
 	}
 
-	private void report()
-	{
-		double eoyAccountValue = getFutureAccountValue(TemporalUtil.END_OF_YEAR);
-		System.out.println(String.format("\nEstimated EOY account value: %6.0f", eoyAccountValue));
-
-		System.out.println(Report.getHeader());
-		reports.forEach(System.out::println);
-
-		for (Position position : account.getPositions())
-		{
-			if (startsWith(position.getValue("Security Type"), "ETF") && accountSettings.getPosition(position.symbol) == null)
-				warnings.add("Position " + position.symbol + " is not being tracked");
-		}
-
-		Map<String, Double> validationMap = new HashMap<>();
-		for (Allocation allocation : accountSettings.getAllocations())
-		{
-			int i = allocation.getCat().lastIndexOf(".");
-			String categoryParent = i != -1 ? allocation.getCat().substring(0, i) : "_root";
-			Double val = validationMap.getOrDefault(categoryParent, 0.);
-			val += allocation.getPercent();
-			validationMap.put(categoryParent, val);
-		}
-		for (Map.Entry<String, Double> entry : validationMap.entrySet())
-		{
-			if (entry.getValue() != 100)
-				warnings.add("Category '" + entry.getKey() + "' doesn't add up to 100%: " + entry.getValue());
-		}
-
-		if (!warnings.isEmpty())
-		{
-			System.out.println("\nWarnings:");
-			warnings.forEach(System.out::println);
-		}
-
-		System.out.println("\nCurrent snapshot of positions:");
-		// TODO copy before modifying
-		for (PositionSettings positionSetting : accountSettings.getPositions())
-		{
-			Position position = account.getPosition(positionSetting.getSymbol());
-			if (position != null)
-			{
-				positionSetting.setT0(account.date.toString());
-				positionSetting.setV0(position.getMarketValue());
-			}
-		}
-		accountSettings.getRealPositions().forEach(System.out::println);
-	}
-
 	private Order evaluate(String symbol)
 	{
-		if (!account.hasSymbol(symbol))
-		{
-			System.out.println(String.format("Initiate new position in %s", symbol));
-			return null;
-		}
-
 		PositionSettings positionSettings = accountSettings.getPosition(symbol);
 		Position position = account.getPosition(symbol);
 
@@ -129,6 +74,12 @@ public class Algorithm
 		{
 			double annualContrib = accountSettings.getAnnualContrib() * accountSettings.getAllocation(symbol);
 			targetValue = getFutureValue(p1, account.date, positionSettings.getAnnualGrowth(), annualContrib);
+		}
+
+		if (!account.hasSymbol(symbol))
+		{
+			System.out.println(String.format("Initiate new position in %s for $%.2f", symbol, targetValue));
+			return null;
 		}
 
 		double delta = targetValue - position.getMarketValue();
@@ -187,6 +138,55 @@ public class Algorithm
 			minOrderAmount *= 2;
 		boolean allowSell = accountSettings.getSell(order.symbol);
 		return Math.abs(order.getAmount()) > minOrderAmount && (order.shareCount > 0 || allowSell);
+	}
+
+	private void report()
+	{
+		double eoyAccountValue = getFutureAccountValue(TemporalUtil.END_OF_YEAR);
+		System.out.println(String.format("\nEstimated EOY account value: %6.0f", eoyAccountValue));
+
+		System.out.println(Report.getHeader());
+		reports.forEach(System.out::println);
+
+		for (Position position : account.getPositions())
+		{
+			if (startsWith(position.getValue("Security Type"), "ETF") && accountSettings.getPosition(position.symbol) == null)
+				warnings.add("Position " + position.symbol + " is not being tracked");
+		}
+
+		Map<String, Double> validationMap = new HashMap<>();
+		for (Allocation allocation : accountSettings.getAllocations())
+		{
+			int i = allocation.getCat().lastIndexOf(".");
+			String categoryParent = i != -1 ? allocation.getCat().substring(0, i) : "_root";
+			Double val = validationMap.getOrDefault(categoryParent, 0.);
+			val += allocation.getPercent();
+			validationMap.put(categoryParent, val);
+		}
+		for (Map.Entry<String, Double> entry : validationMap.entrySet())
+		{
+			if (entry.getValue() != 100)
+				warnings.add("Category '" + entry.getKey() + "' doesn't add up to 100%: " + entry.getValue());
+		}
+
+		if (!warnings.isEmpty())
+		{
+			System.out.println("\nWarnings:");
+			warnings.forEach(System.out::println);
+		}
+
+//		System.out.println("\nCurrent snapshot of positions:");
+//		// TODO copy before modifying
+//		for (PositionSettings positionSetting : accountSettings.getPositions())
+//		{
+//			Position position = account.getPosition(positionSetting.getSymbol());
+//			if (position != null)
+//			{
+//				positionSetting.setT0(account.date.toString());
+//				positionSetting.setV0(position.getMarketValue());
+//			}
+//		}
+//		accountSettings.getRealPositions().forEach(System.out::println);
 	}
 
 	private static boolean startsWith(String s1, String s2)

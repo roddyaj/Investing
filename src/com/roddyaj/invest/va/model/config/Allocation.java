@@ -19,13 +19,13 @@ public class Allocation
 		this.cat = cat;
 	}
 
-	@JsonProperty("percent")
+	@JsonProperty("%")
 	public double getPercent()
 	{
 		return percent;
 	}
 
-	@JsonProperty("percent")
+	@JsonProperty("%")
 	public void setPercent(double percent)
 	{
 		this.percent = percent;

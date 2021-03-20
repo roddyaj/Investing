@@ -78,7 +78,7 @@ public class AlphaVantageAPI implements DataRequester
 			incomeStatement.period = getString(report, "fiscalDateEnding");
 			incomeStatement.incomeBeforeTax = getDouble(report, "incomeBeforeTax");
 			incomeStatement.operatingIncome = getDouble(report, "operatingIncome");
-			incomeStatement.taxProvision = getDouble(report, "taxProvision");
+			incomeStatement.taxProvision = getDouble(report, "incomeTaxExpense");
 			incomeStatements.add(incomeStatement);
 		}
 

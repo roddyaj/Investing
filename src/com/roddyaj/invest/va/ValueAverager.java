@@ -48,7 +48,7 @@ public class ValueAverager implements Program
 				return;
 			}
 
-			boolean report = args.length > 1 && args[1].equals("-report");
+			boolean report = args.length > 1 && args[1].equals("-print");
 
 			run(settings, accountFile, report);
 		}

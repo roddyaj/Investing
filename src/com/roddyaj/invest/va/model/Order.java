@@ -24,6 +24,6 @@ public class Order
 	public String toString()
 	{
 		String action = shareCount >= 0 ? "\033[32mBuy \033[0m" : "\033[31mSell\033[0m";
-		return String.format("%-4s %s %2d  (@ %6.2f = %4.0f)", symbol, action, Math.abs(shareCount), price, getAmount());
+		return String.format("%-4s %s %2d | %6.2f = %4.0f", symbol, action, Math.abs(shareCount), price, getAmount());
 	}
 }

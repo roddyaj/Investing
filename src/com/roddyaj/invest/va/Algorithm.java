@@ -133,7 +133,7 @@ public class Algorithm
 
 	private boolean allowOrder(Order order, Position position)
 	{
-		double minOrderAmount = Math.max(position.getMarketValue() * 0.005, 35);
+		double minOrderAmount = Math.max(position.getMarketValue() * 0.005, 50);
 		if (order.shareCount < 0)
 			minOrderAmount *= 2;
 		boolean allowSell = accountSettings.getSell(order.symbol);

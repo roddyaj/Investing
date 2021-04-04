@@ -83,7 +83,7 @@ public class ValueAverager implements Program
 		if (accountSettings != null)
 		{
 			Account account = SchwabAccountCsv.parse(accountFile);
-			new Algorithm(accountSettings, account).run(report);
+			new Algorithm(accountSettings, account, settings).run(report);
 		}
 		else
 		{

@@ -2,6 +2,10 @@ package com.roddyaj.invest.va;
 
 import static com.roddyaj.invest.va.TemporalUtil.ANNUAL_TRADING_DAYS;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
@@ -10,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.va.model.Account;
 import com.roddyaj.invest.va.model.Order;
@@ -19,6 +24,7 @@ import com.roddyaj.invest.va.model.Report;
 import com.roddyaj.invest.va.model.config.AccountSettings;
 import com.roddyaj.invest.va.model.config.Allocation;
 import com.roddyaj.invest.va.model.config.PositionSettings;
+import com.roddyaj.invest.va.model.config.Settings;
 
 public class Algorithm
 {
@@ -26,14 +32,17 @@ public class Algorithm
 
 	private final Account account;
 
+	private final Settings settings;
+
 	private final List<Report> reports = new ArrayList<>();
 
 	private final List<String> warnings = new ArrayList<>();
 
-	public Algorithm(AccountSettings accountSettings, Account account)
+	public Algorithm(AccountSettings accountSettings, Account account, Settings settings)
 	{
 		this.accountSettings = accountSettings;
 		this.account = account;
+		this.settings = settings;
 	}
 
 	public void run(boolean report)
@@ -49,6 +58,7 @@ public class Algorithm
 
 	private void determineAndPrintOrders()
 	{
+		System.out.println("\n---------- ORDERS ----------\n");
 		// @formatter:off
 		accountSettings.getRealPositions()
 			.map(position -> evaluate(position.getSymbol()))
@@ -142,11 +152,14 @@ public class Algorithm
 
 	private void report()
 	{
-		double eoyAccountValue = getFutureAccountValue(TemporalUtil.END_OF_YEAR);
-		System.out.println(String.format("\nEstimated EOY account value: %6.0f", eoyAccountValue));
+		System.out.println("\n-------------------------------------- REPORT --------------------------------------\n");
 
-		System.out.println(Report.getHeader());
-		reports.forEach(System.out::println);
+		reports.add(new Report("Cash", null, null, 0, accountSettings.getAllocation("cash"), account.getPosition("Cash & Cash Investments")));
+
+		double eoyAccountValue = getFutureAccountValue(TemporalUtil.END_OF_YEAR);
+		System.out.println(String.format("Estimated EOY account value: %6.0f", eoyAccountValue));
+
+		System.out.println(Report.toString(reports));
 
 		for (Position position : account.getPositions())
 		{
@@ -173,6 +186,20 @@ public class Algorithm
 		{
 			System.out.println("\nWarnings:");
 			warnings.forEach(System.out::println);
+		}
+
+		// Write CSV report
+		Path csvPath = Paths.get(settings.getDefaultDataDir(), "report.csv");
+		List<Report> csvReports = reports.stream().filter(r -> r.targetPct > 0).collect(Collectors.toList());
+		csvReports.add(new Report("Stocks", null, null, 0, accountSettings.getAllocation("stocks"), null));
+		try
+		{
+			Files.writeString(csvPath, Report.toCsvString(csvReports));
+			System.out.println("\nWrote " + csvPath);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
 		}
 
 //		System.out.println("\nCurrent snapshot of positions:");

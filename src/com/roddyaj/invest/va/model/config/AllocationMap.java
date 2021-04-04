@@ -19,7 +19,7 @@ public class AllocationMap
 			String category = entry.getKey();
 			String[] tokens = category.split("\\.");
 			String lastToken = tokens[tokens.length - 1];
-			if (lastToken.toUpperCase().equals(lastToken))
+			if (lastToken.toUpperCase().equals(lastToken) || lastToken.equals("cash") || lastToken.equals("stocks"))
 			{
 				String symbol = lastToken;
 				double allocation = 1;

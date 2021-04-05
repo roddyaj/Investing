@@ -178,7 +178,7 @@ public class Algorithm
 		}
 		for (Map.Entry<String, Double> entry : validationMap.entrySet())
 		{
-			if (entry.getValue() != 100)
+			if (Math.abs(entry.getValue() - 100) > 0.001)
 				warnings.add("Category '" + entry.getKey() + "' doesn't add up to 100%: " + entry.getValue());
 		}
 

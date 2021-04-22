@@ -88,7 +88,7 @@ public class Algorithm
 
 		if (!account.hasSymbol(symbol))
 		{
-			System.out.println(String.format("Initiate new position in %s for $%.2f", symbol, targetValue));
+			System.out.println(String.format("Initiate new position in %-4s for $%.2f", symbol, targetValue));
 			return null;
 		}
 
@@ -203,17 +203,54 @@ public class Algorithm
 		}
 
 //		System.out.println("\nCurrent snapshot of positions:");
-//		// TODO copy before modifying
-//		for (PositionSettings positionSetting : accountSettings.getPositions())
+//		Set<String> symbols = new HashSet<>();
+//		List<PositionSettings> positions1 = new ArrayList<>();
+//		for (Allocation allocation : accountSettings.getAllocations())
 //		{
-//			Position position = account.getPosition(positionSetting.getSymbol());
-//			if (position != null)
+//			String symbol = allocation.getCatLastToken();
+//			if (symbol.toUpperCase().equals(symbol) && !symbols.contains(symbol))
 //			{
-//				positionSetting.setT0(account.date.toString());
-//				positionSetting.setV0(position.getMarketValue());
+//				symbols.add(symbol);
+//
+//				Position position = account.getPosition(symbol);
+//				if (position != null)
+//				{
+//					PositionSettings positionSetting = new PositionSettings();
+//					positionSetting.setSymbol(position.symbol);
+//					positionSetting.setT0(account.date.toString());
+//					positionSetting.setV0(position.getMarketValue());
+//					positionSetting.setAnnualGrowthPct(10);
+//					positions1.add(positionSetting);
+//				}
+//				else
+//				{
+//					PositionSettings positionSetting = new PositionSettings();
+//					positionSetting.setSymbol(symbol);
+//					positionSetting.setT0(account.date.toString());
+//					positionSetting.setV0(0);
+//					positionSetting.setAnnualGrowthPct(10);
+//					positions1.add(positionSetting);
+//				}
 //			}
 //		}
-//		accountSettings.getRealPositions().forEach(System.out::println);
+//		List<PositionSettings> positions2 = new ArrayList<>();
+//		for (Position position : account.getPositions())
+//		{
+//			if (startsWith(position.getValue("Security Type"), "ETF") && !symbols.contains(position.symbol))
+//			{
+//				symbols.add(position.symbol);
+//
+//				PositionSettings positionSetting = new PositionSettings();
+//				positionSetting.setSymbol(position.symbol);
+//				positionSetting.setT0(account.date.toString());
+//				positionSetting.setV0(position.getMarketValue());
+//				positionSetting.setAnnualGrowthPct(10);
+//				positions2.add(positionSetting);
+//			}
+//		}
+//		positions1.stream().forEach(System.out::println);
+//		System.out.println();
+//		positions2.stream().sorted((p1, p2) -> p1.getSymbol().compareTo(p2.getSymbol())).forEach(System.out::println);
 	}
 
 	private static boolean startsWith(String s1, String s2)

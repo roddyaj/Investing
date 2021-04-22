@@ -1,5 +1,6 @@
 package com.roddyaj.invest.va.model.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Allocation
@@ -17,6 +18,13 @@ public class Allocation
 	public void setCat(String cat)
 	{
 		this.cat = cat;
+	}
+
+	@JsonIgnore
+	public String getCatLastToken()
+	{
+		String[] tokens = cat.split("\\.");
+		return tokens[tokens.length - 1];
 	}
 
 	@JsonProperty("%")

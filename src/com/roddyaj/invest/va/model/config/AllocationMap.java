@@ -22,18 +22,23 @@ public class AllocationMap
 			if (lastToken.toUpperCase().equals(lastToken) || lastToken.equals("cash") || lastToken.equals("stocks"))
 			{
 				String symbol = lastToken;
+
 				double allocation = 1;
 				for (int i = tokens.length; i > 0; i--)
 				{
 					String partialKey = String.join(".", Arrays.copyOfRange(tokens, 0, i));
-					allocation *= map.get(partialKey);
+					if (map.containsKey(partialKey))
+						allocation *= map.get(partialKey).doubleValue();
 				}
+
+				if (allocationMap.containsKey(symbol))
+					allocation += allocationMap.get(symbol).doubleValue();
 				allocationMap.put(symbol, allocation);
 			}
 		}
 
 //		for (Map.Entry<String, Double> entry : allocationMap.entrySet())
-//			System.out.println(entry.getKey() + " " + entry.getValue());
+//			System.out.println(entry.getKey() + " " + entry.getValue() * 100);
 	}
 
 	public double getAllocation(String symbol)

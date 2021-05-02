@@ -2,7 +2,10 @@ package com.roddyaj.invest.model;
 
 public interface Program
 {
-	String getName();
+	default String getName()
+	{
+		return getClass().getSimpleName();
+	}
 
 	void run(String[] args);
 }

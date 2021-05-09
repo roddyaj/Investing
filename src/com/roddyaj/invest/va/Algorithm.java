@@ -50,6 +50,8 @@ public class Algorithm
 		if (!LocalDate.now().equals(account.date))
 			System.out.println("\n\033[33mAccount data is not from today: " + account.date + "\033[0m");
 
+		if (report)
+			System.out.println("\n---------- ORDERS ----------\n");
 		determineAndPrintOrders();
 
 		if (report)
@@ -58,7 +60,6 @@ public class Algorithm
 
 	private void determineAndPrintOrders()
 	{
-		System.out.println("\n---------- ORDERS ----------\n");
 		// @formatter:off
 		accountSettings.getRealPositions()
 			.map(position -> evaluate(position.getSymbol()))
@@ -88,13 +89,17 @@ public class Algorithm
 
 		if (!account.hasSymbol(symbol))
 		{
-			System.out.println(String.format("Initiate new position in %-4s for $%.2f", symbol, targetValue));
+			if (targetValue > 0)
+				System.out.println(String.format("Initiate new position in %-4s for $%.2f", symbol, targetValue));
 			return null;
 		}
 
+		String changeText = position.getValue("Price Change %");
+		double changePct = Double.parseDouble(changeText.substring(0, changeText.length() - 1));
+
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
-		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice());
+		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), changePct);
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 

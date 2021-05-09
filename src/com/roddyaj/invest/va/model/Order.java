@@ -8,11 +8,15 @@ public class Order
 
 	public final double price;
 
-	public Order(String symbol, int shareCount, double price)
+	// TODO doesn't really belong here
+	public final double changePct;
+
+	public Order(String symbol, int shareCount, double price, double changePct)
 	{
 		this.symbol = symbol;
 		this.shareCount = shareCount;
 		this.price = price;
+		this.changePct = changePct;
 	}
 
 	public double getAmount()
@@ -23,7 +27,23 @@ public class Order
 	@Override
 	public String toString()
 	{
-		String action = shareCount >= 0 ? "\033[32mBuy \033[0m" : "\033[31mSell\033[0m";
-		return String.format("%-4s %s %2d | %6.2f = %4.0f", symbol, action, Math.abs(shareCount), price, getAmount());
+		String action = shareCount >= 0 ? green("Buy ") : red("Sell");
+		return String.format("%-4s %s %2d | %6.2f = %4.0f, %s", symbol, action, Math.abs(shareCount), price, getAmount(), color(changePct));
+	}
+
+	private static String color(double d)
+	{
+		String s = String.format("%.2f", d);
+		return d >= 0 ? green(" " + s) : red(s);
+	}
+
+	private static String red(String s)
+	{
+		return "\033[31m" + s + "\033[0m";
+	}
+
+	private static String green(String s)
+	{
+		return "\033[32m" + s + "\033[0m";
 	}
 }

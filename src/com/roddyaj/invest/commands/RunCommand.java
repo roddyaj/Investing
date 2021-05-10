@@ -2,6 +2,7 @@ package com.roddyaj.invest.commands;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.Program;
 
@@ -25,7 +26,8 @@ public class RunCommand implements Program
 	{
 		if (args.length == 0)
 		{
-			System.err.println("No program specified");
+			String availablePrograms = programs.keySet().stream().sorted().collect(Collectors.joining(", "));
+			System.err.println("Available programs: " + availablePrograms);
 			return;
 		}
 

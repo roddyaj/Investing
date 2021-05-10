@@ -3,10 +3,9 @@ package com.roddyaj.invest;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.commands.ListCommand;
 import com.roddyaj.invest.commands.RunCommand;
@@ -29,15 +28,16 @@ public final class Main
 	public Main()
 	{
 		Path dataDir = Paths.get(System.getProperty("user.home"), ".invest");
-		populateMap(programs, List.of(new ValueFinder(dataDir), new ValueAverager(dataDir), new OptionsAnalyzer()));
-		populateMap(commands, List.of(new ListCommand(programs), new RunCommand(programs)));
+		populateMap(programs, new ValueFinder(dataDir), new ValueAverager(dataDir), new OptionsAnalyzer());
+		populateMap(commands, new ListCommand(programs), new RunCommand(programs));
 	}
 
 	public void run(String[] args)
 	{
 		if (args.length == 0)
 		{
-			System.err.println("No command specified");
+			String availableCommands = commands.keySet().stream().sorted().collect(Collectors.joining(", "));
+			System.err.println("Available commands: " + availableCommands);
 			return;
 		}
 
@@ -50,7 +50,7 @@ public final class Main
 			System.err.println(String.format("Command '%s' not found", commandName));
 	}
 
-	private static void populateMap(Map<String, Program> map, Collection<? extends Program> items)
+	private static void populateMap(Map<String, Program> map, Program... items)
 	{
 		for (Program item : items)
 			map.put(item.getName(), item);

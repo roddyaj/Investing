@@ -11,6 +11,7 @@ import com.roddyaj.invest.commands.ListCommand;
 import com.roddyaj.invest.commands.RunCommand;
 import com.roddyaj.invest.model.Program;
 import com.roddyaj.invest.options.OptionsAnalyzer;
+import com.roddyaj.invest.programs.dataroma.Dataroma;
 import com.roddyaj.invest.va.ValueAverager;
 import com.roddyaj.invest.vf.ValueFinder;
 
@@ -28,7 +29,7 @@ public final class Main
 	public Main()
 	{
 		Path dataDir = Paths.get(System.getProperty("user.home"), ".invest");
-		populateMap(programs, new ValueFinder(dataDir), new ValueAverager(dataDir), new OptionsAnalyzer());
+		populateMap(programs, new ValueFinder(dataDir), new ValueAverager(dataDir), new OptionsAnalyzer(), new Dataroma());
 		populateMap(commands, new ListCommand(programs), new RunCommand(programs));
 	}
 

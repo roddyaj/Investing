@@ -2,6 +2,7 @@ package com.roddyaj.invest.options;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +31,7 @@ public class Options implements Program
 
 		analyzePuts(optionTransactions);
 
-//		writeHistoryCsv(transactions);
+//		writeHistoryCsv(optionTransactions);
 	}
 
 	private void analyzePuts(Collection<? extends Transaction> transactions)
@@ -61,6 +62,8 @@ public class Options implements Program
 			}
 		}
 
+		System.out.println("Puts to Sell:");
+		System.out.println("Symb Ret");
 		candidates.stream().sorted((o1, o2) -> o2.right.compareTo(o1.right))
 				.forEach(p -> System.out.println(String.format("%-4s %3.0f", p.left, p.right)));
 	}
@@ -94,16 +97,16 @@ public class Options implements Program
 
 		public Transaction(CSVRecord record)
 		{
-			date = LocalDate.parse(record.get(0), FORMATTER);
+			date = parseDate(record.get(0));
 			action = record.get(1);
 			option = record.get(2);
 			quantity = Integer.parseInt(record.get(4));
-			price = Double.parseDouble(record.get(5).replace("$", ""));
-			amount = Double.parseDouble(record.get(7).replace("$", ""));
+			price = parseDollar(record.get(5));
+			amount = parseDollar(record.get(7));
 
 			String[] tokens = option.split(" ");
 			symbol = tokens[0];
-			expiryDate = LocalDate.parse(tokens[1], FORMATTER);
+			expiryDate = parseDate(tokens[1]);
 			strike = Double.parseDouble(tokens[2]);
 			type = tokens[3].charAt(0);
 
@@ -117,6 +120,25 @@ public class Options implements Program
 		public String toString()
 		{
 			return String.format("%s,%s,%s,%d,%.2f,%.2f,%.2f,%.1f", date, action, option, days, strike, price, amount, annualReturn);
+		}
+
+		private LocalDate parseDate(String s)
+		{
+			LocalDate date;
+			try
+			{
+				date = LocalDate.parse(s, FORMATTER);
+			}
+			catch (DateTimeParseException e)
+			{
+				date = LocalDate.parse(s.split(" ")[0], FORMATTER);
+			}
+			return date;
+		}
+
+		private double parseDollar(String s)
+		{
+			return !s.isBlank() ? Double.parseDouble(s.replace("$", "")) : 0;
 		}
 	}
 

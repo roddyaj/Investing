@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
@@ -23,49 +24,111 @@ public class Options implements Program
 	@Override
 	public void run(String[] args)
 	{
-		List<CSVRecord> records = FileUtils.readCsv("Adam_Investing_Transactions");
-		records = records.stream().filter(r -> r.size() > 1 && (r.get(1).startsWith("Sell to") || r.get(1).startsWith("Buy to")))
+		List<Transaction> optionTransactions = FileUtils.readCsv("Adam_Investing_Transactions").stream()
+				.filter(r -> r.size() > 1 && (r.get(1).startsWith("Sell to") || r.get(1).startsWith("Buy to"))).map(Transaction::new)
 				.collect(Collectors.toList());
-		writeCsv(records);
-//		records.forEach(System.out::println);
+
+		analyzePuts(optionTransactions);
+
+//		writeHistoryCsv(transactions);
 	}
 
-	private void writeCsv(Collection<? extends CSVRecord> records)
+	private void analyzePuts(Collection<? extends Transaction> transactions)
 	{
-		List<String> linesOut = new ArrayList<>();
-		linesOut.add("Buy Date,Option,Days,Strike,Price,Premium,Annualized Return");
-		for (CSVRecord csvRecord : records)
+		List<Pair<String, Double>> candidates = new ArrayList<>();
+
+		List<Transaction> allPuts = transactions.stream().filter(t -> t.type == 'P').collect(Collectors.toList());
+		Set<String> allPutSymbols = allPuts.stream().map(t -> t.symbol).collect(Collectors.toSet());
+		for (String symbol : allPutSymbols)
 		{
-			Record record = new Record(csvRecord);
-			double annualReturn = record.premium / record.strike * (365.0 / record.days);
-			linesOut.add(String.format("%s,%s,%d,%.2f,%.2f,%.2f,%.1f", record.buyDate, record.option, record.days, record.strike, record.price,
-					record.premium, annualReturn));
+			List<Transaction> symbolActivePuts = allPuts.stream().filter(t -> t.symbol.equals(symbol) && !LocalDate.now().isAfter(t.expiryDate))
+					.collect(Collectors.toList());
+
+			int quantity = 0;
+			for (Transaction transaction : symbolActivePuts)
+			{
+				if (transaction.action.equals("Sell to Open"))
+					quantity += transaction.quantity;
+				else if (transaction.action.equals("Buy to Close"))
+					quantity -= transaction.quantity;
+			}
+
+			if (quantity <= 0)
+			{
+				double averageReturn = allPuts.stream().filter(t -> t.symbol.equals(symbol) && t.action.equals("Sell to Open"))
+						.collect(Collectors.averagingDouble(t -> t.annualReturn));
+				candidates.add(new Pair<>(symbol, averageReturn));
+			}
 		}
-		FileUtils.writeLines("options_history.csv", linesOut);
+
+		candidates.stream().sorted((o1, o2) -> o2.right.compareTo(o1.right))
+				.forEach(p -> System.out.println(String.format("%-4s %3.0f", p.left, p.right)));
 	}
 
-	private static class Record
+	private void writeHistoryCsv(Collection<? extends Transaction> transactions)
+	{
+		List<String> lines = new ArrayList<>();
+		lines.add(Transaction.CSV_HEADER);
+		transactions.stream().map(Transaction::toString).forEach(lines::add);
+		FileUtils.writeLines("options_history.csv", lines);
+	}
+
+	private static class Transaction
 	{
 		private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 
-		public final LocalDate buyDate;
+		public final LocalDate date;
+		public final String action;
 		public final String option;
+		public final int quantity;
 		public final double price;
-		public final double premium;
+		public final double amount;
+
+		public final String symbol;
 		public final LocalDate expiryDate;
 		public final double strike;
-		public final long days;
+		public final char type;
 
-		public Record(CSVRecord record)
+		public final int days;
+		public final double annualReturn;
+
+		public Transaction(CSVRecord record)
 		{
-			buyDate = LocalDate.parse(record.get(0), FORMATTER);
+			date = LocalDate.parse(record.get(0), FORMATTER);
+			action = record.get(1);
 			option = record.get(2);
+			quantity = Integer.parseInt(record.get(4));
 			price = Double.parseDouble(record.get(5).replace("$", ""));
-			premium = Double.parseDouble(record.get(7).replace("$", ""));
+			amount = Double.parseDouble(record.get(7).replace("$", ""));
+
 			String[] tokens = option.split(" ");
+			symbol = tokens[0];
 			expiryDate = LocalDate.parse(tokens[1], FORMATTER);
 			strike = Double.parseDouble(tokens[2]);
-			days = ChronoUnit.DAYS.between(buyDate, expiryDate);
+			type = tokens[3].charAt(0);
+
+			days = (int)ChronoUnit.DAYS.between(date, expiryDate);
+			annualReturn = amount / strike * (365.0 / days);
+		}
+
+		public static final String CSV_HEADER = "Date,Action,Description,Days,Strike,Price,Premium,Annualized Return";
+
+		@Override
+		public String toString()
+		{
+			return String.format("%s,%s,%s,%d,%.2f,%.2f,%.2f,%.1f", date, action, option, days, strike, price, amount, annualReturn);
+		}
+	}
+
+	private static class Pair<T1, T2>
+	{
+		public final T1 left;
+		public final T2 right;
+
+		public Pair(T1 left, T2 right)
+		{
+			this.left = left;
+			this.right = right;
 		}
 	}
 }

@@ -7,7 +7,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
@@ -29,12 +31,16 @@ public class Options implements Program
 				.filter(r -> r.size() > 1 && (r.get(1).startsWith("Sell to") || r.get(1).startsWith("Buy to"))).map(Transaction::new)
 				.collect(Collectors.toList());
 
-		analyzePuts(optionTransactions);
+		Map<String, Integer> symbolToQuantity = FileUtils.readCsv("Adam_Investing-Positions").stream().filter(r -> r.getRecordNumber() > 2)
+				.collect(Collectors.toMap(r -> r.get(0), r -> parseInt(r.get(2))));
+
+		analyzePuts(optionTransactions, symbolToQuantity);
+		analyzeCalls(symbolToQuantity);
 
 //		writeHistoryCsv(optionTransactions);
 	}
 
-	private void analyzePuts(Collection<? extends Transaction> transactions)
+	private void analyzePuts(Collection<? extends Transaction> transactions, Map<String, Integer> symbolToQuantity)
 	{
 		List<Pair<String, Double>> candidates = new ArrayList<>();
 
@@ -54,6 +60,9 @@ public class Options implements Program
 					quantity -= transaction.quantity;
 			}
 
+			if (symbolToQuantity.containsKey(symbol) && symbolToQuantity.get(symbol) > 50)
+				quantity++;
+
 			if (quantity <= 0)
 			{
 				double averageReturn = allPuts.stream().filter(t -> t.symbol.equals(symbol) && t.action.equals("Sell to Open"))
@@ -62,10 +71,18 @@ public class Options implements Program
 			}
 		}
 
-		System.out.println("Puts to Sell:");
-		System.out.println("Symb Ret");
+		System.out.println("\nSell Puts:");
 		candidates.stream().sorted((o1, o2) -> o2.right.compareTo(o1.right))
-				.forEach(p -> System.out.println(String.format("%-4s %3.0f", p.left, p.right)));
+				.forEach(p -> System.out.println(String.format("%-4s (%.0f %% return)", p.left, p.right)));
+	}
+
+	private void analyzeCalls(Map<String, Integer> symbolToQuantity)
+	{
+		System.out.println("\nSell Calls:");
+		Predicate<String> hasOption = symbol -> symbolToQuantity.entrySet().stream().anyMatch(e -> e.getKey().startsWith(symbol + " "));
+		symbolToQuantity.entrySet().stream().filter(e -> e.getValue() >= 100 && !hasOption.test(e.getKey()))
+				.forEach(e -> System.out.println(e.getKey()));
+
 	}
 
 	private void writeHistoryCsv(Collection<? extends Transaction> transactions)
@@ -76,10 +93,43 @@ public class Options implements Program
 		FileUtils.writeLines("options_history.csv", lines);
 	}
 
+	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+
+	private static LocalDate parseDate(String s)
+	{
+		LocalDate date;
+		try
+		{
+			date = LocalDate.parse(s, FORMATTER);
+		}
+		catch (DateTimeParseException e)
+		{
+			date = LocalDate.parse(s.split(" ")[0], FORMATTER);
+		}
+		return date;
+	}
+
+	private static double parsePrice(String s)
+	{
+		if (s.isBlank() || "--".equals(s))
+			return 0;
+		return Double.parseDouble(s.replace("$", "").replace(",", ""));
+	}
+
+	private static int parseInt(String s)
+	{
+		try
+		{
+			return Integer.parseInt(s);
+		}
+		catch (NumberFormatException e)
+		{
+			return 0;
+		}
+	}
+
 	private static class Transaction
 	{
-		private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-
 		public final LocalDate date;
 		public final String action;
 		public final String option;
@@ -101,8 +151,8 @@ public class Options implements Program
 			action = record.get(1);
 			option = record.get(2);
 			quantity = Integer.parseInt(record.get(4));
-			price = parseDollar(record.get(5));
-			amount = parseDollar(record.get(7));
+			price = parsePrice(record.get(5));
+			amount = parsePrice(record.get(7));
 
 			String[] tokens = option.split(" ");
 			symbol = tokens[0];
@@ -120,25 +170,6 @@ public class Options implements Program
 		public String toString()
 		{
 			return String.format("%s,%s,%s,%d,%.2f,%.2f,%.2f,%.1f", date, action, option, days, strike, price, amount, annualReturn);
-		}
-
-		private LocalDate parseDate(String s)
-		{
-			LocalDate date;
-			try
-			{
-				date = LocalDate.parse(s, FORMATTER);
-			}
-			catch (DateTimeParseException e)
-			{
-				date = LocalDate.parse(s.split(" ")[0], FORMATTER);
-			}
-			return date;
-		}
-
-		private double parseDollar(String s)
-		{
-			return !s.isBlank() ? Double.parseDouble(s.replace("$", "")) : 0;
 		}
 	}
 

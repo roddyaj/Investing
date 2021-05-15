@@ -48,9 +48,16 @@ public class ValueAverager implements Program
 				return;
 			}
 
-			boolean report = args.length > 1 && args[1].equals("-print");
+			int reportLevel = 0;
+			if (args.length > 1)
+			{
+				if (args[1].equals("-print"))
+					reportLevel = 1;
+				else if (args[1].equals("-print2"))
+					reportLevel = 2;
+			}
 
-			run(settings, accountFile, report);
+			run(settings, accountFile, reportLevel);
 		}
 		catch (IOException e)
 		{
@@ -76,7 +83,7 @@ public class ValueAverager implements Program
 		return accountFile;
 	}
 
-	private void run(Settings settings, Path accountFile, boolean report) throws IOException
+	private void run(Settings settings, Path accountFile, int reportLevel) throws IOException
 	{
 		String accountKey = accountFile.getFileName().toString().split("-", 2)[0];
 		AccountSettings accountSettings = settings.getAccount(accountKey);
@@ -84,7 +91,7 @@ public class ValueAverager implements Program
 		if (accountSettings != null)
 		{
 			Account account = SchwabAccountCsv.parse(accountFile);
-			new Algorithm(accountSettings, account, settings).run(report);
+			new Algorithm(accountSettings, account, settings).run(reportLevel);
 		}
 		else
 		{

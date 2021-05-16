@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
@@ -31,19 +30,38 @@ public class Options implements Program
 				.filter(r -> r.size() > 1 && (r.get(1).startsWith("Sell to") || r.get(1).startsWith("Buy to"))).map(Transaction::new)
 				.collect(Collectors.toList());
 
-		Map<String, Integer> symbolToQuantity = FileUtils.readCsv("Adam_Investing-Positions").stream().filter(r -> r.getRecordNumber() > 2)
-				.collect(Collectors.toMap(r -> r.get(0), r -> parseInt(r.get(2))));
+		List<Position> positions = FileUtils.readCsv("Adam_Investing-Positions").stream().filter(r -> r.getRecordNumber() > 2).map(Position::new)
+				.collect(Collectors.toList());
 
-		analyzePuts(optionTransactions, symbolToQuantity);
-		analyzeCalls(symbolToQuantity);
+		analyzeBuyToClose(positions);
+		analyzeCalls(positions);
+		analyzePuts(positions, optionTransactions);
 
 //		writeHistoryCsv(optionTransactions);
 	}
 
-	private void analyzePuts(Collection<? extends Transaction> transactions, Map<String, Integer> symbolToQuantity)
+	private void analyzeBuyToClose(Collection<? extends Position> positions)
+	{
+		System.out.println("\nBuy To Close:");
+		positions.stream().filter(p -> "Option".equals(p.securityType) && (p.marketValue / p.costBasis) < .1)
+				.forEach(p -> System.out.println(p.symbol));
+	}
+
+	private void analyzeCalls(Collection<? extends Position> positions)
+	{
+		System.out.println("\nSell Calls:");
+		Set<String> symbolsWithCalls = positions.stream().filter(p -> "Option".equals(p.securityType) && p.symbol.endsWith(" C"))
+				.map(p -> p.symbol.split(" ")[0]).collect(Collectors.toSet());
+		positions.stream().filter(p -> !"Option".equals(p.securityType) && p.quantity >= 100 && !symbolsWithCalls.contains(p.symbol))
+				.forEach(p -> System.out.println(p.symbol));
+
+	}
+
+	private void analyzePuts(Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
 	{
 		List<Pair<String, Double>> candidates = new ArrayList<>();
 
+		Map<String, Integer> symbolToQuantity = positions.stream().collect(Collectors.toMap(r -> r.symbol, r -> r.quantity));
 		List<Transaction> allPuts = transactions.stream().filter(t -> t.type == 'P').collect(Collectors.toList());
 		Set<String> allPutSymbols = allPuts.stream().map(t -> t.symbol).collect(Collectors.toSet());
 		for (String symbol : allPutSymbols)
@@ -76,15 +94,6 @@ public class Options implements Program
 				.forEach(p -> System.out.println(String.format("%-4s (%.0f %% return)", p.left, p.right)));
 	}
 
-	private void analyzeCalls(Map<String, Integer> symbolToQuantity)
-	{
-		System.out.println("\nSell Calls:");
-		Predicate<String> hasOption = symbol -> symbolToQuantity.entrySet().stream().anyMatch(e -> e.getKey().startsWith(symbol + " "));
-		symbolToQuantity.entrySet().stream().filter(e -> e.getValue() >= 100 && !hasOption.test(e.getKey()))
-				.forEach(e -> System.out.println(e.getKey()));
-
-	}
-
 	private void writeHistoryCsv(Collection<? extends Transaction> transactions)
 	{
 		List<String> lines = new ArrayList<>();
@@ -111,7 +120,7 @@ public class Options implements Program
 
 	private static double parsePrice(String s)
 	{
-		if (s.isBlank() || "--".equals(s))
+		if (s.isBlank() || "--".equals(s) || "N/A".equals(s))
 			return 0;
 		return Double.parseDouble(s.replace("$", "").replace(",", ""));
 	}
@@ -125,6 +134,30 @@ public class Options implements Program
 		catch (NumberFormatException e)
 		{
 			return 0;
+		}
+	}
+
+	private static class Position
+	{
+		public final String symbol;
+		public final int quantity;
+		public final double marketValue;
+		public final double costBasis;
+		public final String securityType;
+
+		public Position(CSVRecord record)
+		{
+			symbol = record.get(0);
+			quantity = parseInt(record.get(2));
+			marketValue = parsePrice(record.get(6));
+			costBasis = parsePrice(record.get(9));
+			securityType = record.size() > 24 ? record.get(24) : null;
+		}
+
+		@Override
+		public String toString()
+		{
+			return String.format("%s %d %.2f %.2f %s", symbol, quantity, marketValue, costBasis, securityType);
 		}
 	}
 

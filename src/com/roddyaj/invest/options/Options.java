@@ -6,6 +6,7 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,8 +37,7 @@ public class Options implements Program
 		analyzeBuyToClose(positions);
 		analyzeCalls(positions);
 		analyzePuts(positions, optionTransactions);
-
-//		writeHistoryCsv(optionTransactions);
+		monthlyIncome(optionTransactions);
 	}
 
 	private void analyzeBuyToClose(Collection<? extends Position> positions)
@@ -94,12 +94,15 @@ public class Options implements Program
 				.forEach(p -> System.out.println(String.format("%-4s (%.0f %% return)", p.left, p.right)));
 	}
 
-	private void writeHistoryCsv(Collection<? extends Transaction> transactions)
+	private void monthlyIncome(Collection<? extends Transaction> transactions)
 	{
-		List<String> lines = new ArrayList<>();
-		lines.add(Transaction.CSV_HEADER);
-		transactions.stream().map(Transaction::toString).forEach(lines::add);
-		FileUtils.writeLines("options_history.csv", lines);
+		System.out.println("\nMonthly Income:");
+		Map<String, Double> monthToIncome = new HashMap<>();
+		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
+		for (Transaction transaction : transactions)
+			monthToIncome.merge(transaction.date.format(format), transaction.amount, Double::sum);
+		monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey()))
+				.forEach(e -> System.out.println(String.format("%s %.2f", e.getKey(), e.getValue())));
 	}
 
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -197,12 +200,10 @@ public class Options implements Program
 			annualReturn = amount / strike * (365.0 / days);
 		}
 
-		public static final String CSV_HEADER = "Date,Action,Description,Days,Strike,Price,Premium,Annualized Return";
-
 		@Override
 		public String toString()
 		{
-			return String.format("%s,%s,%s,%d,%.2f,%.2f,%.2f,%.1f", date, action, option, days, strike, price, amount, annualReturn);
+			return String.format("%s %s %s %d %.2f %.2f %.2f %.1f", date, action, option, days, strike, price, amount, annualReturn);
 		}
 	}
 

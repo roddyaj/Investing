@@ -53,7 +53,7 @@ public class Options implements Program
 		Set<String> symbolsWithCalls = positions.stream().filter(p -> "Option".equals(p.securityType) && p.symbol.endsWith(" C"))
 				.map(p -> p.symbol.split(" ")[0]).collect(Collectors.toSet());
 		positions.stream().filter(p -> !"Option".equals(p.securityType) && p.quantity >= 100 && !symbolsWithCalls.contains(p.symbol))
-				.forEach(p -> System.out.println(p.symbol));
+				.forEach(p -> System.out.println(String.format("%-4s %s", p.symbol, p.dayChangePct >= 0 ? "\uD83D\uDC4D" : "\uD83D\uDC4E")));
 
 	}
 
@@ -61,7 +61,7 @@ public class Options implements Program
 	{
 		List<Pair<String, Double>> candidates = new ArrayList<>();
 
-		Map<String, Integer> symbolToQuantity = positions.stream().collect(Collectors.toMap(r -> r.symbol, r -> r.quantity));
+		Map<String, Position> symbolToPosition = positions.stream().collect(Collectors.toMap(r -> r.symbol, r -> r));
 		List<Transaction> allPuts = transactions.stream().filter(t -> t.type == 'P').collect(Collectors.toList());
 		Set<String> allPutSymbols = allPuts.stream().map(t -> t.symbol).collect(Collectors.toSet());
 		for (String symbol : allPutSymbols)
@@ -78,7 +78,7 @@ public class Options implements Program
 					quantity -= transaction.quantity;
 			}
 
-			if (symbolToQuantity.containsKey(symbol) && symbolToQuantity.get(symbol) > 50)
+			if (symbolToPosition.containsKey(symbol) && symbolToPosition.get(symbol).quantity > 50)
 				quantity++;
 
 			if (quantity <= 0)
@@ -147,6 +147,7 @@ public class Options implements Program
 		public final double marketValue;
 		public final double costBasis;
 		public final String securityType;
+		public final double dayChangePct;
 
 		public Position(CSVRecord record)
 		{
@@ -155,12 +156,13 @@ public class Options implements Program
 			marketValue = parsePrice(record.get(6));
 			costBasis = parsePrice(record.get(9));
 			securityType = record.size() > 24 ? record.get(24) : null;
+			dayChangePct = Double.parseDouble(record.get(8).replace("%", ""));
 		}
 
 		@Override
 		public String toString()
 		{
-			return String.format("%s %d %.2f %.2f %s", symbol, quantity, marketValue, costBasis, securityType);
+			return String.format("%-4s %d %.2f %.2f %s %.2f", symbol, quantity, marketValue, costBasis, securityType, dayChangePct);
 		}
 	}
 

@@ -27,17 +27,16 @@ public class Options implements Program
 	@Override
 	public void run(String[] args)
 	{
-		List<Transaction> optionTransactions = FileUtils.readCsv("Adam_Investing_Transactions").stream()
-				.filter(r -> r.size() > 1 && (r.get(1).startsWith("Sell to") || r.get(1).startsWith("Buy to"))).map(Transaction::new)
-				.collect(Collectors.toList());
+		List<Transaction> transactions = FileUtils.readCsv("Adam_Investing_Transactions").stream().filter(r -> r.getRecordNumber() > 2)
+				.map(Transaction::new).collect(Collectors.toList());
 
 		List<Position> positions = FileUtils.readCsv("Adam_Investing-Positions").stream().filter(r -> r.getRecordNumber() > 2).map(Position::new)
 				.collect(Collectors.toList());
 
 		analyzeBuyToClose(positions);
-		analyzeCalls(positions);
-		analyzePuts(positions, optionTransactions);
-		monthlyIncome(optionTransactions);
+		analyzeCalls(positions, transactions);
+		analyzePuts(positions, transactions);
+		monthlyIncome(transactions);
 	}
 
 	private void analyzeBuyToClose(Collection<? extends Position> positions)
@@ -47,14 +46,25 @@ public class Options implements Program
 				.forEach(p -> System.out.println(p.symbol));
 	}
 
-	private void analyzeCalls(Collection<? extends Position> positions)
+	private void analyzeCalls(Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
 	{
-		System.out.println("\nSell Calls:");
 		Set<String> symbolsWithCalls = positions.stream().filter(p -> "Option".equals(p.securityType) && p.symbol.endsWith(" C"))
 				.map(p -> p.symbol.split(" ")[0]).collect(Collectors.toSet());
-		positions.stream().filter(p -> !"Option".equals(p.securityType) && p.quantity >= 100 && !symbolsWithCalls.contains(p.symbol))
-				.forEach(p -> System.out.println(String.format("%-4s %s", p.symbol, p.dayChangePct >= 0 ? "\uD83D\uDC4D" : "\uD83D\uDC4E")));
 
+		Map<String, Double> symbolToLast100Buy = new HashMap<>();
+		for (Transaction transaction : transactions)
+		{
+			if (!transaction.isOption && transaction.action.equals("Buy") && transaction.quantity == 100
+					&& !symbolToLast100Buy.containsKey(transaction.symbol))
+				symbolToLast100Buy.put(transaction.symbol, transaction.price);
+		}
+
+		System.out.println("\nSell Calls:");
+		positions.stream().filter(p -> !"Option".equals(p.securityType) && p.quantity >= 100 && !symbolsWithCalls.contains(p.symbol)).forEach(p -> {
+			String s = String.format("%-4s %s (bought $%5.2f)", p.symbol, p.dayChangePct >= 0 ? "Y" : "N",
+					symbolToLast100Buy.getOrDefault(p.symbol, 0.));
+			System.out.println(s);
+		});
 	}
 
 	private void analyzePuts(Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
@@ -91,7 +101,7 @@ public class Options implements Program
 
 		System.out.println("\nSell Puts:");
 		candidates.stream().sorted((o1, o2) -> o2.right.compareTo(o1.right))
-				.forEach(p -> System.out.println(String.format("%-4s (%.0f %% return)", p.left, p.right)));
+				.forEach(p -> System.out.println(String.format("%-4s (%.0f%% return)", p.left, p.right)));
 	}
 
 	private void monthlyIncome(Collection<? extends Transaction> transactions)
@@ -100,15 +110,20 @@ public class Options implements Program
 		Map<String, Double> monthToIncome = new HashMap<>();
 		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
 		for (Transaction transaction : transactions)
-			monthToIncome.merge(transaction.date.format(format), transaction.amount, Double::sum);
+		{
+			if (transaction.isOption && (transaction.action.startsWith("Sell to") || transaction.action.startsWith("Buy to")))
+				monthToIncome.merge(transaction.date.format(format), transaction.amount, Double::sum);
+		}
 		monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey()))
-				.forEach(e -> System.out.println(String.format("%s %.2f", e.getKey(), e.getValue())));
+				.forEach(e -> System.out.println(String.format("%s %7.2f", e.getKey(), e.getValue())));
 	}
 
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 
 	private static LocalDate parseDate(String s)
 	{
+		if (!s.contains("/"))
+			return null;
 		LocalDate date;
 		try
 		{
@@ -130,6 +145,8 @@ public class Options implements Program
 
 	private static int parseInt(String s)
 	{
+		if (s.isBlank())
+			return 0;
 		try
 		{
 			return Integer.parseInt(s);
@@ -156,13 +173,13 @@ public class Options implements Program
 			marketValue = parsePrice(record.get(6));
 			costBasis = parsePrice(record.get(9));
 			securityType = record.size() > 24 ? record.get(24) : null;
-			dayChangePct = Double.parseDouble(record.get(8).replace("%", ""));
+			dayChangePct = Double.parseDouble(record.get(8).replace("%", "").replace(",", ""));
 		}
 
 		@Override
 		public String toString()
 		{
-			return String.format("%-4s %d %.2f %.2f %s %.2f", symbol, quantity, marketValue, costBasis, securityType, dayChangePct);
+			return String.format("%-4s %3d %7.2f %7.2f %-23s %5.2f", symbol, quantity, marketValue, costBasis, securityType, dayChangePct);
 		}
 	}
 
@@ -175,6 +192,7 @@ public class Options implements Program
 		public final double price;
 		public final double amount;
 
+		public final boolean isOption;
 		public final String symbol;
 		public final LocalDate expiryDate;
 		public final double strike;
@@ -187,25 +205,42 @@ public class Options implements Program
 		{
 			date = parseDate(record.get(0));
 			action = record.get(1);
-			option = record.get(2);
-			quantity = Integer.parseInt(record.get(4));
+			String symbolOrOption = record.get(2);
+			quantity = parseInt(record.get(4));
 			price = parsePrice(record.get(5));
 			amount = parsePrice(record.get(7));
 
-			String[] tokens = option.split(" ");
-			symbol = tokens[0];
-			expiryDate = parseDate(tokens[1]);
-			strike = Double.parseDouble(tokens[2]);
-			type = tokens[3].charAt(0);
+			isOption = symbolOrOption.contains(" ");
+			if (isOption)
+			{
+				String[] tokens = symbolOrOption.split(" ");
+				option = symbolOrOption;
+				symbol = tokens[0];
+				expiryDate = parseDate(tokens[1]);
+				strike = Double.parseDouble(tokens[2]);
+				type = tokens[3].charAt(0);
 
-			days = (int)ChronoUnit.DAYS.between(date, expiryDate);
-			annualReturn = amount / strike * (365.0 / days);
+				days = (int)ChronoUnit.DAYS.between(date, expiryDate);
+				annualReturn = amount / strike * (365.0 / days);
+			}
+			else
+			{
+				option = null;
+				symbol = symbolOrOption;
+				expiryDate = null;
+				strike = 0;
+				type = '\0';
+
+				days = 0;
+				annualReturn = 0;
+			}
 		}
 
 		@Override
 		public String toString()
 		{
-			return String.format("%s %s %s %d %.2f %.2f %.2f %.1f", date, action, option, days, strike, price, amount, annualReturn);
+			return String.format("%s %-14s %-5s %-23s %3d %2d %6.2f %7.2f %8.2f %5.1f", date, action, symbol, option, quantity, days, strike, price,
+					amount, annualReturn);
 		}
 	}
 

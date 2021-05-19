@@ -2,7 +2,6 @@ package com.roddyaj.invest.options;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +15,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.roddyaj.invest.model.Program;
 import com.roddyaj.invest.util.FileUtils;
+import com.roddyaj.invest.util.StringUtils;
 
 public class Options implements Program
 {
@@ -118,62 +118,23 @@ public class Options implements Program
 				.forEach(e -> System.out.println(String.format("%s %7.2f", e.getKey(), e.getValue())));
 	}
 
-	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-
-	private static LocalDate parseDate(String s)
-	{
-		if (!s.contains("/"))
-			return null;
-		LocalDate date;
-		try
-		{
-			date = LocalDate.parse(s, FORMATTER);
-		}
-		catch (DateTimeParseException e)
-		{
-			date = LocalDate.parse(s.split(" ")[0], FORMATTER);
-		}
-		return date;
-	}
-
-	private static double parsePrice(String s)
-	{
-		if (s.isBlank() || "--".equals(s) || "N/A".equals(s))
-			return 0;
-		return Double.parseDouble(s.replace("$", "").replace(",", ""));
-	}
-
-	private static int parseInt(String s)
-	{
-		if (s.isBlank())
-			return 0;
-		try
-		{
-			return Integer.parseInt(s);
-		}
-		catch (NumberFormatException e)
-		{
-			return 0;
-		}
-	}
-
 	private static class Position
 	{
 		public final String symbol;
 		public final int quantity;
 		public final double marketValue;
+		public final double dayChangePct;
 		public final double costBasis;
 		public final String securityType;
-		public final double dayChangePct;
 
 		public Position(CSVRecord record)
 		{
 			symbol = record.get(0);
-			quantity = parseInt(record.get(2));
-			marketValue = parsePrice(record.get(6));
-			costBasis = parsePrice(record.get(9));
+			quantity = StringUtils.parseInt(record.get(2));
+			marketValue = StringUtils.parsePrice(record.get(6));
+			dayChangePct = StringUtils.parsePercent(record.get(8));
+			costBasis = StringUtils.parsePrice(record.get(9));
 			securityType = record.size() > 24 ? record.get(24) : null;
-			dayChangePct = Double.parseDouble(record.get(8).replace("%", "").replace(",", ""));
 		}
 
 		@Override
@@ -203,12 +164,12 @@ public class Options implements Program
 
 		public Transaction(CSVRecord record)
 		{
-			date = parseDate(record.get(0));
+			date = StringUtils.parseDate(record.get(0));
 			action = record.get(1);
 			String symbolOrOption = record.get(2);
-			quantity = parseInt(record.get(4));
-			price = parsePrice(record.get(5));
-			amount = parsePrice(record.get(7));
+			quantity = (int)Math.round(StringUtils.parseDouble(record.get(4)));
+			price = StringUtils.parsePrice(record.get(5));
+			amount = StringUtils.parsePrice(record.get(7));
 
 			isOption = symbolOrOption.contains(" ");
 			if (isOption)
@@ -216,7 +177,7 @@ public class Options implements Program
 				String[] tokens = symbolOrOption.split(" ");
 				option = symbolOrOption;
 				symbol = tokens[0];
-				expiryDate = parseDate(tokens[1]);
+				expiryDate = StringUtils.parseDate(tokens[1]);
 				strike = Double.parseDouble(tokens[2]);
 				type = tokens[3].charAt(0);
 

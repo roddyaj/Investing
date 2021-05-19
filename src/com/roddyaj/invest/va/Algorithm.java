@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.roddyaj.invest.util.StringUtils;
 import com.roddyaj.invest.va.model.Account;
 import com.roddyaj.invest.va.model.Order;
 import com.roddyaj.invest.va.model.Point;
@@ -96,8 +97,7 @@ public class Algorithm
 			return null;
 		}
 
-		String changeText = position.getValue("Price Change %").replace("%", "");
-		double changePct = !changeText.equals("N/A") ? Double.parseDouble(changeText) : 0;
+		double changePct = StringUtils.parsePercent(position.getValue("Price Change %"));
 
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());

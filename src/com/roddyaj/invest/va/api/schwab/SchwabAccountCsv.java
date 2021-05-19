@@ -13,6 +13,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import com.roddyaj.invest.util.StringUtils;
 import com.roddyaj.invest.va.model.Account;
 import com.roddyaj.invest.va.model.Position;
 
@@ -59,8 +60,8 @@ public class SchwabAccountCsv
 					}
 
 					Position position = new Position(symbol);
-					position.setMarketValue(parsePrice(symbolMap.get("Market Value")));
-					position.setPrice(parsePrice(symbolMap.get("Price")));
+					position.setMarketValue(StringUtils.parsePrice(symbolMap.get("Market Value")));
+					position.setPrice(StringUtils.parsePrice(symbolMap.get("Price")));
 					position.setValues(symbolMap);
 					account.addPosition(symbol, position);
 				}
@@ -69,7 +70,7 @@ public class SchwabAccountCsv
 
 		Position accountTotal = account.getPosition("Account Total");
 		if (accountTotal != null)
-			account.setTotalValue(parsePrice(accountTotal.getValue("Market Value")));
+			account.setTotalValue(StringUtils.parsePrice(accountTotal.getValue("Market Value")));
 
 		final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
 		Matcher matcher = datePattern.matcher(file.getFileName().toString());
@@ -77,12 +78,5 @@ public class SchwabAccountCsv
 			account.date = LocalDate.parse(matcher.group(1));
 
 		return account;
-	}
-
-	public static double parsePrice(String text)
-	{
-		if ("--".equals(text))
-			return 0;
-		return Double.parseDouble(text.replace("$", "").replace(",", ""));
 	}
 }

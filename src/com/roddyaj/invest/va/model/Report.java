@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.roddyaj.invest.util.StringUtils;
+
 public class Report
 {
 	public final String symbol;
@@ -38,7 +40,7 @@ public class Report
 	public String toString()
 	{
 		double delta = position.getMarketValue() - targetValue;
-		double currentPct = Double.parseDouble(position.getValue("% Of Account").replace("%", ""));
+		double currentPct = StringUtils.parsePercent(position.getValue("% Of Account"));
 		String dirText = p0 == null || p1 == null ? " " : p1.value > p0.value ? "\033[32m↗\033[0m" : "\033[31m↘\033[0m";
 		String p0Text = p0 != null ? p0.toString() : "                   ";
 		String p1Text = p1 != null ? p1.toString() : "                   ";

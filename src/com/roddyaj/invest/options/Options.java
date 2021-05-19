@@ -29,6 +29,7 @@ public class Options implements Program
 	{
 		List<Transaction> transactions = FileUtils.readCsv("Adam_Investing_Transactions").stream().filter(r -> r.getRecordNumber() > 2)
 				.map(Transaction::new).collect(Collectors.toList());
+//		transactions.forEach(System.out::println);
 
 		List<Position> positions = FileUtils.readCsv("Adam_Investing-Positions").stream().filter(r -> r.getRecordNumber() > 2).map(Position::new)
 				.collect(Collectors.toList());
@@ -36,20 +37,19 @@ public class Options implements Program
 		analyzeBuyToClose(positions);
 		analyzeCalls(positions, transactions);
 		analyzePuts(positions, transactions);
+		currentPositions(positions);
 		monthlyIncome(transactions);
 	}
 
 	private void analyzeBuyToClose(Collection<? extends Position> positions)
 	{
 		System.out.println("\nBuy To Close:");
-		positions.stream().filter(p -> "Option".equals(p.securityType) && (p.marketValue / p.costBasis) < .1)
-				.forEach(p -> System.out.println(p.symbol));
+		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) < .1).forEach(p -> System.out.println(p.symbol));
 	}
 
 	private void analyzeCalls(Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
 	{
-		Set<String> symbolsWithCalls = positions.stream().filter(p -> "Option".equals(p.securityType) && p.symbol.endsWith(" C"))
-				.map(p -> p.symbol.split(" ")[0]).collect(Collectors.toSet());
+		Set<String> symbolsWithCalls = positions.stream().filter(Position::isCallOption).map(p -> p.symbol.split(" ")[0]).collect(Collectors.toSet());
 
 		Map<String, Double> symbolToLast100Buy = new HashMap<>();
 		for (Transaction transaction : transactions)
@@ -60,7 +60,7 @@ public class Options implements Program
 		}
 
 		System.out.println("\nSell Calls:");
-		positions.stream().filter(p -> !"Option".equals(p.securityType) && p.quantity >= 100 && !symbolsWithCalls.contains(p.symbol)).forEach(p -> {
+		positions.stream().filter(p -> !p.isOption() && p.quantity >= 100 && !symbolsWithCalls.contains(p.symbol)).forEach(p -> {
 			String s = String.format("%-4s %s (bought $%5.2f)", p.symbol, p.dayChangePct >= 0 ? "Y" : "N",
 					symbolToLast100Buy.getOrDefault(p.symbol, 0.));
 			System.out.println(s);
@@ -104,6 +104,13 @@ public class Options implements Program
 				.forEach(p -> System.out.println(String.format("%-4s (%.0f%% return)", p.left, p.right)));
 	}
 
+	private void currentPositions(Collection<? extends Position> positions)
+	{
+		System.out.println("\nCurrent Options:");
+		positions.stream().filter(p -> p.isPutOption()).forEach(p -> System.out.println(p.toShortString()));
+		positions.stream().filter(p -> p.isCallOption()).forEach(p -> System.out.println(p.toShortString()));
+	}
+
 	private void monthlyIncome(Collection<? extends Transaction> transactions)
 	{
 		System.out.println("\nMonthly Income:");
@@ -135,6 +142,26 @@ public class Options implements Program
 			dayChangePct = StringUtils.parsePercent(record.get(8));
 			costBasis = StringUtils.parsePrice(record.get(9));
 			securityType = record.size() > 24 ? record.get(24) : null;
+		}
+
+		public boolean isOption()
+		{
+			return "Option".equals(securityType);
+		}
+
+		public boolean isCallOption()
+		{
+			return isOption() && symbol.endsWith(" C");
+		}
+
+		public boolean isPutOption()
+		{
+			return isOption() && symbol.endsWith(" P");
+		}
+
+		public String toShortString()
+		{
+			return String.format("%-23s %3d", symbol, quantity);
 		}
 
 		@Override

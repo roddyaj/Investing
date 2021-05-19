@@ -96,8 +96,8 @@ public class Algorithm
 			return null;
 		}
 
-		String changeText = position.getValue("Price Change %");
-		double changePct = Double.parseDouble(changeText.substring(0, changeText.length() - 1));
+		String changeText = position.getValue("Price Change %").replace("%", "");
+		double changePct = !changeText.equals("N/A") ? Double.parseDouble(changeText) : 0;
 
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());

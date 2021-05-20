@@ -93,6 +93,11 @@ public final class StringUtils
 		return date;
 	}
 
+	public static String limit(String s, int length)
+	{
+		return s.substring(0, Math.min(length, s.length()));
+	}
+
 	private StringUtils()
 	{
 	}

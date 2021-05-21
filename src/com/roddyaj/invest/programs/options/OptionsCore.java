@@ -70,6 +70,12 @@ public class OptionsCore
 			output.putsToSell.add(new Pair<>(symbol, averageReturn));
 		}
 		Collections.sort(output.putsToSell, (o1, o2) -> o2.right.compareTo(o1.right));
+
+		// Calculate available cash to trade
+		double cashBalance = positions.stream().filter(p -> p.symbol.equals("Cash & Cash Investments")).mapToDouble(p -> p.marketValue).findAny()
+				.orElse(0);
+		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * 100).sum();
+		output.availableToTrade = cashBalance - putOnHold;
 	}
 
 	private void currentPositions(Collection<? extends Position> positions, OptionsOutput output)

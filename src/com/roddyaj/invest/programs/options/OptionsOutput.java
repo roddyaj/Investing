@@ -13,6 +13,7 @@ public class OptionsOutput
 	public final List<Position> buyToClose = new ArrayList<>();
 	public final List<Position> callsToSell = new ArrayList<>();
 	public final Map<String, Double> symbolToLast100Buy = new HashMap<>();
+	public double availableToTrade;
 	public final List<Pair<String, Double>> putsToSell = new ArrayList<>();
 	public final List<Position> currentPositions = new ArrayList<>();
 	public final Map<String, Double> monthToIncome = new HashMap<>();
@@ -39,6 +40,7 @@ public class OptionsOutput
 		if (!putsToSell.isEmpty())
 		{
 			addHeader("Sell Puts:", lines);
+			lines.add(String.format("%s %.2f", "Available to trade:", availableToTrade));
 			for (Pair<String, Double> pair : putsToSell)
 				lines.add(String.format("%-4s (%.0f%% return)", pair.left, pair.right));
 		}

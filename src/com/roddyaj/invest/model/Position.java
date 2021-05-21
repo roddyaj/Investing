@@ -13,14 +13,26 @@ public class Position
 	public final double costBasis;
 	public final String securityType;
 
+	public Option option;
+
 	public Position(CSVRecord record)
 	{
-		symbol = record.get(0);
+		String symbolOrOption = record.get(0);
 		quantity = StringUtils.parseInt(record.get(2));
 		marketValue = StringUtils.parsePrice(record.get(6));
 		dayChangePct = StringUtils.parsePercent(record.get(8));
 		costBasis = StringUtils.parsePrice(record.get(9));
 		securityType = record.size() > 24 ? record.get(24) : null;
+
+		if (isOption())
+		{
+			option = new Option(symbolOrOption);
+			symbol = option.symbol;
+		}
+		else
+		{
+			symbol = symbolOrOption;
+		}
 	}
 
 	public boolean isOption()
@@ -30,22 +42,27 @@ public class Position
 
 	public boolean isCallOption()
 	{
-		return isOption() && symbol.endsWith(" C");
+		return isOption() && option.type == 'C';
 	}
 
 	public boolean isPutOption()
 	{
-		return isOption() && symbol.endsWith(" P");
+		return isOption() && option.type == 'P';
 	}
 
-	public String toShortString()
+	public String toStringStock()
 	{
-		return String.format("%-23s %3d", symbol, quantity);
+		return String.format("%-5s %3d %7.2f %7.2f %7.2f", symbol, quantity, marketValue, costBasis, dayChangePct);
+	}
+
+	public String toStringOption()
+	{
+		return String.format("%-5s %2d %s %5.2f %s", symbol, quantity, option.expiryDate, option.strike, option.type);
 	}
 
 	@Override
 	public String toString()
 	{
-		return String.format("%-5s %3d %7.2f %7.2f %-23s %5.2f", symbol, quantity, marketValue, costBasis, securityType, dayChangePct);
+		return option == null ? toStringStock() : toStringOption();
 	}
 }

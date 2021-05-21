@@ -16,7 +16,6 @@ public class Transaction
 	public final double price;
 	public final double amount;
 
-	public final boolean isOption;
 	public Option option;
 	public int days;
 	public double annualReturn;
@@ -28,12 +27,12 @@ public class Transaction
 	{
 		date = StringUtils.parseDate(record.get(0));
 		action = record.get(1);
+		String symbolOrOption = record.get(2);
 		quantity = (int)Math.round(StringUtils.parseDouble(record.get(4)));
 		price = StringUtils.parsePrice(record.get(5));
 		amount = StringUtils.parsePrice(record.get(7));
 
-		String symbolOrOption = record.get(2);
-		isOption = symbolOrOption.contains(" ");
+		boolean isOption = symbolOrOption.contains(" ");
 		if (isOption)
 		{
 			option = new Option(symbolOrOption);
@@ -47,21 +46,35 @@ public class Transaction
 		}
 	}
 
+	public boolean isOption()
+	{
+		return option != null;
+	}
+
 	public boolean isCallOption()
 	{
-		return isOption && option.type == 'C';
+		return isOption() && option.type == 'C';
 	}
 
 	public boolean isPutOption()
 	{
-		return isOption && option.type == 'P';
+		return isOption() && option.type == 'P';
+	}
+
+	public String toStringStock()
+	{
+		return String.format(STOCK_FORMAT, date, StringUtils.limit(action, 14), symbol, quantity, price, amount);
+	}
+
+	public String toStringOption()
+	{
+		return String.format(OPTION_FORMAT, date, StringUtils.limit(action, 14), symbol, quantity, price, amount, option.expiryDate, option.strike,
+				option.type, days, annualReturn);
 	}
 
 	@Override
 	public String toString()
 	{
-		return !isOption ? String.format(STOCK_FORMAT, date, StringUtils.limit(action, 14), symbol, quantity, price, amount)
-				: String.format(OPTION_FORMAT, date, StringUtils.limit(action, 14), symbol, quantity, price, amount, option.expiryDate, option.strike,
-						option.type, days, annualReturn);
+		return option == null ? toStringStock() : toStringOption();
 	}
 }

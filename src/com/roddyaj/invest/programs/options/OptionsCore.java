@@ -20,6 +20,7 @@ public class OptionsCore
 	{
 //		transactions.forEach(System.out::println);
 //		positions.forEach(System.out::println);
+
 		analyzeBuyToClose(positions);
 		analyzeCalls(positions, transactions);
 		analyzePuts(positions, transactions);
@@ -30,17 +31,17 @@ public class OptionsCore
 	private void analyzeBuyToClose(Collection<? extends Position> positions)
 	{
 		System.out.println("\nBuy To Close:");
-		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) < .1).forEach(p -> System.out.println(p.symbol));
+		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) < .1).forEach(p -> System.out.println(p.toStringOption()));
 	}
 
 	private void analyzeCalls(Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
 	{
-		Set<String> symbolsWithCalls = positions.stream().filter(Position::isCallOption).map(p -> p.symbol.split(" ")[0]).collect(Collectors.toSet());
+		Set<String> symbolsWithCalls = positions.stream().filter(Position::isCallOption).map(p -> p.symbol).collect(Collectors.toSet());
 
 		Map<String, Double> symbolToLast100Buy = new HashMap<>();
 		for (Transaction t : transactions)
 		{
-			if (!t.isOption && t.action.equals("Buy") && t.quantity == 100 && !symbolToLast100Buy.containsKey(t.symbol))
+			if (!t.isOption() && t.action.equals("Buy") && t.quantity == 100 && !symbolToLast100Buy.containsKey(t.symbol))
 				symbolToLast100Buy.put(t.symbol, t.price);
 		}
 
@@ -56,7 +57,7 @@ public class OptionsCore
 	{
 		List<Pair<String, Double>> candidates = new ArrayList<>();
 
-		Map<String, Position> symbolToPosition = positions.stream().collect(Collectors.toMap(r -> r.symbol, r -> r));
+		Map<String, Position> symbolToPosition = positions.stream().filter(p -> !p.isOption()).collect(Collectors.toMap(r -> r.symbol, r -> r));
 		List<Transaction> allPuts = transactions.stream().filter(t -> t.isPutOption()).collect(Collectors.toList());
 		Set<String> allPutSymbols = allPuts.stream().map(t -> t.symbol).collect(Collectors.toSet());
 		for (String symbol : allPutSymbols)
@@ -92,8 +93,8 @@ public class OptionsCore
 	private void currentPositions(Collection<? extends Position> positions)
 	{
 		System.out.println("\nCurrent Options:");
-		positions.stream().filter(p -> p.isPutOption()).forEach(p -> System.out.println(p.toShortString()));
-		positions.stream().filter(p -> p.isCallOption()).forEach(p -> System.out.println(p.toShortString()));
+		positions.stream().filter(Position::isPutOption).forEach(System.out::println);
+		positions.stream().filter(Position::isCallOption).forEach(System.out::println);
 	}
 
 	private void monthlyIncome(Collection<? extends Transaction> transactions)
@@ -103,7 +104,7 @@ public class OptionsCore
 		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
 		for (Transaction transaction : transactions)
 		{
-			if (transaction.isOption && (transaction.action.startsWith("Sell to") || transaction.action.startsWith("Buy to")))
+			if (transaction.isOption() && (transaction.action.startsWith("Sell to") || transaction.action.startsWith("Buy to")))
 				monthToIncome.merge(transaction.date.format(format), transaction.amount, Double::sum);
 		}
 		monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey()))

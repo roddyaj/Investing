@@ -14,6 +14,7 @@ public class Position
 	public final String securityType;
 
 	public Option option;
+	public String money;
 
 	public Position(CSVRecord record)
 	{
@@ -22,6 +23,7 @@ public class Position
 		marketValue = StringUtils.parsePrice(record.get(6));
 		dayChangePct = StringUtils.parsePercent(record.get(8));
 		costBasis = StringUtils.parsePrice(record.get(9));
+		money = record.size() > 23 ? record.get(23) : null;
 		securityType = record.size() > 24 ? record.get(24) : null;
 
 		if (isOption())
@@ -57,7 +59,7 @@ public class Position
 
 	public String toStringOption()
 	{
-		return String.format("%-5s %2d %s %5.2f %s", symbol, quantity, option.expiryDate, option.strike, option.type);
+		return String.format("%-5s %2d %s %5.2f %s %s", symbol, quantity, option.expiryDate, option.strike, option.type, money);
 	}
 
 	@Override

@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.roddyaj.invest.model.Program;
+import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.network.HttpClient;
 
 public class Dataroma implements Program

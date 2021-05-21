@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.roddyaj.invest.commands.ListCommand;
-import com.roddyaj.invest.commands.RunCommand;
-import com.roddyaj.invest.model.Program;
-import com.roddyaj.invest.options.Options;
+import com.roddyaj.invest.framework.ListCommand;
+import com.roddyaj.invest.framework.Program;
+import com.roddyaj.invest.framework.RunCommand;
 import com.roddyaj.invest.programs.dataroma.Dataroma;
+import com.roddyaj.invest.programs.options.Options;
 import com.roddyaj.invest.va.ValueAverager;
 import com.roddyaj.invest.vf.ValueFinder;
 

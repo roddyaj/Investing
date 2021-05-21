@@ -1,8 +1,6 @@
-package com.roddyaj.invest.commands;
+package com.roddyaj.invest.framework;
 
 import java.util.Map;
-
-import com.roddyaj.invest.model.Program;
 
 public class ListCommand implements Program
 {

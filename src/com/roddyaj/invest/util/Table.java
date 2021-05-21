@@ -1,6 +1,6 @@
-package com.roddyaj.invest.model;
+package com.roddyaj.invest.util;
 
-import static com.roddyaj.invest.model.Table.Alignment.R;
+import static com.roddyaj.invest.util.Table.Alignment.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;

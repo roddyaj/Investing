@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.roddyaj.invest.model.Program;
+import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.va.api.schwab.SchwabAccountCsv;
 import com.roddyaj.invest.va.model.Account;
 import com.roddyaj.invest.va.model.config.AccountSettings;

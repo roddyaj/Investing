@@ -1,4 +1,4 @@
-package com.roddyaj.invest.model;
+package com.roddyaj.invest.framework;
 
 public interface Program
 {

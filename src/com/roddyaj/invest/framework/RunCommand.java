@@ -1,10 +1,8 @@
-package com.roddyaj.invest.commands;
+package com.roddyaj.invest.framework;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.roddyaj.invest.model.Program;
 
 public class RunCommand implements Program
 {

@@ -11,7 +11,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import com.roddyaj.invest.model.Program;
+import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.vf.api.DataRequesterImpl;
 import com.roddyaj.invest.vf.api.misc.SymbolReader;
 import com.roddyaj.invest.vf.api.schwab.SchwabScreenCsv;

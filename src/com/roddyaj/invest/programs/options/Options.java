@@ -22,6 +22,7 @@ public class Options implements Program
 				.map(Transaction::new).collect(Collectors.toList());
 		List<Position> positions = FileUtils.readCsv("Adam_Investing-Positions").stream().filter(r -> r.getRecordNumber() > 2).map(Position::new)
 				.collect(Collectors.toList());
-		new OptionsCore().run(positions, transactions);
+		OptionsOutput output = new OptionsCore().run(positions, transactions);
+		System.out.println(output);
 	}
 }

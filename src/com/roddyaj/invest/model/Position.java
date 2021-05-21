@@ -4,7 +4,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.roddyaj.invest.util.StringUtils;
 
-public class Position
+public class Position implements Comparable<Position>
 {
 	public final String symbol;
 	public final int quantity;
@@ -59,12 +59,19 @@ public class Position
 
 	public String toStringOption()
 	{
-		return String.format("%-5s %2d %s %5.2f %s %s", symbol, quantity, option.expiryDate, option.strike, option.type, money);
+		String moneyText = "OTM".equals(money) ? " " : "*";
+		return String.format("%-5s %2d %s %5.2f %s %s", symbol, quantity, option.expiryDate, option.strike, option.type, moneyText);
 	}
 
 	@Override
 	public String toString()
 	{
 		return option == null ? toStringStock() : toStringOption();
+	}
+
+	@Override
+	public int compareTo(Position o)
+	{
+		return symbol.compareTo(o.symbol);
 	}
 }

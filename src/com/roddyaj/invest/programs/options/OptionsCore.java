@@ -1,9 +1,9 @@
 package com.roddyaj.invest.programs.options;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +31,7 @@ public class OptionsCore
 	private void analyzeBuyToClose(Collection<? extends Position> positions)
 	{
 		System.out.println("\nBuy To Close:");
-		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) < .1).forEach(p -> System.out.println(p.toStringOption()));
+		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) < .1).forEach(System.out::println);
 	}
 
 	private void analyzeCalls(Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
@@ -55,39 +55,31 @@ public class OptionsCore
 
 	private void analyzePuts(Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
 	{
-		List<Pair<String, Double>> candidates = new ArrayList<>();
+		List<Transaction> historicalPuts = transactions.stream().filter(Transaction::isPutOption).collect(Collectors.toList());
 
-		Map<String, Position> symbolToPosition = positions.stream().filter(p -> !p.isOption()).collect(Collectors.toMap(r -> r.symbol, r -> r));
-		List<Transaction> allPuts = transactions.stream().filter(t -> t.isPutOption()).collect(Collectors.toList());
-		Set<String> allPutSymbols = allPuts.stream().map(t -> t.symbol).collect(Collectors.toSet());
-		for (String symbol : allPutSymbols)
+		// Get list of CSP candidates based on historical activity
+		List<String> putCandidates = new ArrayList<>();
+		Set<String> historicalPutSymbols = historicalPuts.stream().map(Transaction::getSymbol).collect(Collectors.toSet());
+		for (String symbol : historicalPutSymbols)
 		{
-			List<Transaction> symbolActivePuts = allPuts.stream()
-					.filter(t -> t.symbol.equals(symbol) && !LocalDate.now().isAfter(t.option.expiryDate)).collect(Collectors.toList());
-
-			int quantity = 0;
-			for (Transaction transaction : symbolActivePuts)
-			{
-				if (transaction.action.equals("Sell to Open"))
-					quantity += transaction.quantity;
-				else if (transaction.action.equals("Buy to Close"))
-					quantity -= transaction.quantity;
-			}
-
-			if (symbolToPosition.containsKey(symbol) && symbolToPosition.get(symbol).quantity > 50)
-				quantity++;
-
-			if (quantity <= 0)
-			{
-				double averageReturn = allPuts.stream().filter(t -> t.symbol.equals(symbol) && t.action.equals("Sell to Open"))
-						.collect(Collectors.averagingDouble(t -> t.annualReturn));
-				candidates.add(new Pair<>(symbol, averageReturn));
-			}
+			boolean haveCurrentPosition = positions.stream().anyMatch(p -> p.symbol.equals(symbol) && (p.isPutOption() || p.quantity > 50));
+			if (!haveCurrentPosition)
+				putCandidates.add(symbol);
 		}
 
+		// Calculate historical return on each one
+		List<Pair<String, Double>> candidatesWithReturn = new ArrayList<>();
+		for (String symbol : putCandidates)
+		{
+			double averageReturn = historicalPuts.stream().filter(t -> t.symbol.equals(symbol) && t.action.equals("Sell to Open"))
+					.collect(Collectors.averagingDouble(t -> t.annualReturn));
+			candidatesWithReturn.add(new Pair<>(symbol, averageReturn));
+		}
+		Collections.sort(candidatesWithReturn, (o1, o2) -> o2.right.compareTo(o1.right));
+
+		// Format output
 		System.out.println("\nSell Puts:");
-		candidates.stream().sorted((o1, o2) -> o2.right.compareTo(o1.right))
-				.forEach(p -> System.out.println(String.format("%-4s (%.0f%% return)", p.left, p.right)));
+		candidatesWithReturn.stream().forEach(p -> System.out.println(String.format("%-4s (%.0f%% return)", p.left, p.right)));
 	}
 
 	private void currentPositions(Collection<? extends Position> positions)

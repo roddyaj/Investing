@@ -46,6 +46,11 @@ public class Transaction
 		}
 	}
 
+	public String getSymbol()
+	{
+		return symbol;
+	}
+
 	public boolean isOption()
 	{
 		return option != null;

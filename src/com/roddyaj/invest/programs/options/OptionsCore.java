@@ -18,6 +18,7 @@ public class OptionsCore
 	{
 //		transactions.forEach(System.out::println);
 //		positions.forEach(System.out::println);
+//		transactions.stream().filter(Transaction::isOption).forEach(System.out::println);
 
 		OptionsOutput output = new OptionsOutput();
 
@@ -57,6 +58,7 @@ public class OptionsCore
 		Set<String> historicalPutSymbols = historicalPuts.stream().map(Transaction::getSymbol).collect(Collectors.toSet());
 		for (String symbol : historicalPutSymbols)
 		{
+			// TODO use total position size & threshold instead
 			boolean haveCurrentPosition = positions.stream().anyMatch(p -> p.symbol.equals(symbol) && (p.isPutOption() || p.quantity > 50));
 			if (!haveCurrentPosition)
 				putCandidates.add(symbol);

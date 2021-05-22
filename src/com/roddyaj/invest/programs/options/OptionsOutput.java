@@ -45,6 +45,8 @@ public class OptionsOutput
 				lines.add(String.format("%-4s (%.0f%% return)", pair.left, pair.right));
 		}
 
+		lines.add("\n===========================");
+
 		if (!buyToClose.isEmpty())
 		{
 			addHeader("Current Options:", lines);

@@ -11,8 +11,7 @@ import com.roddyaj.invest.util.Pair;
 public class OptionsOutput
 {
 	public final List<Position> buyToClose = new ArrayList<>();
-	public final List<Position> callsToSell = new ArrayList<>();
-	public final Map<String, Double> symbolToLast100Buy = new HashMap<>();
+	public final List<CallToSell> callsToSell = new ArrayList<>();
 	public double availableToTrade;
 	public final List<Pair<String, Double>> putsToSell = new ArrayList<>();
 	public final List<Position> currentPositions = new ArrayList<>();
@@ -32,9 +31,7 @@ public class OptionsOutput
 		if (!callsToSell.isEmpty())
 		{
 			addHeader("Sell Calls:", lines);
-			for (Position p : callsToSell)
-				lines.add(String.format("%-4s %s (bought $%5.2f)", p.symbol, p.dayChangePct >= 0 ? "Y" : "N",
-						symbolToLast100Buy.getOrDefault(p.symbol, 0.)));
+			callsToSell.forEach(c -> lines.add(c.toString()));
 		}
 
 		if (!putsToSell.isEmpty())

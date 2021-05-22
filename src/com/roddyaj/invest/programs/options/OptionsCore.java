@@ -4,7 +4,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,7 +20,6 @@ public class OptionsCore
 	{
 //		transactions.forEach(System.out::println);
 //		positions.forEach(System.out::println);
-//		transactions.stream().filter(Transaction::isOption).forEach(System.out::println);
 
 		OptionsOutput output = new OptionsOutput();
 
@@ -38,15 +39,25 @@ public class OptionsCore
 
 	private void analyzeCalls(Collection<? extends Position> positions, Collection<? extends Transaction> transactions, OptionsOutput output)
 	{
-		Set<String> symbolsWithCalls = positions.stream().filter(Position::isCallOption).map(p -> p.symbol).collect(Collectors.toSet());
-
+		Map<String, Double> symbolToLast100Buy = new HashMap<>();
 		for (Transaction t : transactions)
 		{
-			if (!t.isOption() && t.action.equals("Buy") && t.quantity == 100 && !output.symbolToLast100Buy.containsKey(t.symbol))
-				output.symbolToLast100Buy.put(t.symbol, t.price);
+			if (!t.isOption() && t.action.equals("Buy") && t.quantity == 100 && !symbolToLast100Buy.containsKey(t.symbol))
+				symbolToLast100Buy.put(t.symbol, t.price);
 		}
 
-		positions.stream().filter(p -> !p.isOption() && p.quantity >= 100 && !symbolsWithCalls.contains(p.symbol)).forEach(output.callsToSell::add);
+		for (Position position : positions)
+		{
+			if (!position.isOption() && position.quantity >= 100)
+			{
+				int totalCallsSold = positions.stream().filter(p -> p.symbol.equals(position.symbol) && p.isCallOption()).mapToInt(p -> p.quantity)
+						.sum();
+				int availableShares = position.quantity + totalCallsSold * 100;
+				int availableCalls = (int)Math.floor(availableShares / 100.0);
+				if (availableCalls > 0)
+					output.callsToSell.add(new CallToSell(position, symbolToLast100Buy.getOrDefault(position.symbol, 0.), availableCalls));
+			}
+		}
 	}
 
 	private void analyzePuts(Collection<? extends Position> positions, Collection<? extends Transaction> transactions, OptionsOutput output)

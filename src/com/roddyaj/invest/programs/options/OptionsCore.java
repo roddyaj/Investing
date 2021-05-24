@@ -63,11 +63,11 @@ public class OptionsCore
 	{
 		final double MAX_ALLOCATION = 2500;
 
-		List<Transaction> historicalPuts = transactions.stream().filter(Transaction::isPutOption).collect(Collectors.toList());
+		List<Transaction> historicalOptions = transactions.stream().filter(Transaction::isOption).collect(Collectors.toList());
 
 		// Get list of CSP candidates based on historical activity
-		Set<String> historicalPutSymbols = historicalPuts.stream().map(Transaction::getSymbol).collect(Collectors.toSet());
-		for (String symbol : historicalPutSymbols)
+		Set<String> historicalSymbols = historicalOptions.stream().map(Transaction::getSymbol).collect(Collectors.toSet());
+		for (String symbol : historicalSymbols)
 		{
 			List<Position> symbolPositions = positions.stream().filter(p -> p.symbol.equals(symbol)).collect(Collectors.toList());
 			if (!symbolPositions.isEmpty())
@@ -78,7 +78,7 @@ public class OptionsCore
 						.orElse(0);
 				double totalInvested = (shareCount + putsSold * -100) * price;
 				double available = MAX_ALLOCATION - totalInvested;
-				double canSellCount = available / (price * 100); // should be divided by strike price
+				double canSellCount = available / (price * 100); // Hack: using price in place of strike since we don't have strike
 				if (canSellCount > 0.9)
 					output.putsToSell.add(new PutToSell(symbol, available));
 			}
@@ -89,7 +89,7 @@ public class OptionsCore
 		// Calculate historical return on each one
 		for (PutToSell put : output.putsToSell)
 		{
-			put.averageReturn = historicalPuts.stream().filter(t -> t.symbol.equals(put.symbol) && t.action.equals("Sell to Open"))
+			put.averageReturn = historicalOptions.stream().filter(t -> t.symbol.equals(put.symbol) && t.action.equals("Sell to Open"))
 					.collect(Collectors.averagingDouble(t -> t.annualReturn));
 		}
 

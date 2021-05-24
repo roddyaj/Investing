@@ -8,38 +8,41 @@ public class Position implements Comparable<Position>
 {
 	public final String symbol;
 	public final int quantity;
+	public final double price;
 	public final double marketValue;
 	public final double dayChangePct;
 	public final double costBasis;
 	public final String securityType;
 
-	public Option option;
-	public String money;
+	public final Option option;
 
 	public Position(CSVRecord record)
 	{
 		String symbolOrOption = record.get(0);
 		quantity = StringUtils.parseInt(record.get(2));
+		price = StringUtils.parsePrice(record.get(3));
 		marketValue = StringUtils.parsePrice(record.get(6));
 		dayChangePct = StringUtils.parsePercent(record.get(8));
 		costBasis = StringUtils.parsePrice(record.get(9));
-		money = record.size() > 23 ? record.get(23) : null;
+		double intrinsicValue = record.size() > 22 ? StringUtils.parseDouble(record.get(22)) : 0;
+		String money = record.size() > 23 ? record.get(23) : null;
 		securityType = record.size() > 24 ? record.get(24) : null;
 
-		if (isOption())
+		if ("Option".equals(securityType))
 		{
-			option = new Option(symbolOrOption);
+			option = new Option(symbolOrOption, money, intrinsicValue);
 			symbol = option.symbol;
 		}
 		else
 		{
+			option = null;
 			symbol = symbolOrOption;
 		}
 	}
 
 	public boolean isOption()
 	{
-		return "Option".equals(securityType);
+		return option != null;
 	}
 
 	public boolean isCallOption()
@@ -59,14 +62,14 @@ public class Position implements Comparable<Position>
 
 	public String toStringOption()
 	{
-		String moneyText = "OTM".equals(money) ? " " : "*";
+		String moneyText = "OTM".equals(option.money) ? " " : "*";
 		return String.format("%-5s %2d %s %5.2f %s %s", symbol, quantity, option.expiryDate, option.strike, option.type, moneyText);
 	}
 
 	@Override
 	public String toString()
 	{
-		return option == null ? toStringStock() : toStringOption();
+		return isOption() ? toStringOption() : toStringStock();
 	}
 
 	@Override

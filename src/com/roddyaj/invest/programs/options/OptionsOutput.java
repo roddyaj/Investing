@@ -6,14 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.roddyaj.invest.model.Position;
-import com.roddyaj.invest.util.Pair;
 
 public class OptionsOutput
 {
 	public final List<Position> buyToClose = new ArrayList<>();
 	public final List<CallToSell> callsToSell = new ArrayList<>();
+	public final List<PutToSell> putsToSell = new ArrayList<>();
 	public double availableToTrade;
-	public final List<Pair<String, Double>> putsToSell = new ArrayList<>();
 	public final List<Position> currentPositions = new ArrayList<>();
 	public final Map<String, Double> monthToIncome = new HashMap<>();
 
@@ -38,11 +37,11 @@ public class OptionsOutput
 		{
 			addHeader("Sell Puts:", lines);
 			lines.add(String.format("%s %.2f", "Available to trade:", availableToTrade));
-			for (Pair<String, Double> pair : putsToSell)
-				lines.add(String.format("%-4s (%.0f%% return)", pair.left, pair.right));
+			putsToSell.forEach(p -> lines.add(p.toString()));
 		}
 
-		lines.add("\n===========================");
+		if (!lines.isEmpty())
+			lines.add("\n===========================");
 
 		if (!buyToClose.isEmpty())
 		{

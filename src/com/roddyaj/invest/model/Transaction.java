@@ -80,6 +80,6 @@ public class Transaction
 	@Override
 	public String toString()
 	{
-		return option == null ? toStringStock() : toStringOption();
+		return isOption() ? toStringOption() : toStringStock();
 	}
 }

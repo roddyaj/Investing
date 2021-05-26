@@ -106,8 +106,8 @@ public class OptionsCore
 
 	private void currentPositions(Collection<? extends Position> positions, OptionsOutput output)
 	{
-		positions.stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
 		positions.stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
+		positions.stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
 	}
 
 	private void monthlyIncome(Collection<? extends Transaction> transactions, OptionsOutput output)

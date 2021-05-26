@@ -95,7 +95,7 @@ public class OptionsOutput
 		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<title>Options</title>");
 		lines.add("<style>");
 		lines.add("th, td { padding: 2px 4px; }");
-		lines.add(".heading { margin-bottom: 4px; }");
+		lines.add(".heading { margin-bottom: 4px; font-size: large; }");
 		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin: 8px 0px; }");
 		lines.add("</style>");
 		lines.add("</head>\n<body>");

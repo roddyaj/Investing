@@ -132,10 +132,9 @@ public class Position implements Comparable<Position>
 		protected List<Object> getObjectElements(Position p)
 		{
 			final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
-			String link = String.format("<a href=\"" + url + "\">%s</a>", p.symbol, p.symbol);
 			String moneyText = "OTM".equals(p.option.money) ? "" : "*";
 
-			return List.of(link, p.quantity, p.option.expiryDate, p.option.strike, p.option.type, moneyText);
+			return List.of(toLink(url, p.symbol), p.quantity, p.option.expiryDate, p.option.strike, p.option.type, moneyText);
 		}
 	}
 }

@@ -42,7 +42,8 @@ public class PutToSell implements Comparable<PutToSell>
 		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
-			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("Schwab", "%s", Align.L));
+			columns.add(new Column("Yahoo", "%s", Align.L));
 			columns.add(new Column("Available", "$%.0f", Align.R));
 			columns.add(new Column("Avg. Return", "%.0f%%", Align.R));
 			return columns;
@@ -51,10 +52,10 @@ public class PutToSell implements Comparable<PutToSell>
 		@Override
 		protected List<Object> getObjectElements(PutToSell p)
 		{
-			final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
-			String link = String.format("<a href=\"" + url + "\">%s</a>", p.symbol, p.symbol);
+			final String schwab = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+			final String yahoo = "https://finance.yahoo.com/quote/%s";
 
-			return List.of(link, p.availableAmount, p.averageReturn);
+			return List.of(toLink(schwab, p.symbol), toLink(yahoo, p.symbol), p.availableAmount, p.averageReturn);
 		}
 	}
 }

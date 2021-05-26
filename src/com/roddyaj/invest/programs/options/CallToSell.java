@@ -42,9 +42,8 @@ public class CallToSell
 		protected List<Object> getObjectElements(CallToSell c)
 		{
 			final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
-			String link = String.format("<a href=\"" + url + "\">%s</a>", c.position.symbol, c.position.symbol);
 
-			return List.of(link, c.quantity, c.position.dayChangePct >= 0 ? "Y" : "", c.lastBuy);
+			return List.of(toLink(url, c.position.symbol), c.quantity, c.position.dayChangePct >= 0 ? "Y" : "", c.lastBuy);
 		}
 	}
 }

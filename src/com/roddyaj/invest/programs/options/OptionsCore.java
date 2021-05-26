@@ -33,7 +33,7 @@ public class OptionsCore
 
 	private void analyzeBuyToClose(Collection<? extends Position> positions, OptionsOutput output)
 	{
-		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) < .1).forEach(output.buyToClose::add);
+		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .1).forEach(output.buyToClose::add);
 	}
 
 	private void analyzeCalls(Collection<? extends Position> positions, Collection<? extends Transaction> transactions, OptionsOutput output)
@@ -100,7 +100,7 @@ public class OptionsCore
 	{
 		double cashBalance = positions.stream().filter(p -> p.symbol.equals("Cash & Cash Investments")).mapToDouble(p -> p.marketValue).findAny()
 				.orElse(0);
-		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * 100).sum();
+		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * p.quantity * -100).sum();
 		output.availableToTrade = cashBalance - putOnHold;
 	}
 

@@ -1,7 +1,11 @@
 package com.roddyaj.invest.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.csv.CSVRecord;
 
+import com.roddyaj.invest.util.HtmlFormatter;
 import com.roddyaj.invest.util.StringUtils;
 
 public class Position implements Comparable<Position>
@@ -12,7 +16,6 @@ public class Position implements Comparable<Position>
 	public final double marketValue;
 	public final double dayChangePct;
 	public final double costBasis;
-	public final String securityType;
 
 	public final Option option;
 
@@ -26,7 +29,7 @@ public class Position implements Comparable<Position>
 		costBasis = StringUtils.parsePrice(record.get(9));
 		double intrinsicValue = record.size() > 22 ? StringUtils.parseDouble(record.get(22)) : 0;
 		String money = record.size() > 23 ? record.get(23) : null;
-		securityType = record.size() > 24 ? record.get(24) : null;
+		String securityType = record.size() > 24 ? record.get(24) : null;
 
 		if ("Option".equals(securityType))
 		{
@@ -38,6 +41,17 @@ public class Position implements Comparable<Position>
 			option = null;
 			symbol = symbolOrOption;
 		}
+	}
+
+	public Position(String symbol, int quantity, double price)
+	{
+		this.symbol = symbol;
+		this.quantity = quantity;
+		this.price = price;
+		marketValue = quantity * price;
+		dayChangePct = 0;
+		costBasis = 0;
+		option = null;
 	}
 
 	public boolean isOption()
@@ -78,19 +92,50 @@ public class Position implements Comparable<Position>
 		return symbol.compareTo(o.symbol);
 	}
 
-	public String toHtmlString()
+	public static class StockHtmlFormatter extends HtmlFormatter<Position>
 	{
-		return isOption() ? toHtmlStringOption() : toHtmlStringStock();
+		@Override
+		protected List<Column> getColumns()
+		{
+			List<Column> columns = new ArrayList<>();
+			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("#", "%d", Align.R));
+			columns.add(new Column("MarketValue", "$%.2f", Align.R));
+			columns.add(new Column("Cost Basis", "$%.2f", Align.R));
+			columns.add(new Column("Day Change", "%.2f%%", Align.R));
+			return columns;
+		}
+
+		@Override
+		protected List<Object> getObjectElements(Position p)
+		{
+			return List.of(p.symbol, p.quantity, p.marketValue, p.costBasis, p.dayChangePct);
+		}
 	}
 
-	private String toHtmlStringStock()
+	public static class OptionHtmlFormatter extends HtmlFormatter<Position>
 	{
-		return "TODO";
-//		return String.format("%-5s %3d %7.2f %7.2f %7.2f", symbol, quantity, marketValue, costBasis, dayChangePct);
-	}
+		@Override
+		protected List<Column> getColumns()
+		{
+			List<Column> columns = new ArrayList<>();
+			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("#", "%d", Align.R));
+			columns.add(new Column("Expiry Date", "%s", Align.L));
+			columns.add(new Column("Strike", "$%.2f", Align.R));
+			columns.add(new Column("Type", "%s", Align.C));
+			columns.add(new Column("", "%s", Align.C));
+			return columns;
+		}
 
-	private String toHtmlStringOption()
-	{
-		return String.format("<div><a href=\"https://client.schwab.com/SymbolRouting.aspx?symbol=%s\">%s</a></div>", symbol, symbol);
+		@Override
+		protected List<Object> getObjectElements(Position p)
+		{
+			final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+			String link = String.format("<a href=\"" + url + "\">%s</a>", p.symbol, p.symbol);
+			String moneyText = "OTM".equals(p.option.money) ? "" : "*";
+
+			return List.of(link, p.quantity, p.option.expiryDate, p.option.strike, p.option.type, moneyText);
+		}
 	}
 }

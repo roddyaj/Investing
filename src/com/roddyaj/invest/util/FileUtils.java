@@ -14,7 +14,7 @@ import org.apache.commons.csv.CSVRecord;
 
 public final class FileUtils
 {
-	private static final Path DEFAULT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
+	public static final Path DEFAULT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
 
 	public static List<String> readLines(String file)
 	{

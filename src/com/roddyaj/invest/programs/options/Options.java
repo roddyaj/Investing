@@ -31,7 +31,7 @@ public class Options implements Program
 
 		System.out.println(output.toString());
 
-		Path path = Paths.get("options.html");
+		Path path = Paths.get(FileUtils.DEFAULT_DIR.toString(), "options.html");
 		try
 		{
 			Files.writeString(path, output.toHtmlString());

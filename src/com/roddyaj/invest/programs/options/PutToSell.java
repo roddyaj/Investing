@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.roddyaj.invest.util.HtmlFormatter;
+
 public class PutToSell implements Comparable<PutToSell>
 {
 	public final String symbol;
@@ -28,24 +30,31 @@ public class PutToSell implements Comparable<PutToSell>
 		return Double.compare(o.averageReturn, averageReturn);
 	}
 
-	public String toHtmlString()
+	public static List<String> toBlock(Collection<? extends PutToSell> puts, double availableToTrade)
 	{
-		final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
-		return String.format("<tr><td><a href=\"" + url + "\">%s</a></td><td align=\"right\">$%.0f</td><td align=\"right\">%.0f%%</td></tr>", symbol,
-				symbol, availableAmount, averageReturn);
+		String title = String.format("<div class=\"heading\"><b>Candidate Puts To Sell</b>&nbsp; $%.2f available to trade</div>", availableToTrade);
+		return new PutHtmlFormatter().toBlockHtmlTitle(puts, title);
 	}
 
-	public static List<String> toHtml(Collection<? extends PutToSell> puts)
+	public static class PutHtmlFormatter extends HtmlFormatter<PutToSell>
 	{
-		List<String> lines = new ArrayList<>();
-		if (!puts.isEmpty())
+		@Override
+		protected List<Column> getColumns()
 		{
-			lines.add("<h4>Candidate Puts To Sell</h4>");
-			lines.add("<table cellspacing=\"10\">");
-			lines.add("<tr><th>Ticker</th><th>Available</th><th>Avg. Return</th></tr>");
-			puts.forEach(p -> lines.add(p.toHtmlString()));
-			lines.add("</table>");
+			List<Column> columns = new ArrayList<>();
+			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("Available", "$%.0f", Align.R));
+			columns.add(new Column("Avg. Return", "%.0f%%", Align.R));
+			return columns;
 		}
-		return lines;
+
+		@Override
+		protected List<Object> getObjectElements(PutToSell p)
+		{
+			final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+			String link = String.format("<a href=\"" + url + "\">%s</a>", p.symbol, p.symbol);
+
+			return List.of(link, p.availableAmount, p.averageReturn);
+		}
 	}
 }

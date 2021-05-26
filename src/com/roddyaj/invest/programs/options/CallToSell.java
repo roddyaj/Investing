@@ -1,10 +1,10 @@
 package com.roddyaj.invest.programs.options;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.roddyaj.invest.model.Position;
+import com.roddyaj.invest.util.HtmlFormatter;
 
 public class CallToSell
 {
@@ -25,24 +25,26 @@ public class CallToSell
 		return String.format("%-4s %d %s (bought at $%5.2f)", position.symbol, quantity, position.dayChangePct >= 0 ? "Y" : " ", lastBuy);
 	}
 
-	public String toHtmlString()
+	public static class CallHtmlFormatter extends HtmlFormatter<CallToSell>
 	{
-		final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
-		return String.format("<tr><td><a href=\"" + url + "\">%s</a></td><td>%d</td><td align=\"center\">%s</td><td align=\"right\">$%.2f</td></tr>",
-				position.symbol, position.symbol, quantity, position.dayChangePct >= 0 ? "Y" : "", lastBuy);
-	}
-
-	public static List<String> toHtml(Collection<? extends CallToSell> calls)
-	{
-		List<String> lines = new ArrayList<>();
-		if (!calls.isEmpty())
+		@Override
+		protected List<Column> getColumns()
 		{
-			lines.add("<h4>Calls To Sell</h4>");
-			lines.add("<table cellspacing=\"10\">");
-			lines.add("<tr><th>Ticker</th><th>#</th><th>Favorable</th><th>Last Buy</th></tr>");
-			calls.forEach(c -> lines.add(c.toHtmlString()));
-			lines.add("</table>");
+			List<Column> columns = new ArrayList<>();
+			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("#", "%d", Align.R));
+			columns.add(new Column("Favorable", "%s", Align.C));
+			columns.add(new Column("Last Buy", "$%.2f", Align.R));
+			return columns;
 		}
-		return lines;
+
+		@Override
+		protected List<Object> getObjectElements(CallToSell c)
+		{
+			final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+			String link = String.format("<a href=\"" + url + "\">%s</a>", c.position.symbol, c.position.symbol);
+
+			return List.of(link, c.quantity, c.position.dayChangePct >= 0 ? "Y" : "", c.lastBuy);
+		}
 	}
 }

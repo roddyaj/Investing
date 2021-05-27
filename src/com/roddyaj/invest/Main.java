@@ -12,8 +12,8 @@ import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.framework.RunCommand;
 import com.roddyaj.invest.programs.dataroma.Dataroma;
 import com.roddyaj.invest.programs.options.Options;
-import com.roddyaj.invest.va.ValueAverager;
-import com.roddyaj.invest.vf.ValueFinder;
+import com.roddyaj.invest.programs.va.ValueAverager;
+import com.roddyaj.invest.programs.vf.ValueFinder;
 
 public final class Main
 {

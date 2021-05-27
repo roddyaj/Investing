@@ -11,7 +11,12 @@ public class AccountSettings
 	private double annualContrib;
 	private Allocation[] allocations;
 	private PositionSettings[] positions;
-	private AllocationMap allocation = null;
+	private AllocationMap allocation;
+
+	public void createMap(double untrackedPercent)
+	{
+		allocation = new AllocationMap(allocations, untrackedPercent);
+	}
 
 	@JsonProperty("name")
 	public String getName()
@@ -61,10 +66,13 @@ public class AccountSettings
 		this.positions = positions;
 	}
 
+	public boolean hasAllocation(String symbol)
+	{
+		return Arrays.stream(allocations).anyMatch(a -> a.getCatLastToken().equals(symbol));
+	}
+
 	public double getAllocation(String symbol)
 	{
-		if (allocation == null)
-			allocation = new AllocationMap(allocations);
 		return allocation.getAllocation(symbol);
 	}
 

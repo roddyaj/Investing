@@ -11,12 +11,20 @@ public class AllocationMap
 {
 	private final Map<String, Double> allocationMap = new HashMap<>();
 
-	public AllocationMap(Allocation[] allocations)
+	public AllocationMap(Allocation[] allocations, double untrackedPercent)
 	{
 		// Create a map of category => percent from the config
 		Map<String, Double> map = new HashMap<>();
 		for (Allocation allocation : allocations)
 			map.put(allocation.getCat(), allocation.getPercent() / 100);
+
+		// Fill in the untracked percent
+		String untrackedCategory = map.keySet().stream().filter(c -> getSymbol(c).equals("untracked")).findAny().orElse(null);
+		if (untrackedCategory != null)
+		{
+			double factor = getTotalAllocation(getParent(untrackedCategory), map);
+			map.put(untrackedCategory, untrackedPercent / factor);
+		}
 
 		// Calculate any relative values
 		for (Map.Entry<String, Double> entry : map.entrySet())
@@ -47,16 +55,9 @@ public class AllocationMap
 			boolean isLeaf = getChildren(category, map).count() == 0;
 			if (isLeaf)
 			{
-				double allocation = 1;
-				String[] tokens = category.split("\\.");
-				for (int i = tokens.length; i > 0; i--)
-				{
-					String partialKey = String.join(".", Arrays.copyOfRange(tokens, 0, i));
-					if (map.containsKey(partialKey))
-						allocation *= map.get(partialKey).doubleValue();
-				}
-
 				String symbol = getSymbol(category);
+				double allocation = getTotalAllocation(category, map);
+
 				if (allocationMap.containsKey(symbol))
 					allocation += allocationMap.get(symbol).doubleValue();
 				allocationMap.put(symbol, allocation);
@@ -75,6 +76,19 @@ public class AllocationMap
 	public double getAllocation(String symbol)
 	{
 		return allocationMap.getOrDefault(symbol, 0.);
+	}
+
+	private static double getTotalAllocation(String category, Map<String, Double> map)
+	{
+		double allocation = 1;
+		String[] tokens = category.split("\\.");
+		for (int i = tokens.length; i > 0; i--)
+		{
+			String partialKey = String.join(".", Arrays.copyOfRange(tokens, 0, i));
+			if (map.containsKey(partialKey))
+				allocation *= map.get(partialKey).doubleValue();
+		}
+		return allocation;
 	}
 
 	private static Stream<Map.Entry<String, Double>> getChildren(String parent, Map<String, Double> map)

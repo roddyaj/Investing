@@ -51,6 +51,13 @@ public class Algorithm
 
 	public void run(int reportLevel)
 	{
+		double untrackedTotal = account.getPositions().stream()
+				.filter(p -> !accountSettings.hasAllocation(p.symbol) && !"--".equals(p.getValue("Quantity"))).mapToDouble(Position::getMarketValue)
+				.sum();
+		double untrackedPercent = untrackedTotal / account.getTotalValue();
+
+		accountSettings.createMap(untrackedPercent);
+
 		if (!LocalDate.now().equals(account.date))
 			System.out.println("\n\033[33mAccount data is not from today: " + account.date + "\033[0m");
 
@@ -64,14 +71,6 @@ public class Algorithm
 
 	private void determineAndPrintOrders()
 	{
-		for (Position position : account.getPositions())
-		{
-			if (accountSettings.getAllocation(position.symbol) == 0)
-			{
-				System.out.println("untracked " + position.symbol);
-			}
-		}
-
 		// @formatter:off
 		List<Order> orders = accountSettings.getRealPositions()
 			.map(position -> evaluate(position.getSymbol()))

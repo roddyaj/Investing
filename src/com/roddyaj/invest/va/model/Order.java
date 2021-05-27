@@ -59,10 +59,10 @@ public class Order
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
-			columns.add(new Column("Action", "%s", Align.L));
+			columns.add(new Column("Action", "%s", Align.C));
 			columns.add(new Column("#", "%d", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
-			columns.add(new Column("Amount", "%.0f", Align.R));
+			columns.add(new Column("Total", "%.0f", Align.R));
 			columns.add(new Column("Change", "%s", Align.R));
 			return columns;
 		}
@@ -72,12 +72,19 @@ public class Order
 		{
 			String action = o.shareCount >= 0 ? "Buy" : "Sell";
 			final String url = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx?tradeaction=" + action + "&amp;Symbol=%s";
-			return List.of(toLink(url, o.symbol), action, Math.abs(o.shareCount), o.price, o.getAmount(), color(o.changePct, "%.2f%%"));
+			String actionColored = color(action, action.equals("Buy") ? "green" : "red");
+			String changeColored = color(o.changePct, "%.2f%%");
+			return List.of(toLink(url, o.symbol), actionColored, Math.abs(o.shareCount), o.price, o.getAmount(), changeColored);
 		}
 
 		private static String color(double d, String format)
 		{
-			return "<font color=\"" + (d >= 0 ? "green" : "red") + "\">" + String.format(format, d) + "</font>";
+			return color(String.format(format, d), d >= 0 ? "green" : "red");
+		}
+
+		private static String color(String s, String color)
+		{
+			return "<font color=\"" + color + "\">" + s + "</font>";
 		}
 	}
 }

@@ -33,7 +33,7 @@ public class OptionsCore
 
 	private void analyzeBuyToClose(Collection<? extends Position> positions, OptionsOutput output)
 	{
-		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .1).forEach(output.buyToClose::add);
+		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .15).forEach(output.buyToClose::add);
 	}
 
 	private void analyzeCalls(Collection<? extends Position> positions, Collection<? extends Transaction> transactions, OptionsOutput output)

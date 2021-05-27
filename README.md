@@ -1,2 +1,2 @@
-# ValueFinder
-Attempts to find good investments
+# Investing
+A collection of programs to help with investing.

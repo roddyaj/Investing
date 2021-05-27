@@ -9,9 +9,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.util.FileUtils;
+import com.roddyaj.invest.util.HtmlFormatter;
 
 public class OptionsOutput
 {
@@ -37,7 +39,7 @@ public class OptionsOutput
 		Path path = Paths.get(FileUtils.DEFAULT_DIR.toString(), "options.html");
 		try
 		{
-			Files.writeString(path, output.toHtmlString());
+			Files.writeString(path, output.toString());
 			Desktop.getDesktop().browse(path.toUri());
 		}
 		catch (IOException e)
@@ -51,48 +53,8 @@ public class OptionsOutput
 	{
 		List<String> lines = new ArrayList<>();
 
-		if (!buyToClose.isEmpty())
-		{
-			addHeader("Buy To Close:", lines);
-			buyToClose.forEach(p -> lines.add(p.toString()));
-		}
-
-		if (!callsToSell.isEmpty())
-		{
-			addHeader("Sell Calls:", lines);
-			callsToSell.forEach(c -> lines.add(c.toString()));
-		}
-
-		if (!putsToSell.isEmpty())
-		{
-			addHeader("Sell Puts:", lines);
-			lines.add(String.format("%s $%.2f", "Available to trade:", availableToTrade));
-			putsToSell.forEach(p -> lines.add(p.toString()));
-		}
-
-		if (!lines.isEmpty())
-			lines.add("\n===========================");
-
-		if (!currentPositions.isEmpty())
-		{
-			addHeader("Current Options:", lines);
-			currentPositions.forEach(p -> lines.add(p.toString()));
-		}
-
-		if (!monthToIncome.isEmpty())
-		{
-			addHeader("Monthly Income:", lines);
-			monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey()))
-					.forEach(e -> lines.add(String.format("%s %7.2f", e.getKey(), e.getValue())));
-		}
-
-		return String.join("\n", lines);
-	}
-
-	public String toHtmlString()
-	{
-		List<String> lines = new ArrayList<>();
-		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<title>Options</title>");
+		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>");
+		lines.add("<title>Options</title>");
 		lines.add("<style>");
 		lines.add("th, td { padding: 2px 4px; }");
 		lines.add(".heading { margin-bottom: 4px; font-size: large; }");
@@ -105,22 +67,29 @@ public class OptionsOutput
 		lines.addAll(PutToSell.toBlock(putsToSell, availableToTrade));
 		lines.add("<div style=\"padding: 4px 0px;\"></div>");
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, "Current Options"));
-
-//		if (!monthToIncome.isEmpty())
-//		{
-//			addHeader("Monthly Income:", lines);
-//			monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey()))
-//					.forEach(e -> lines.add(String.format("%s %7.2f", e.getKey(), e.getValue())));
-//		}
+		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
+		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Income"));
 
 		lines.add("</body>\n</html>");
+
 		return String.join("\n", lines);
 	}
 
-	private static void addHeader(String header, List<String> lines)
+	private static class MonthlyIncomeFormatter extends HtmlFormatter<Map.Entry<String, Double>>
 	{
-		if (!lines.isEmpty())
-			lines.add("");
-		lines.add(header);
+		@Override
+		protected List<Column> getColumns()
+		{
+			List<Column> columns = new ArrayList<>();
+			columns.add(new Column("Month", "%s", Align.L));
+			columns.add(new Column("Income", "$%.2f", Align.R));
+			return columns;
+		}
+
+		@Override
+		protected List<Object> getObjectElements(Map.Entry<String, Double> e)
+		{
+			return List.of(e.getKey(), e.getValue());
+		}
 	}
 }

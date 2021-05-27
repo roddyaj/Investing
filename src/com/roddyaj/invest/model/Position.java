@@ -121,7 +121,7 @@ public class Position implements Comparable<Position>
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("#", "%d", Align.R));
-			columns.add(new Column("Expiry Date", "%s", Align.L));
+			columns.add(new Column("Expiration", "%s", Align.L));
 			columns.add(new Column("Strike", "$%.2f", Align.R));
 			columns.add(new Column("Type", "%s", Align.C));
 			columns.add(new Column("", "%s", Align.C));

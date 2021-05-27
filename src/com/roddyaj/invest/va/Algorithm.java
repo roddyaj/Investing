@@ -2,6 +2,7 @@ package com.roddyaj.invest.va;
 
 import static com.roddyaj.invest.va.TemporalUtil.ANNUAL_TRADING_DAYS;
 
+import java.awt.Desktop;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +19,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.roddyaj.invest.util.FileUtils;
+import com.roddyaj.invest.util.HtmlFormatter;
 import com.roddyaj.invest.util.StringUtils;
 import com.roddyaj.invest.va.model.Account;
 import com.roddyaj.invest.va.model.Order;
@@ -64,12 +67,28 @@ public class Algorithm
 	private void determineAndPrintOrders()
 	{
 		// @formatter:off
-		accountSettings.getRealPositions()
+		List<Order> orders = accountSettings.getRealPositions()
 			.map(position -> evaluate(position.getSymbol()))
 			.filter(Objects::nonNull)
 			.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount()))
-			.forEach(System.out::println);
+			.collect(Collectors.toList());
 		// @formatter:on
+
+		orders.forEach(System.out::println);
+
+		String title = accountSettings.getName() + " Orders";
+		String output = HtmlFormatter.toDocument(title, new Order.OrderFormatter().toBlock(orders, title));
+
+		Path path = Paths.get(FileUtils.DEFAULT_DIR.toString(), "orders.html");
+		try
+		{
+			Files.writeString(path, output.toString());
+			Desktop.getDesktop().browse(path.toUri());
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	private Order evaluate(String symbol)

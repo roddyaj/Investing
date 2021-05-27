@@ -81,6 +81,22 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		return String.format("<a href=\"" + url + "\">%s</a>", text, text);
 	}
 
+	public static String toDocument(String title, Collection<? extends String> input)
+	{
+		List<String> lines = new ArrayList<>();
+		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>");
+		lines.add("<title>" + title + "</title>");
+		lines.add("<style>");
+		lines.add("th, td { padding: 2px 4px; }");
+		lines.add(".heading { margin-bottom: 4px; font-size: large; }");
+		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin: 8px 0px; }");
+		lines.add("</style>");
+		lines.add("</head>\n<body>");
+		lines.addAll(input);
+		lines.add("</body>\n</html>");
+		return String.join("\n", lines);
+	}
+
 	public enum Align
 	{
 		L("left"), C("center"), R("right");

@@ -1,5 +1,10 @@
 package com.roddyaj.invest.va.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.roddyaj.invest.util.HtmlFormatter;
+
 public class Order
 {
 	public final String symbol;
@@ -45,5 +50,34 @@ public class Order
 	private static String green(String s)
 	{
 		return "\033[32m" + s + "\033[0m";
+	}
+
+	public static class OrderFormatter extends HtmlFormatter<Order>
+	{
+		@Override
+		protected List<Column> getColumns()
+		{
+			List<Column> columns = new ArrayList<>();
+			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("Action", "%s", Align.L));
+			columns.add(new Column("#", "%d", Align.R));
+			columns.add(new Column("Price", "%.2f", Align.R));
+			columns.add(new Column("Amount", "%.0f", Align.R));
+			columns.add(new Column("Change", "%s", Align.R));
+			return columns;
+		}
+
+		@Override
+		protected List<Object> getObjectElements(Order o)
+		{
+			String action = o.shareCount >= 0 ? "Buy" : "Sell";
+			final String url = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx?tradeaction=" + action + "&amp;Symbol=%s";
+			return List.of(toLink(url, o.symbol), action, Math.abs(o.shareCount), o.price, o.getAmount(), color(o.changePct, "%.2f%%"));
+		}
+
+		private static String color(double d, String format)
+		{
+			return "<font color=\"" + (d >= 0 ? "green" : "red") + "\">" + String.format(format, d) + "</font>";
+		}
 	}
 }

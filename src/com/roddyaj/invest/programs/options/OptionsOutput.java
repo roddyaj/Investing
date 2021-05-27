@@ -52,27 +52,15 @@ public class OptionsOutput
 	public String toString()
 	{
 		List<String> lines = new ArrayList<>();
-
-		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>");
-		lines.add("<title>Options</title>");
-		lines.add("<style>");
-		lines.add("th, td { padding: 2px 4px; }");
-		lines.add(".heading { margin-bottom: 4px; font-size: large; }");
-		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin: 8px 0px; }");
-		lines.add("</style>");
-		lines.add("</head>\n<body>");
-
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close"));
 		lines.addAll(new CallToSell.CallHtmlFormatter().toBlock(callsToSell, "Calls To Sell"));
 		lines.addAll(PutToSell.toBlock(putsToSell, availableToTrade));
 		lines.add("<div style=\"padding: 4px 0px;\"></div>");
-		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, "Current Options"));
+		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, "Current Options (" + currentPositions.size() + ")"));
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
 		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Income"));
 
-		lines.add("</body>\n</html>");
-
-		return String.join("\n", lines);
+		return HtmlFormatter.toDocument("Options", lines);
 	}
 
 	private static class MonthlyIncomeFormatter extends HtmlFormatter<Map.Entry<String, Double>>

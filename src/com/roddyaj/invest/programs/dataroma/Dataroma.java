@@ -14,6 +14,12 @@ import com.roddyaj.invest.network.HttpClient;
 
 public class Dataroma implements Program
 {
+	// For testing in IDE
+	public static void main(String[] args)
+	{
+		new Dataroma().run(new String[] { "https://www.dataroma.com/m/holdings.php?m=SAM" });
+	}
+
 	@Override
 	public void run(String[] args)
 	{
@@ -23,8 +29,10 @@ public class Dataroma implements Program
 			String content = HttpClient.get(url);
 			List<Record> records = parseRecords(content);
 			records = filterRecords(records);
-			String csv = toYahooCsv(records);
-			System.out.println(csv);
+			normalizePercents(records);
+
+			printSettings(records, url);
+			System.out.println(toYahooCsv(records));
 		}
 		catch (IOException e)
 		{
@@ -36,6 +44,7 @@ public class Dataroma implements Program
 	{
 		final Pattern stockPattern = Pattern.compile("<td class=\"stock\"><a href=.+?>(.+?)<span>.+?</span></a></td>");
 		final Pattern buyPattern = Pattern.compile("<td class=\"buy\">(.+?)</td>");
+		final Pattern percentPattern = Pattern.compile("<td>(\\d+\\.\\d{2})</td>");
 
 		List<Record> records = new ArrayList<>();
 		content.lines().forEach(line -> {
@@ -52,6 +61,15 @@ public class Dataroma implements Program
 				{
 					String activity = matcher.group(1);
 					records.get(records.size() - 1).activity = activity;
+				}
+				else
+				{
+					matcher = percentPattern.matcher(line);
+					if (matcher.find())
+					{
+						double percent = Double.parseDouble(matcher.group(1));
+						records.get(records.size() - 1).percent = percent;
+					}
 				}
 			}
 		});
@@ -78,8 +96,15 @@ public class Dataroma implements Program
 					}
 				}
 			}
+			pass &= record.percent >= 1.5;
 			return pass;
 		}).collect(Collectors.toList());
+	}
+
+	private void normalizePercents(Collection<? extends Record> records)
+	{
+		double totalPercent = records.stream().mapToDouble(r -> r.percent).sum() / 100;
+		records.forEach(r -> r.percent /= totalPercent);
 	}
 
 	private String toYahooCsv(List<Record> records)
@@ -88,11 +113,23 @@ public class Dataroma implements Program
 		return records.stream().map(r -> r.ticker).collect(Collectors.joining(","));
 	}
 
+	private void printSettings(Collection<? extends Record> records, String url)
+	{
+		int i = url.lastIndexOf('=');
+		final String code = url.substring(i + 1).toLowerCase();
+		records.forEach(r -> {
+			String categoryString = String.format("%-28s", String.format("\"me.risk.tracked.%s.%s\",", code, r.ticker));
+			System.out.println(String.format("        { \"cat\": %s \"%%\": %6.3f },", categoryString, r.percent));
+		});
+	}
+
 	private static class Record
 	{
 		public String ticker;
 
 		public String activity;
+
+		public double percent;
 
 		public Record(String ticker)
 		{
@@ -102,7 +139,7 @@ public class Dataroma implements Program
 		@Override
 		public String toString()
 		{
-			return ticker + " " + activity;
+			return ticker + " " + activity + " " + percent;
 		}
 	}
 }

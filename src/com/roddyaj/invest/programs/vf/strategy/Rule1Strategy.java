@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 
 import com.roddyaj.invest.programs.vf.model.DateAndDouble;
 import com.roddyaj.invest.programs.vf.model.SymbolData;
-import com.roddyaj.invest.programs.vf.model.SymbolResult;
 import com.roddyaj.invest.programs.vf.model.SymbolData.BalanceSheet;
 import com.roddyaj.invest.programs.vf.model.SymbolData.IncomeStatement;
+import com.roddyaj.invest.programs.vf.model.SymbolResult;
 
 public class Rule1Strategy extends AndStrategy
 {

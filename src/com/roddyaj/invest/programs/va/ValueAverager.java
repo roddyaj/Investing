@@ -22,12 +22,6 @@ public class ValueAverager implements Program
 	}
 
 	@Override
-	public String getName()
-	{
-		return "ValueAverager";
-	}
-
-	@Override
 	public void run(String[] args)
 	{
 		if (args.length == 0)

@@ -72,9 +72,11 @@ public class Order
 		{
 			String action = o.shareCount >= 0 ? "Buy" : "Sell";
 			final String url = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx?tradeaction=" + action + "&amp;Symbol=%s";
+			String link = String.format("<a href=\"" + url + "\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.shareCount) + "');\">%s</a>",
+					o.symbol, o.symbol);
 			String actionColored = color(action, action.equals("Buy") ? "green" : "red");
 			String changeColored = color(o.changePct, "%.2f%%");
-			return List.of(toLink(url, o.symbol), actionColored, Math.abs(o.shareCount), o.price, o.getAmount(), changeColored);
+			return List.of(link, actionColored, Math.abs(o.shareCount), o.price, o.getAmount(), changeColored);
 		}
 
 		private static String color(double d, String format)

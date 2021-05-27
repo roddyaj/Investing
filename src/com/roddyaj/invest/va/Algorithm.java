@@ -64,6 +64,14 @@ public class Algorithm
 
 	private void determineAndPrintOrders()
 	{
+		for (Position position : account.getPositions())
+		{
+			if (accountSettings.getAllocation(position.symbol) == 0)
+			{
+				System.out.println("untracked " + position.symbol);
+			}
+		}
+
 		// @formatter:off
 		List<Order> orders = accountSettings.getRealPositions()
 			.map(position -> evaluate(position.getSymbol()))

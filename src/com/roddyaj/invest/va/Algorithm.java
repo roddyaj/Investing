@@ -11,10 +11,8 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -191,21 +189,6 @@ public class Algorithm
 		{
 			if (startsWith(position.getValue("Security Type"), "ETF") && accountSettings.getPosition(position.symbol) == null)
 				warnings.add("Position " + position.symbol + " is not being tracked");
-		}
-
-		Map<String, Double> validationMap = new HashMap<>();
-		for (Allocation allocation : accountSettings.getAllocations())
-		{
-			int i = allocation.getCat().lastIndexOf(".");
-			String categoryParent = i != -1 ? allocation.getCat().substring(0, i) : "_root";
-			Double val = validationMap.getOrDefault(categoryParent, 0.);
-			val += allocation.getPercent();
-			validationMap.put(categoryParent, val);
-		}
-		for (Map.Entry<String, Double> entry : validationMap.entrySet())
-		{
-			if (Math.abs(entry.getValue() - 100) > 0.001)
-				warnings.add("Category '" + entry.getKey() + "' doesn't add up to 100%: " + entry.getValue());
 		}
 
 		if (!warnings.isEmpty())

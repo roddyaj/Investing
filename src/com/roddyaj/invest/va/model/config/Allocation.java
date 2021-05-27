@@ -38,4 +38,10 @@ public class Allocation
 	{
 		this.percent = percent;
 	}
+
+	@Override
+	public String toString()
+	{
+		return cat + ": " + percent;
+	}
 }

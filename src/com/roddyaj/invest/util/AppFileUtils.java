@@ -9,7 +9,7 @@ public final class AppFileUtils
 {
 	private static final Path INPUT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
 
-	private static final Pattern TIME_PATTERN = Pattern.compile(".+?([-\\d]+).CSV");
+	private static final Pattern FILE_PATTERN = Pattern.compile("(.+?)[-_]\\w+[-_]([-\\d]+).CSV");
 
 	public static Path getAccountFile(String account, FileType type)
 	{
@@ -25,6 +25,20 @@ public final class AppFileUtils
 		return file;
 	}
 
+	public static String getFullAccountName(String accountShorthand)
+	{
+		String accountName = null;
+		String pattern = ".*" + accountShorthand + ".*-Positions-.*\\.CSV";
+		Path path = FileUtils.list(INPUT_DIR, pattern).sorted(AppFileUtils::compare).findFirst().orElse(null);
+		if (path != null)
+		{
+			Matcher m = FILE_PATTERN.matcher(path.getFileName().toString());
+			if (m.find())
+				accountName = m.group(1);
+		}
+		return accountName;
+	}
+
 	private static int compare(Path p1, Path p2)
 	{
 		return getTime(p2).compareTo(getTime(p1));
@@ -33,9 +47,9 @@ public final class AppFileUtils
 	private static String getTime(Path path)
 	{
 		String timeString = null;
-		Matcher m = TIME_PATTERN.matcher(path.getFileName().toString());
+		Matcher m = FILE_PATTERN.matcher(path.getFileName().toString());
 		if (m.find())
-			timeString = m.group(1).replace("-", "");
+			timeString = m.group(2).replace("-", "");
 		return timeString;
 	}
 

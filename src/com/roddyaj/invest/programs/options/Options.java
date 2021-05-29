@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 
 import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.model.Account;
+import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.FileUtils;
 
 public class Options implements Program
@@ -15,13 +16,14 @@ public class Options implements Program
 	// For testing in IDE
 	public static void main(String[] args)
 	{
-		new Options().run("PCRA_Trust");
+		new Options().run("PCRA");
 	}
 
 	@Override
 	public void run(String... args)
 	{
 		String accountName = args[0];
+		accountName = AppFileUtils.getFullAccountName(accountName);
 		Account account = new Account(accountName);
 
 		// Run the algorithm

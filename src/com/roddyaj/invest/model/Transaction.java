@@ -38,7 +38,7 @@ public class Transaction
 			option = new Option(symbolOrOption);
 			symbol = option.symbol;
 			days = (int)ChronoUnit.DAYS.between(date, option.expiryDate);
-			annualReturn = amount / option.strike * (365.0 / days);
+			annualReturn = ((amount / quantity) / option.strike) * (365.0 / days);
 		}
 		else
 		{

@@ -1,7 +1,6 @@
 package com.roddyaj.invest.programs.options;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,48 +8,49 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.Transaction;
 
 public class OptionsCore
 {
-	public OptionsOutput run(String account, Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
+	public OptionsOutput run(Account account)
 	{
 //		transactions.forEach(System.out::println);
 //		positions.forEach(System.out::println);
 
-		OptionsOutput output = new OptionsOutput(account);
+		OptionsOutput output = new OptionsOutput(account.getName());
 
-		analyzeBuyToClose(positions, output);
-		analyzeCalls(positions, transactions, output);
-		analyzePuts(positions, transactions, output);
-		availableToTrade(positions, output);
-		currentPositions(positions, output);
-		monthlyIncome(transactions, output);
+		analyzeBuyToClose(account, output);
+		analyzeCalls(account, output);
+		analyzePuts(account, output);
+		availableToTrade(account, output);
+		currentPositions(account, output);
+		monthlyIncome(account, output);
 
 		return output;
 	}
 
-	private void analyzeBuyToClose(Collection<? extends Position> positions, OptionsOutput output)
+	private void analyzeBuyToClose(Account account, OptionsOutput output)
 	{
-		positions.stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .15).forEach(output.buyToClose::add);
+		account.getPositions().stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .15).forEach(output.buyToClose::add);
 	}
 
-	private void analyzeCalls(Collection<? extends Position> positions, Collection<? extends Transaction> transactions, OptionsOutput output)
+	private void analyzeCalls(Account account, OptionsOutput output)
 	{
 		Map<String, Double> symbolToLast100Buy = new HashMap<>();
-		for (Transaction t : transactions)
+		for (Transaction t : account.getTransactions())
 		{
 			if (!t.isOption() && t.action.equals("Buy") && t.quantity == 100 && !symbolToLast100Buy.containsKey(t.symbol))
 				symbolToLast100Buy.put(t.symbol, t.price);
 		}
 
-		for (Position position : positions)
+		for (Position position : account.getPositions())
 		{
 			if (!position.isOption() && position.quantity >= 100)
 			{
-				int totalCallsSold = positions.stream().filter(p -> p.symbol.equals(position.symbol) && p.isCallOption()).mapToInt(p -> p.quantity)
-						.sum();
+				int totalCallsSold = account.getPositions().stream().filter(p -> p.symbol.equals(position.symbol) && p.isCallOption())
+						.mapToInt(p -> p.quantity).sum();
 				int availableShares = position.quantity + totalCallsSold * 100;
 				int availableCalls = (int)Math.floor(availableShares / 100.0);
 				if (availableCalls > 0)
@@ -59,17 +59,17 @@ public class OptionsCore
 		}
 	}
 
-	private void analyzePuts(Collection<? extends Position> positions, Collection<? extends Transaction> transactions, OptionsOutput output)
+	private void analyzePuts(Account account, OptionsOutput output)
 	{
 		final double MAX_ALLOCATION = 2500;
 
-		List<Transaction> historicalOptions = transactions.stream().filter(Transaction::isOption).collect(Collectors.toList());
+		List<Transaction> historicalOptions = account.getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
 
 		// Get list of CSP candidates based on historical activity
 		Set<String> historicalSymbols = historicalOptions.stream().map(Transaction::getSymbol).collect(Collectors.toSet());
 		for (String symbol : historicalSymbols)
 		{
-			List<Position> symbolPositions = positions.stream().filter(p -> p.symbol.equals(symbol)).collect(Collectors.toList());
+			List<Position> symbolPositions = account.getPositions().stream().filter(p -> p.symbol.equals(symbol)).collect(Collectors.toList());
 			if (!symbolPositions.isEmpty())
 			{
 				int shareCount = symbolPositions.stream().filter(p -> !p.isOption()).mapToInt(p -> p.quantity).sum();
@@ -96,24 +96,24 @@ public class OptionsCore
 		Collections.sort(output.putsToSell);
 	}
 
-	private void availableToTrade(Collection<? extends Position> positions, OptionsOutput output)
+	private void availableToTrade(Account account, OptionsOutput output)
 	{
-		double cashBalance = positions.stream().filter(p -> p.symbol.equals("Cash & Cash Investments")).mapToDouble(p -> p.marketValue).findAny()
-				.orElse(0);
-		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * p.quantity * -100).sum();
+		double cashBalance = account.getPositions().stream().filter(p -> p.symbol.equals("Cash & Cash Investments")).mapToDouble(p -> p.marketValue)
+				.findAny().orElse(0);
+		double putOnHold = account.getPositions().stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * p.quantity * -100).sum();
 		output.availableToTrade = cashBalance - putOnHold;
 	}
 
-	private void currentPositions(Collection<? extends Position> positions, OptionsOutput output)
+	private void currentPositions(Account account, OptionsOutput output)
 	{
-		positions.stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
-		positions.stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
+		account.getPositions().stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
+		account.getPositions().stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
 	}
 
-	private void monthlyIncome(Collection<? extends Transaction> transactions, OptionsOutput output)
+	private void monthlyIncome(Account account, OptionsOutput output)
 	{
 		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
-		for (Transaction transaction : transactions)
+		for (Transaction transaction : account.getTransactions())
 		{
 			if (transaction.isOption() && (transaction.action.startsWith("Sell to") || transaction.action.startsWith("Buy to")))
 				output.monthToIncome.merge(transaction.date.format(format), transaction.amount, Double::sum);

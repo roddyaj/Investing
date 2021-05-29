@@ -7,5 +7,5 @@ public interface Program
 		return getClass().getSimpleName();
 	}
 
-	void run(String[] args);
+	void run(String... args);
 }

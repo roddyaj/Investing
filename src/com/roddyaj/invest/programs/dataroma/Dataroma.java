@@ -21,7 +21,7 @@ public class Dataroma implements Program
 	}
 
 	@Override
-	public void run(String[] args)
+	public void run(String... args)
 	{
 		String url = args[0];
 		try

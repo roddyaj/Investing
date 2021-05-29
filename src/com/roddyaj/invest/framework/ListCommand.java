@@ -18,7 +18,7 @@ public class ListCommand implements Program
 	}
 
 	@Override
-	public void run(String[] args)
+	public void run(String... args)
 	{
 		System.out.println("\nAvailable Programs:");
 		programs.keySet().stream().sorted().forEach(System.out::println);

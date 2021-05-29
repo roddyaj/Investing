@@ -22,7 +22,7 @@ public class ValueAverager implements Program
 	}
 
 	@Override
-	public void run(String[] args)
+	public void run(String... args)
 	{
 		if (args.length == 0)
 		{

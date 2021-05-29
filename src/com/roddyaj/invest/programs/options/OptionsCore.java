@@ -14,12 +14,12 @@ import com.roddyaj.invest.model.Transaction;
 
 public class OptionsCore
 {
-	public OptionsOutput run(Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
+	public OptionsOutput run(String account, Collection<? extends Position> positions, Collection<? extends Transaction> transactions)
 	{
 //		transactions.forEach(System.out::println);
 //		positions.forEach(System.out::println);
 
-		OptionsOutput output = new OptionsOutput();
+		OptionsOutput output = new OptionsOutput(account);
 
 		analyzeBuyToClose(positions, output);
 		analyzeCalls(positions, transactions, output);

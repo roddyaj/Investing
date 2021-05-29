@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -14,6 +15,7 @@ import org.apache.commons.csv.CSVRecord;
 
 public final class FileUtils
 {
+	// TODO abstract this out to AppFileUtils
 	public static final Path DEFAULT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
 
 	public static List<String> readLines(String file)
@@ -32,8 +34,12 @@ public final class FileUtils
 
 	public static List<CSVRecord> readCsv(String file)
 	{
+		return readCsv(getPath(file));
+	}
+
+	public static List<CSVRecord> readCsv(Path path)
+	{
 		List<CSVRecord> records = new ArrayList<>();
-		Path path = getPath(file);
 		Charset charset = Charset.forName("UTF-8");
 		CSVFormat format = CSVFormat.DEFAULT;
 		try
@@ -65,6 +71,7 @@ public final class FileUtils
 		}
 	}
 
+	// TODO abstract this out to AppFileUtils
 	public static Path getPath(String file)
 	{
 		Path actualPath = null;
@@ -82,5 +89,21 @@ public final class FileUtils
 			e.printStackTrace();
 		}
 		return actualPath;
+	}
+
+	public static Stream<Path> list(Path dir, String pattern)
+	{
+		if (Files.exists(dir))
+		{
+			try
+			{
+				return Files.list(dir).filter(p -> p.getFileName().toString().matches(pattern));
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return Stream.empty();
 	}
 }

@@ -37,7 +37,7 @@ public class ValueFinder implements Program
 	}
 
 	@Override
-	public void run(String[] args)
+	public void run(String... args)
 	{
 		try
 		{

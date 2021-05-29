@@ -17,6 +17,7 @@ import com.roddyaj.invest.util.HtmlFormatter;
 
 public class OptionsOutput
 {
+	private final String account;
 	public final List<Position> buyToClose = new ArrayList<>();
 	public final List<CallToSell> callsToSell = new ArrayList<>();
 	public final List<PutToSell> putsToSell = new ArrayList<>();
@@ -27,7 +28,7 @@ public class OptionsOutput
 	// Test code
 	public static void main(String[] args)
 	{
-		OptionsOutput output = new OptionsOutput();
+		OptionsOutput output = new OptionsOutput("test");
 		output.buyToClose.add(new Position("ABC", 50, 123.));
 		output.buyToClose.add(new Position("DEF", 50, 123.));
 		output.callsToSell.add(new CallToSell(new Position("ABC", 50, 123.), 123., 2));
@@ -48,10 +49,17 @@ public class OptionsOutput
 		}
 	}
 
+	public OptionsOutput(String account)
+	{
+		this.account = account;
+	}
+
 	@Override
 	public String toString()
 	{
+		final String title = account + " Options";
 		List<String> lines = new ArrayList<>();
+		lines.add("<h2>" + title + "</h2>");
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close"));
 		lines.addAll(new CallToSell.CallHtmlFormatter().toBlock(callsToSell, "Calls To Sell"));
 		lines.addAll(PutToSell.toBlock(putsToSell, availableToTrade));
@@ -60,7 +68,7 @@ public class OptionsOutput
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
 		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Income"));
 
-		return HtmlFormatter.toDocument("Options", lines);
+		return HtmlFormatter.toDocument(title, lines);
 	}
 
 	private static class MonthlyIncomeFormatter extends HtmlFormatter<Map.Entry<String, Double>>

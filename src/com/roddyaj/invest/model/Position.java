@@ -1,5 +1,7 @@
 package com.roddyaj.invest.model;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,6 +124,7 @@ public class Position implements Comparable<Position>
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("#", "%d", Align.R));
 			columns.add(new Column("Expiration", "%s", Align.L));
+			columns.add(new Column("Days", "%d", Align.R));
 			columns.add(new Column("Strike", "$%.2f", Align.R));
 			columns.add(new Column("Type", "%s", Align.C));
 			columns.add(new Column("", "%s", Align.C));
@@ -132,9 +135,10 @@ public class Position implements Comparable<Position>
 		protected List<Object> getObjectElements(Position p)
 		{
 			final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+			int days = (int)ChronoUnit.DAYS.between(LocalDate.now(), p.option.expiryDate);
 			String moneyText = "OTM".equals(p.option.money) ? "" : "*";
 
-			return List.of(toLink(url, p.symbol), p.quantity, p.option.expiryDate, p.option.strike, p.option.type, moneyText);
+			return List.of(toLink(url, p.symbol), p.quantity, p.option.expiryDate, days, p.option.strike, p.option.type, moneyText);
 		}
 	}
 }

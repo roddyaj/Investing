@@ -3,8 +3,12 @@ package com.roddyaj.invest.model;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import org.apache.commons.csv.CSVRecord;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.model.settings.AccountSettings;
@@ -12,6 +16,7 @@ import com.roddyaj.invest.model.settings.Settings;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.AppFileUtils.FileType;
 import com.roddyaj.invest.util.FileUtils;
+import com.roddyaj.invest.util.StringUtils;
 
 public class Account
 {
@@ -72,8 +77,14 @@ public class Account
 				transactionsFile = AppFileUtils.getAccountFile(accountSettings.getAlias(), FileType.TRANSACTIONS);
 			}
 
-			transactions = transactionsFile != null ? FileUtils.readCsv(transactionsFile).stream().filter(r -> r.getRecordNumber() > 2)
-					.map(Transaction::new).collect(Collectors.toList()) : List.of();
+			final LocalDate yearAgo = LocalDate.now().minusYears(1);
+			Predicate<CSVRecord> filter = record -> {
+				LocalDate date = null;
+				return record.getRecordNumber() > 2 && (date = StringUtils.parseDate(record.get(0))) != null && date.isAfter(yearAgo);
+			};
+			transactions = transactionsFile != null
+					? FileUtils.readCsv(transactionsFile).stream().filter(filter).map(Transaction::new).collect(Collectors.toList())
+					: List.of();
 		}
 		return transactions;
 	}

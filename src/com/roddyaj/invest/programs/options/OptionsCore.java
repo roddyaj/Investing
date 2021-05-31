@@ -16,9 +16,6 @@ public class OptionsCore
 {
 	public OptionsOutput run(Account account)
 	{
-//		transactions.forEach(System.out::println);
-//		positions.forEach(System.out::println);
-
 		OptionsOutput output = new OptionsOutput(account.getName());
 
 		analyzeBuyToClose(account, output);
@@ -94,6 +91,8 @@ public class OptionsCore
 		}
 
 		Collections.sort(output.putsToSell);
+
+//		account.getOptionableStocks().stream().map(s -> new PutToSell(s.symbol, MAX_ALLOCATION)).forEach(output.putsToSell::add);
 	}
 
 	private void availableToTrade(Account account, OptionsOutput output)

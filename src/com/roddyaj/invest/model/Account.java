@@ -24,6 +24,7 @@ public class Account
 	private AccountSettings accountSettings;
 	private List<Position> positions;
 	private List<Transaction> transactions;
+	private List<OptionableStock> optionableStocks;
 
 	public Account(String name)
 	{
@@ -87,5 +88,16 @@ public class Account
 					: List.of();
 		}
 		return transactions;
+	}
+
+	public List<OptionableStock> getOptionableStocks()
+	{
+		if (optionableStocks == null)
+		{
+			Path file = Paths.get(AppFileUtils.INPUT_DIR.toString(), "Results.csv");
+			optionableStocks = FileUtils.readCsv(file).stream().filter(r -> r.getRecordNumber() > 1).map(OptionableStock::new)
+					.collect(Collectors.toList());
+		}
+		return optionableStocks;
 	}
 }

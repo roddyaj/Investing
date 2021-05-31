@@ -22,7 +22,7 @@ public class Account
 
 	public Account(String name)
 	{
-		this.name = name;
+		this.name = AppFileUtils.getFullAccountName(name);
 	}
 
 	public String getName()

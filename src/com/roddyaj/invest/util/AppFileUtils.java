@@ -1,5 +1,8 @@
 package com.roddyaj.invest.util;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
@@ -9,6 +12,7 @@ public final class AppFileUtils
 {
 	public static final Path SETTINGS_DIR = Paths.get(System.getProperty("user.home"), ".invest");
 	public static final Path INPUT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
+	public static final Path OUTPUT_DIR = Paths.get(System.getProperty("user.home"), "Documents");
 
 	private static final Pattern FILE_PATTERN = Pattern.compile("(.+?)[-_]\\w+[-_]([-\\d]+).CSV");
 
@@ -38,6 +42,20 @@ public final class AppFileUtils
 				accountName = m.group(1);
 		}
 		return accountName;
+	}
+
+	public static void showHtml(String html, String fileName)
+	{
+		Path path = Paths.get(OUTPUT_DIR.toString(), fileName);
+		try
+		{
+			Files.writeString(path, html);
+			Desktop.getDesktop().browse(path.toUri());
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	private static int compare(Path p1, Path p2)

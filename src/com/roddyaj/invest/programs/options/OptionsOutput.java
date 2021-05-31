@@ -1,10 +1,5 @@
 package com.roddyaj.invest.programs.options;
 
-import java.awt.Desktop;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.Position;
-import com.roddyaj.invest.util.FileUtils;
+import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class OptionsOutput
@@ -37,16 +32,7 @@ public class OptionsOutput
 		output.putsToSell.add(new PutToSell("DEF", 100.));
 		output.availableToTrade = 2000.;
 
-		Path path = Paths.get(FileUtils.DEFAULT_DIR.toString(), "options.html");
-		try
-		{
-			Files.writeString(path, output.toString());
-			Desktop.getDesktop().browse(path.toUri());
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		AppFileUtils.showHtml(output.toString(), "options.html");
 	}
 
 	public OptionsOutput(String account)

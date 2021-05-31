@@ -2,7 +2,6 @@ package com.roddyaj.invest.programs.va;
 
 import static com.roddyaj.invest.programs.va.TemporalUtil.ANNUAL_TRADING_DAYS;
 
-import java.awt.Desktop;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,7 +25,7 @@ import com.roddyaj.invest.programs.va.model.Order;
 import com.roddyaj.invest.programs.va.model.Point;
 import com.roddyaj.invest.programs.va.model.Position;
 import com.roddyaj.invest.programs.va.model.Report;
-import com.roddyaj.invest.util.FileUtils;
+import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.HtmlFormatter;
 import com.roddyaj.invest.util.StringUtils;
 
@@ -84,16 +83,7 @@ public class Algorithm
 		String title = accountSettings.getName() + " Orders";
 		String output = HtmlFormatter.toDocument(title, new Order.OrderFormatter().toBlock(orders, title));
 
-		Path path = Paths.get(FileUtils.DEFAULT_DIR.toString(), "orders.html");
-		try
-		{
-			Files.writeString(path, output.toString());
-			Desktop.getDesktop().browse(path.toUri());
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		AppFileUtils.showHtml(output.toString(), "orders.html");
 	}
 
 	private Order evaluate(String symbol)

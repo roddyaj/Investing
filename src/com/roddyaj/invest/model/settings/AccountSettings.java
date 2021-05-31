@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.va.model.config;
+package com.roddyaj.invest.model.settings;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class AccountSettings
 {
 	private String name;
+	private String alias;
 	private double annualContrib;
 	private Allocation[] allocations;
 	private PositionSettings[] positions;
@@ -28,6 +29,18 @@ public class AccountSettings
 	public void setName(String name)
 	{
 		this.name = name;
+	}
+
+	@JsonProperty("alias")
+	public String getAlias()
+	{
+		return alias;
+	}
+
+	@JsonProperty("alias")
+	public void setAlias(String alias)
+	{
+		this.alias = alias;
 	}
 
 	@JsonProperty("annualContrib")

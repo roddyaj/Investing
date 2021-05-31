@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.va.model.config;
+package com.roddyaj.invest.model.settings;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

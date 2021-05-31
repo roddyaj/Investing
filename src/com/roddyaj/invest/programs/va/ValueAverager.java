@@ -7,10 +7,10 @@ import java.nio.file.Paths;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.framework.Program;
+import com.roddyaj.invest.model.settings.AccountSettings;
+import com.roddyaj.invest.model.settings.Settings;
 import com.roddyaj.invest.programs.va.api.schwab.SchwabAccountCsv;
 import com.roddyaj.invest.programs.va.model.Account;
-import com.roddyaj.invest.programs.va.model.config.AccountSettings;
-import com.roddyaj.invest.programs.va.model.config.Settings;
 
 public class ValueAverager implements Program
 {

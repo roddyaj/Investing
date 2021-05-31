@@ -7,7 +7,8 @@ import java.util.regex.Pattern;
 
 public final class AppFileUtils
 {
-	private static final Path INPUT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
+	public static final Path SETTINGS_DIR = Paths.get(System.getProperty("user.home"), ".invest");
+	public static final Path INPUT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
 
 	private static final Pattern FILE_PATTERN = Pattern.compile("(.+?)[-_]\\w+[-_]([-\\d]+).CSV");
 

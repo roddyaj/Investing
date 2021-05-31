@@ -3,50 +3,51 @@ package com.roddyaj.invest.programs.options;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.roddyaj.invest.model.Account;
+import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.Transaction;
 
 public class OptionsCore
 {
-	public OptionsOutput run(Account account)
+	public OptionsOutput run(Input input)
 	{
-		OptionsOutput output = new OptionsOutput(account.getName());
+		OptionsOutput output = new OptionsOutput(input.account.getName());
 
-		analyzeBuyToClose(account, output);
-		analyzeCalls(account, output);
-		analyzePuts(account, output);
-		availableToTrade(account, output);
-		currentPositions(account, output);
-		monthlyIncome(account, output);
+		analyzeBuyToClose(input, output);
+		analyzeCalls(input, output);
+		analyzePuts(input, output);
+		availableToTrade(input, output);
+		currentPositions(input, output);
+		monthlyIncome(input, output);
 
 		return output;
 	}
 
-	private void analyzeBuyToClose(Account account, OptionsOutput output)
+	private void analyzeBuyToClose(Input input, OptionsOutput output)
 	{
-		account.getPositions().stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .15).forEach(output.buyToClose::add);
+		input.account.getPositions().stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .15).forEach(output.buyToClose::add);
 	}
 
-	private void analyzeCalls(Account account, OptionsOutput output)
+	private void analyzeCalls(Input input, OptionsOutput output)
 	{
 		Map<String, Double> symbolToLast100Buy = new HashMap<>();
-		for (Transaction t : account.getTransactions())
+		for (Transaction t : input.account.getTransactions())
 		{
 			if (!t.isOption() && t.action.equals("Buy") && t.quantity == 100 && !symbolToLast100Buy.containsKey(t.symbol))
 				symbolToLast100Buy.put(t.symbol, t.price);
 		}
 
-		for (Position position : account.getPositions())
+		for (Position position : input.account.getPositions())
 		{
 			if (!position.isOption() && position.quantity >= 100)
 			{
-				int totalCallsSold = account.getPositions().stream().filter(p -> p.symbol.equals(position.symbol) && p.isCallOption())
+				int totalCallsSold = input.account.getPositions().stream().filter(p -> p.symbol.equals(position.symbol) && p.isCallOption())
 						.mapToInt(p -> p.quantity).sum();
 				int availableShares = position.quantity + totalCallsSold * 100;
 				int availableCalls = (int)Math.floor(availableShares / 100.0);
@@ -56,17 +57,27 @@ public class OptionsCore
 		}
 	}
 
-	private void analyzePuts(Account account, OptionsOutput output)
+	private void analyzePuts(Input input, OptionsOutput output)
 	{
 		final double MAX_ALLOCATION = 2500;
 
-		List<Transaction> historicalOptions = account.getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
+		List<Transaction> historicalOptions = input.account.getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
 
 		// Get list of CSP candidates based on historical activity
-		Set<String> historicalSymbols = historicalOptions.stream().map(Transaction::getSymbol).collect(Collectors.toSet());
-		for (String symbol : historicalSymbols)
+		Set<String> symbols = historicalOptions.stream().map(Transaction::getSymbol).collect(Collectors.toSet());
+
+		// Add in other candidates
+		Set<String> optionable = input.information.getOptionableStocks().stream().map(r -> r.symbol).collect(Collectors.toSet());
+		String[] guruCodes = new String[] { "SAM" };
+		Set<String> guruPicks = input.information.getDataromaStocks(guruCodes).stream().map(r -> r.symbol).collect(Collectors.toSet());
+		Set<String> intersection = new HashSet<>(optionable);
+		intersection.retainAll(guruPicks);
+		symbols.addAll(intersection);
+
+		// Create the orders with amount available
+		for (String symbol : symbols)
 		{
-			List<Position> symbolPositions = account.getPositions().stream().filter(p -> p.symbol.equals(symbol)).collect(Collectors.toList());
+			List<Position> symbolPositions = input.account.getPositions().stream().filter(p -> p.symbol.equals(symbol)).collect(Collectors.toList());
 			if (!symbolPositions.isEmpty())
 			{
 				int shareCount = symbolPositions.stream().filter(p -> !p.isOption()).mapToInt(p -> p.quantity).sum();
@@ -91,28 +102,27 @@ public class OptionsCore
 		}
 
 		Collections.sort(output.putsToSell);
-
-//		account.getOptionableStocks().stream().map(s -> new PutToSell(s.symbol, MAX_ALLOCATION)).forEach(output.putsToSell::add);
 	}
 
-	private void availableToTrade(Account account, OptionsOutput output)
+	private void availableToTrade(Input input, OptionsOutput output)
 	{
-		double cashBalance = account.getPositions().stream().filter(p -> p.symbol.equals("Cash & Cash Investments")).mapToDouble(p -> p.marketValue)
-				.findAny().orElse(0);
-		double putOnHold = account.getPositions().stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * p.quantity * -100).sum();
+		double cashBalance = input.account.getPositions().stream().filter(p -> p.symbol.equals("Cash & Cash Investments"))
+				.mapToDouble(p -> p.marketValue).findAny().orElse(0);
+		double putOnHold = input.account.getPositions().stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * p.quantity * -100)
+				.sum();
 		output.availableToTrade = cashBalance - putOnHold;
 	}
 
-	private void currentPositions(Account account, OptionsOutput output)
+	private void currentPositions(Input input, OptionsOutput output)
 	{
-		account.getPositions().stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
-		account.getPositions().stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
+		input.account.getPositions().stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
+		input.account.getPositions().stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
 	}
 
-	private void monthlyIncome(Account account, OptionsOutput output)
+	private void monthlyIncome(Input input, OptionsOutput output)
 	{
 		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
-		for (Transaction transaction : account.getTransactions())
+		for (Transaction transaction : input.account.getTransactions())
 		{
 			if (transaction.isOption() && (transaction.action.startsWith("Sell to") || transaction.action.startsWith("Buy to")))
 				output.monthToIncome.merge(transaction.date.format(format), transaction.amount, Double::sum);

@@ -27,7 +27,10 @@ public class PutToSell implements Comparable<PutToSell>
 	@Override
 	public int compareTo(PutToSell o)
 	{
-		return Double.compare(o.averageReturn, averageReturn);
+		int result = Double.compare(o.averageReturn, averageReturn);
+		if (result == 0)
+			result = symbol.compareTo(o.symbol);
+		return result;
 	}
 
 	public static List<String> toBlock(Collection<? extends PutToSell> puts, double availableToTrade)

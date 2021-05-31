@@ -1,7 +1,7 @@
 package com.roddyaj.invest.programs.options;
 
 import com.roddyaj.invest.framework.Program;
-import com.roddyaj.invest.model.Account;
+import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.util.AppFileUtils;
 
 public class Options implements Program
@@ -17,9 +17,9 @@ public class Options implements Program
 	{
 		String accountName = args[0];
 
-		Account account = new Account(accountName);
+		Input input = new Input(accountName);
 
-		OptionsOutput output = new OptionsCore().run(account);
+		OptionsOutput output = new OptionsCore().run(input);
 
 		AppFileUtils.showHtml(output.toString(), "options.html");
 	}

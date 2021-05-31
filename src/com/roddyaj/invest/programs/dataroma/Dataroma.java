@@ -14,30 +14,49 @@ import com.roddyaj.invest.network.HttpClient;
 
 public class Dataroma implements Program
 {
-	// For testing in IDE
+	private static final String URL_BASE = "https://www.dataroma.com/m/holdings.php?m=";
+
+	// For running in IDE
 	public static void main(String[] args)
 	{
-		new Dataroma().run(new String[] { "https://www.dataroma.com/m/holdings.php?m=SAM" });
+		new Dataroma().run("SAM");
 	}
 
 	@Override
 	public void run(String... args)
 	{
 		String url = args[0];
+		List<Record> records = runNoOutput(url);
+		showOutput(records, url);
+	}
+
+	public List<Record> runNoOutput(String url)
+	{
+		if (!url.startsWith("http"))
+			url = URL_BASE + url;
+		List<Record> records = getRecords(url);
+		return run(records);
+	}
+
+	private List<Record> getRecords(String url)
+	{
 		try
 		{
 			String content = HttpClient.get(url);
-			List<Record> records = parseRecords(content);
-			records = filterRecords(records);
-			normalizePercents(records);
-
-			printSettings(records, url);
-			System.out.println(toYahooCsv(records));
+			return parseRecords(content);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
+		return List.of();
+	}
+
+	private List<Record> run(Collection<? extends Record> records)
+	{
+		List<Record> filteredRecords = filterRecords(records);
+		normalizePercents(filteredRecords);
+		return filteredRecords;
 	}
 
 	private List<Record> parseRecords(String content)
@@ -107,10 +126,16 @@ public class Dataroma implements Program
 		records.forEach(r -> r.percent /= totalPercent);
 	}
 
+	private void showOutput(List<Record> records, String url)
+	{
+		printSettings(records, url);
+		System.out.println(toYahooCsv(records));
+	}
+
 	private String toYahooCsv(List<Record> records)
 	{
 		Collections.reverse(records);
-		return records.stream().map(r -> r.ticker).collect(Collectors.joining(","));
+		return records.stream().map(r -> r.symbol).collect(Collectors.joining(","));
 	}
 
 	private void printSettings(Collection<? extends Record> records, String url)
@@ -118,14 +143,14 @@ public class Dataroma implements Program
 		int i = url.lastIndexOf('=');
 		final String code = url.substring(i + 1).toLowerCase();
 		records.forEach(r -> {
-			String categoryString = String.format("%-28s", String.format("\"me.risk.tracked.%s.%s\",", code, r.ticker));
+			String categoryString = String.format("%-28s", String.format("\"me.risk.tracked.%s.%s\",", code, r.symbol));
 			System.out.println(String.format("        { \"cat\": %s \"%%\": %6.3f },", categoryString, r.percent));
 		});
 	}
 
-	private static class Record
+	public static class Record
 	{
-		public String ticker;
+		public String symbol;
 
 		public String activity;
 
@@ -133,13 +158,13 @@ public class Dataroma implements Program
 
 		public Record(String ticker)
 		{
-			this.ticker = ticker;
+			this.symbol = ticker;
 		}
 
 		@Override
 		public String toString()
 		{
-			return ticker + " " + activity + " " + percent;
+			return symbol + " " + activity + " " + percent;
 		}
 	}
 }

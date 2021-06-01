@@ -7,7 +7,6 @@ public class PositionSettings
 	private String symbol;
 	private String t0;
 	private double v0;
-	private double annualGrowthPct;
 	private Boolean sell;
 	private String period;
 
@@ -47,18 +46,6 @@ public class PositionSettings
 		this.v0 = v0;
 	}
 
-	@JsonProperty("annualGrowthPct")
-	public double getAnnualGrowthPct()
-	{
-		return annualGrowthPct;
-	}
-
-	@JsonProperty("annualGrowthPct")
-	public void setAnnualGrowthPct(double annualGrowthPct)
-	{
-		this.annualGrowthPct = annualGrowthPct;
-	}
-
 	@JsonProperty("sell")
 	public Boolean getSell()
 	{
@@ -83,17 +70,11 @@ public class PositionSettings
 		this.period = period;
 	}
 
-	public double getAnnualGrowth()
-	{
-		return annualGrowthPct / 100;
-	}
-
 	@Override
 	public String toString()
 	{
 		String symbolText = "\"" + symbol + "\",";
 		String sellText = sell != null && sell.booleanValue() ? ", \"sell\": true" : "";
-		return String.format("        { \"symbol\": %-7s \"t0\": \"%s\", \"v0\": %5.0f, \"annualGrowthPct\": %2.0f%s },", symbolText, t0, v0,
-				annualGrowthPct, sellText);
+		return String.format("        { \"symbol\": %-7s \"t0\": \"%s\", \"v0\": %5.0f%s },", symbolText, t0, v0, sellText);
 	}
 }

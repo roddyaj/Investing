@@ -60,8 +60,6 @@ public class Algorithm
 		if (!LocalDate.now().equals(account.date))
 			System.out.println("\n\033[33mAccount data is not from today: " + account.date + "\033[0m");
 
-		if (reportLevel > 0)
-			System.out.println("\n---------- ORDERS ----------\n");
 		determineAndPrintOrders();
 
 		if (reportLevel > 0)
@@ -77,8 +75,6 @@ public class Algorithm
 			.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount()))
 			.collect(Collectors.toList());
 		// @formatter:on
-
-		orders.forEach(System.out::println);
 
 		String title = accountSettings.getName() + " Orders";
 		String output = HtmlFormatter.toDocument(title, new Order.OrderFormatter().toBlock(orders, title));
@@ -96,12 +92,12 @@ public class Algorithm
 		double targetValue;
 		if (account.date.isBefore(p1.date))
 		{
-			targetValue = getTargetValue(p0, p1, account.date, positionSettings.getAnnualGrowth());
+			targetValue = getTargetValue(p0, p1, account.date, settings.getAnnualGrowth(symbol));
 		}
 		else
 		{
 			double annualContrib = accountSettings.getAnnualContrib() * accountSettings.getAllocation(symbol);
-			targetValue = getFutureValue(p1, account.date, positionSettings.getAnnualGrowth(), annualContrib);
+			targetValue = getFutureValue(p1, account.date, settings.getAnnualGrowth(symbol), annualContrib);
 		}
 
 		if (!account.hasSymbol(symbol))
@@ -227,7 +223,6 @@ public class Algorithm
 						positionSetting.setSymbol(position.symbol);
 						positionSetting.setT0(account.date.toString());
 						positionSetting.setV0(position.getMarketValue());
-						positionSetting.setAnnualGrowthPct(10);
 						positions1.add(positionSetting);
 					}
 					else
@@ -236,7 +231,6 @@ public class Algorithm
 						positionSetting.setSymbol(symbol);
 						positionSetting.setT0(account.date.toString());
 						positionSetting.setV0(0);
-						positionSetting.setAnnualGrowthPct(10);
 						positions1.add(positionSetting);
 					}
 				}
@@ -252,7 +246,6 @@ public class Algorithm
 					positionSetting.setSymbol(position.symbol);
 					positionSetting.setT0(account.date.toString());
 					positionSetting.setV0(position.getMarketValue());
-					positionSetting.setAnnualGrowthPct(10);
 					positions2.add(positionSetting);
 				}
 			}

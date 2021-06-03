@@ -19,7 +19,7 @@ public class Options implements Program
 
 		Input input = new Input(accountName);
 
-		OptionsOutput output = new OptionsCore().run(input);
+		OptionsOutput output = new OptionsCore(input).run();
 
 		AppFileUtils.showHtml(output.toString(), "options.html");
 	}

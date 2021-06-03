@@ -15,26 +15,33 @@ import com.roddyaj.invest.model.Transaction;
 
 public class OptionsCore
 {
-	public OptionsOutput run(Input input)
+	private final Input input;
+
+	private final OptionsOutput output;
+
+	public OptionsCore(Input input)
 	{
-		OptionsOutput output = new OptionsOutput(input.account.getName());
+		this.input = input;
+		output = new OptionsOutput(input.account.getName());
+	}
 
-		analyzeBuyToClose(input, output);
-		analyzeCalls(input, output);
-		analyzePuts(input, output);
-		availableToTrade(input, output);
-		currentPositions(input, output);
-		monthlyIncome(input, output);
-
+	public OptionsOutput run()
+	{
+		analyzeBuyToClose();
+		analyzeCallsToSell();
+		analyzePutsToSell();
+		availableToTrade();
+		currentPositions();
+		monthlyIncome();
 		return output;
 	}
 
-	private void analyzeBuyToClose(Input input, OptionsOutput output)
+	private void analyzeBuyToClose()
 	{
 		input.account.getPositions().stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .15).forEach(output.buyToClose::add);
 	}
 
-	private void analyzeCalls(Input input, OptionsOutput output)
+	private void analyzeCallsToSell()
 	{
 		Map<String, Double> symbolToLast100Buy = new HashMap<>();
 		for (Transaction t : input.account.getTransactions())
@@ -52,12 +59,15 @@ public class OptionsCore
 				int availableShares = position.quantity + totalCallsSold * 100;
 				int availableCalls = (int)Math.floor(availableShares / 100.0);
 				if (availableCalls > 0)
-					output.callsToSell.add(new CallToSell(position, symbolToLast100Buy.getOrDefault(position.symbol, 0.), availableCalls));
+				{
+					double costPerShare = symbolToLast100Buy.getOrDefault(position.symbol, position.costBasis / position.quantity);
+					output.callsToSell.add(new CallToSell(position, costPerShare, availableCalls));
+				}
 			}
 		}
 	}
 
-	private void analyzePuts(Input input, OptionsOutput output)
+	private void analyzePutsToSell()
 	{
 		final double MAX_ALLOCATION = 2500;
 
@@ -104,22 +114,22 @@ public class OptionsCore
 		Collections.sort(output.putsToSell);
 	}
 
-	private void availableToTrade(Input input, OptionsOutput output)
+	private void availableToTrade()
 	{
-		double cashBalance = input.account.getPositions().stream().filter(p -> p.symbol.equals("Cash & Cash Investments"))
-				.mapToDouble(p -> p.marketValue).findAny().orElse(0);
-		double putOnHold = input.account.getPositions().stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * p.quantity * -100)
-				.sum();
+		List<Position> positions = input.account.getPositions();
+		double cashBalance = positions.stream().filter(p -> p.symbol.equals("Cash & Cash Investments")).mapToDouble(p -> p.marketValue).findAny()
+				.orElse(0);
+		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * p.quantity * -100).sum();
 		output.availableToTrade = cashBalance - putOnHold;
 	}
 
-	private void currentPositions(Input input, OptionsOutput output)
+	private void currentPositions()
 	{
 		input.account.getPositions().stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
 		input.account.getPositions().stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
 	}
 
-	private void monthlyIncome(Input input, OptionsOutput output)
+	private void monthlyIncome()
 	{
 		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
 		for (Transaction transaction : input.account.getTransactions())

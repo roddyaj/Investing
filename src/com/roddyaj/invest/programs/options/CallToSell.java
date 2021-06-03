@@ -9,20 +9,20 @@ import com.roddyaj.invest.util.HtmlFormatter;
 public class CallToSell
 {
 	public final Position position;
-	public final double lastBuy;
+	public final double costPerShare;
 	public final int quantity;
 
-	public CallToSell(Position position, double lastBuy, int quantity)
+	public CallToSell(Position position, double costPerShare, int quantity)
 	{
 		this.position = position;
-		this.lastBuy = lastBuy;
+		this.costPerShare = costPerShare;
 		this.quantity = quantity;
 	}
 
 	@Override
 	public String toString()
 	{
-		return String.format("%-4s %d %s (bought at $%5.2f)", position.symbol, quantity, position.dayChangePct >= 0 ? "Y" : " ", lastBuy);
+		return String.format("%-4s %d %s (bought at $%5.2f)", position.symbol, quantity, position.dayChangePct >= 0 ? "Y" : " ", costPerShare);
 	}
 
 	public static class CallHtmlFormatter extends HtmlFormatter<CallToSell>
@@ -31,19 +31,22 @@ public class CallToSell
 		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
-			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("Schwab", "%s", Align.L));
+			columns.add(new Column("Yahoo", "%s", Align.L));
 			columns.add(new Column("#", "%d", Align.R));
 			columns.add(new Column("Favorable", "%s", Align.C));
-			columns.add(new Column("Last Buy", "$%.2f", Align.R));
+			columns.add(new Column("Cost/Share", "$%.2f", Align.R));
 			return columns;
 		}
 
 		@Override
 		protected List<Object> getObjectElements(CallToSell c)
 		{
-			final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+			final String schwab = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+			final String yahoo = "https://finance.yahoo.com/quote/%s";
 
-			return List.of(toLink(url, c.position.symbol), c.quantity, c.position.dayChangePct >= 0 ? "Y" : "", c.lastBuy);
+			return List.of(toLink(schwab, c.position.symbol), toLink(yahoo, c.position.symbol), c.quantity, c.position.dayChangePct >= 0 ? "Y" : "",
+					c.costPerShare);
 		}
 	}
 }

@@ -88,4 +88,10 @@ public class Account
 		}
 		return transactions;
 	}
+
+	public double getPrice(String symbol)
+	{
+		return getPositions().stream().filter(p -> p.symbol.equals(symbol)).mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.price)
+				.findFirst().orElse(0);
+	}
 }

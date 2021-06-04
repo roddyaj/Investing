@@ -27,8 +27,10 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		for (Object element : getObjectElements(object))
 		{
 			Column column = columns.get(i++);
-			builder.append("<td style=\"text-align: ").append(column.align).append("\">").append(String.format(column.format, element))
-					.append("</td>");
+			builder.append("<td style=\"text-align: ").append(column.align).append("\">");
+			if (element != null)
+				builder.append(String.format(column.format, element));
+			builder.append("</td>");
 		}
 		builder.append("</tr>");
 		return builder.toString();

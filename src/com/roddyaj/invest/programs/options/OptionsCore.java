@@ -98,10 +98,10 @@ public class OptionsCore
 				double available = MAX_ALLOCATION - totalInvested;
 				double canSellCount = available / (price * 100); // Hack: using price in place of strike since we don't have strike
 				if (canSellCount > 0.9)
-					output.putsToSell.add(new PutToSell(symbol, available));
+					output.putsToSell.add(new PutToSell(symbol, available, input.getPrice(symbol)));
 			}
 			else
-				output.putsToSell.add(new PutToSell(symbol, MAX_ALLOCATION));
+				output.putsToSell.add(new PutToSell(symbol, MAX_ALLOCATION, input.getPrice(symbol)));
 		}
 
 		// Calculate historical return on each one

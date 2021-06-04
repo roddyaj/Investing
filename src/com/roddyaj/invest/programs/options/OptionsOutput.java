@@ -28,8 +28,8 @@ public class OptionsOutput
 		output.buyToClose.add(new Position("DEF", 50, 123.));
 		output.callsToSell.add(new CallToSell(new Position("ABC", 50, 123.), 123., 2));
 		output.callsToSell.add(new CallToSell(new Position("DEF", 50, 123.), 123., 2));
-		output.putsToSell.add(new PutToSell("ABC", 1000.));
-		output.putsToSell.add(new PutToSell("DEF", 100.));
+		output.putsToSell.add(new PutToSell("ABC", 1000., 0));
+		output.putsToSell.add(new PutToSell("DEF", 100., 0));
 		output.availableToTrade = 2000.;
 
 		AppFileUtils.showHtml(output.toString(), "options.html");

@@ -10,4 +10,9 @@ public class Input
 		account = new Account(accountName);
 		information = new Information();
 	}
+
+	public double getPrice(String symbol)
+	{
+		return account.getPrice(symbol);
+	}
 }

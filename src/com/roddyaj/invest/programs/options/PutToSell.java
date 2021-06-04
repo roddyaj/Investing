@@ -10,12 +10,14 @@ public class PutToSell implements Comparable<PutToSell>
 {
 	public final String symbol;
 	public final double availableAmount;
+	public final double underlyingPrice;
 	public double averageReturn;
 
-	public PutToSell(String symbol, double availableAmount)
+	public PutToSell(String symbol, double availableAmount, double underlyingPrice)
 	{
 		this.symbol = symbol;
 		this.availableAmount = availableAmount;
+		this.underlyingPrice = underlyingPrice;
 	}
 
 	@Override
@@ -48,6 +50,7 @@ public class PutToSell implements Comparable<PutToSell>
 			columns.add(new Column("Schwab", "%s", Align.L));
 			columns.add(new Column("Yahoo", "%s", Align.L));
 			columns.add(new Column("Max", "$%.0f", Align.R));
+			columns.add(new Column("U. Price", "$%.2f", Align.R));
 			columns.add(new Column("Avg. Return", "%.0f%%", Align.R));
 			return columns;
 		}
@@ -58,7 +61,7 @@ public class PutToSell implements Comparable<PutToSell>
 			final String schwab = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
 			final String yahoo = "https://finance.yahoo.com/quote/%s";
 
-			return List.of(toLink(schwab, p.symbol), toLink(yahoo, p.symbol), p.availableAmount, p.averageReturn);
+			return List.of(toLink(schwab, p.symbol), toLink(yahoo, p.symbol), p.availableAmount, p.underlyingPrice, p.averageReturn);
 		}
 	}
 }

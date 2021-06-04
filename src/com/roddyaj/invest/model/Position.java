@@ -123,10 +123,11 @@ public class Position implements Comparable<Position>
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("#", "%d", Align.R));
+			columns.add(new Column("Type", "%s", Align.C));
 			columns.add(new Column("Expiration", "%s", Align.L));
 			columns.add(new Column("Days", "%d", Align.R));
 			columns.add(new Column("Strike", "$%.2f", Align.R));
-			columns.add(new Column("Type", "%s", Align.C));
+			columns.add(new Column("U. Price", "$%.2f", Align.R));
 			columns.add(new Column("", "%s", Align.C));
 			return columns;
 		}
@@ -138,7 +139,8 @@ public class Position implements Comparable<Position>
 			int days = (int)ChronoUnit.DAYS.between(LocalDate.now(), p.option.expiryDate);
 			String moneyText = "OTM".equals(p.option.money) ? "" : "*";
 
-			return List.of(toLink(url, p.symbol), p.quantity, p.option.expiryDate, days, p.option.strike, p.option.type, moneyText);
+			return List.of(toLink(url, p.symbol), p.quantity, p.option.type, p.option.expiryDate, days, p.option.strike,
+					p.option.getUnderlyingPrice(), moneyText);
 		}
 	}
 }

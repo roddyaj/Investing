@@ -71,6 +71,16 @@ public class Position implements Comparable<Position>
 		return isOption() && option.type == 'P';
 	}
 
+	public double getPrice()
+	{
+		return price;
+	}
+
+	public double getMarketValue()
+	{
+		return marketValue;
+	}
+
 	@Override
 	public String toString()
 	{

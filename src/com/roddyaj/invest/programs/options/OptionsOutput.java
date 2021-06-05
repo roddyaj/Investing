@@ -35,7 +35,6 @@ public class OptionsOutput
 	{
 		final String title = account + " Options";
 		List<String> lines = new ArrayList<>();
-		lines.add("<h2>" + title + "</h2>");
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close"));
 		lines.addAll(new CallToSell.CallHtmlFormatter().toBlock(callsToSell, "Calls To Sell"));
 		lines.addAll(PutToSell.toBlock(putsToSell, availableToTrade));

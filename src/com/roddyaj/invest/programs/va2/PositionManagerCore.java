@@ -1,29 +1,141 @@
 package com.roddyaj.invest.programs.va2;
 
+import static com.roddyaj.invest.programs.va.TemporalUtil.ANNUAL_TRADING_DAYS;
+
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Input;
+import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.settings.AccountSettings;
+import com.roddyaj.invest.model.settings.PositionSettings;
+import com.roddyaj.invest.model.settings.Settings;
+import com.roddyaj.invest.programs.va.TemporalUtil;
+import com.roddyaj.invest.programs.va.model.Order;
+import com.roddyaj.invest.programs.va.model.Point;
 
 public class PositionManagerCore
 {
-	private final Input input;
+	private final Account account;
+
+	private final Settings settings;
+
+	private final AccountSettings accountSettings;
 
 	private final PositionManagerOutput output;
 
 	public PositionManagerCore(Input input)
 	{
-		this.input = input;
+		account = input.account;
+		settings = input.account.getSettings();
+		accountSettings = input.account.getAccountSettings();
 		output = new PositionManagerOutput(input.account.getName());
 	}
 
 	public PositionManagerOutput run()
 	{
-		final AccountSettings accountSettings = input.account.getAccountSettings();
-		double untrackedTotal = input.account.getPositions().stream().filter(p -> !accountSettings.hasAllocation(p.symbol) && p.quantity > 0)
+		// Create the allocation map
+		double untrackedTotal = account.getPositions().stream().filter(p -> p.quantity > 0 && !accountSettings.hasAllocation(p.symbol))
 				.mapToDouble(p -> p.marketValue).sum();
-//		double untrackedPercent = untrackedTotal / account.getTotalValue();
+		double untrackedPercent = untrackedTotal / account.getTotalValue();
+		accountSettings.createMap(untrackedPercent);
+		System.out.println("untrackedPercent: " + untrackedPercent);
 
-		output.blah = untrackedTotal;
+//		if (!LocalDate.now().equals(input.account.date))
+//			System.out.println("\n\033[33mAccount data is not from today: " + input.account.date + "\033[0m");
+
+		List<Order> orders = accountSettings.getRealPositions().map(p -> evaluate(p.getSymbol())).filter(Objects::nonNull)
+				.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).collect(Collectors.toList());
+		output.setOrders(orders);
 
 		return output;
+	}
+
+	private Order evaluate(String symbol)
+	{
+		PositionSettings positionSettings = accountSettings.getPosition(symbol);
+		Position position = account.getPosition(symbol);
+
+		Point p0 = new Point(LocalDate.parse(positionSettings.getT0()), positionSettings.getV0());
+		Point p1 = getP1(symbol, p0.date);
+		double targetValue;
+		if (account.getDate().isBefore(p1.date))
+		{
+			targetValue = getTargetValue(p0, p1, account.getDate(), settings.getAnnualGrowth(symbol));
+		}
+		else
+		{
+			double annualContrib = accountSettings.getAnnualContrib() * accountSettings.getAllocation(symbol);
+			targetValue = getFutureValue(p1, account.getDate(), settings.getAnnualGrowth(symbol), annualContrib);
+		}
+
+		if (!account.hasSymbol(symbol))
+		{
+			if (targetValue > 0)
+				System.out.println(String.format("Initiate new position in %-4s for $%.2f", symbol, targetValue));
+			return null;
+		}
+
+		double delta = targetValue - position.getMarketValue();
+		long sharesToBuy = Math.round(delta / position.getPrice());
+		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position.dayChangePct);
+
+//		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
+//
+//		if (p1.value < p0.value && !accountSettings.getSell(symbol))
+//			warnings.add("Sell not enabled for " + symbol);
+
+		if (allowOrder(order, position))
+			return order;
+		return null;
+	}
+
+	private Point getP1(String symbol, LocalDate t0)
+	{
+		Period period = Period.parse(accountSettings.getPeriod(symbol));
+		long daysInPeriod = TemporalUtil.getDaysApprox(period);
+		LocalDate t1 = t0.plusDays(daysInPeriod);
+		double v1 = getFutureAccountValue(t1) * accountSettings.getAllocation(symbol);
+		return new Point(t1, v1);
+	}
+
+	private double getFutureAccountValue(LocalDate t)
+	{
+		return getFutureValue(new Point(account.getDate(), account.getTotalValue()), t, 0.06, accountSettings.getAnnualContrib());
+	}
+
+	private static double getTargetValue(Point p0, Point p1, LocalDate t, double annualGrowth)
+	{
+		double valueDelta = p1.value - getFutureValue(p0, p1.date, annualGrowth, 0);
+		long daysBetween = ChronoUnit.DAYS.between(p0.date, p1.date);
+		double annualContrib = (valueDelta / daysBetween) * 365;
+		return getFutureValue(p0, t, annualGrowth, annualContrib);
+	}
+
+	private static double getFutureValue(Point startPoint, LocalDate futureDate, double annualGrowth, double annualContrib)
+	{
+		double futureValue = startPoint.value;
+		double dailyGrowthRate = 1 + annualGrowth / ANNUAL_TRADING_DAYS;
+		double dailyContrib = annualContrib / ANNUAL_TRADING_DAYS;
+		for (LocalDate date = startPoint.date; date.compareTo(futureDate) < 0; date = date.plusDays(1))
+		{
+			if (TemporalUtil.isTradingDay(date))
+				futureValue = futureValue * dailyGrowthRate + dailyContrib;
+		}
+		return futureValue;
+	}
+
+	private boolean allowOrder(Order order, Position position)
+	{
+		double minOrderAmount = Math.max(position.getMarketValue() * 0.005, 50);
+		if (order.shareCount < 0)
+			minOrderAmount *= 2;
+		boolean allowSell = accountSettings.getSell(order.symbol);
+		return Math.abs(order.getAmount()) > minOrderAmount && (order.shareCount > 0 || allowSell);
 	}
 }

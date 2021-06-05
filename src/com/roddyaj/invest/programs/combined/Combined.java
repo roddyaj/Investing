@@ -21,12 +21,10 @@ public class Combined implements Program
 
 		Input input = new Input(accountName);
 
-		PositionManagerOutput positionsOutput = new PositionManagerCore(input).run();
-		OptionsOutput optionsOutput = new OptionsCore(input).run();
-
 		List<String> lines = new ArrayList<>();
-//		lines.add("<h2>" + input.account.getName() + " Combined</h2>");
+		PositionManagerOutput positionsOutput = new PositionManagerCore(input).run();
 		lines.addAll(positionsOutput.getContent());
+		OptionsOutput optionsOutput = new OptionsCore(input).run();
 		lines.addAll(optionsOutput.getContent());
 		String html = HtmlFormatter.toDocument(input.account.getName(), lines);
 

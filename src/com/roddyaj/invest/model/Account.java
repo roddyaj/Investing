@@ -6,7 +6,10 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVRecord;
 
@@ -21,6 +24,8 @@ import com.roddyaj.invest.util.StringUtils;
 public class Account
 {
 	private final String name;
+	private LocalDate date;
+	private Settings settings;
 	private AccountSettings accountSettings;
 	private List<Position> positions;
 	private List<Transaction> transactions;
@@ -35,20 +40,33 @@ public class Account
 		return name;
 	}
 
-	public AccountSettings getAccountSettings()
+	public LocalDate getDate()
 	{
-		if (accountSettings == null)
+		return date;
+	}
+
+	public Settings getSettings()
+	{
+		if (settings == null)
 		{
 			Path settingsFile = Paths.get(AppFileUtils.SETTINGS_DIR.toString(), "settings.json");
 			try
 			{
-				Settings settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
-				accountSettings = settings.getAccount(name);
+				settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
 			}
 			catch (IOException e)
 			{
 				e.printStackTrace();
 			}
+		}
+		return settings;
+	}
+
+	public AccountSettings getAccountSettings()
+	{
+		if (accountSettings == null)
+		{
+			accountSettings = getSettings().getAccount(name);
 		}
 		return accountSettings;
 	}
@@ -58,9 +76,15 @@ public class Account
 		if (positions == null)
 		{
 			Path positionsFile = AppFileUtils.getAccountFile(name, FileType.POSITIONS);
+
 			positions = positionsFile != null
 					? FileUtils.readCsv(positionsFile).stream().filter(r -> r.getRecordNumber() > 2).map(Position::new).collect(Collectors.toList())
 					: List.of();
+
+			final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
+			Matcher matcher = datePattern.matcher(positionsFile.getFileName().toString());
+			if (matcher.find())
+				date = LocalDate.parse(matcher.group(1));
 		}
 		return positions;
 	}
@@ -91,7 +115,26 @@ public class Account
 
 	public double getPrice(String symbol)
 	{
-		return getPositions().stream().filter(p -> p.symbol.equals(symbol)).mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.price)
-				.findFirst().orElse(0);
+		return getPositions(symbol).mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.price).findFirst().orElse(0);
+	}
+
+	public double getTotalValue()
+	{
+		return getPositions("Account Total").mapToDouble(p -> p.marketValue).findFirst().orElse(0);
+	}
+
+	public Position getPosition(String symbol)
+	{
+		return getPositions(symbol).findFirst().orElse(null);
+	}
+
+	public boolean hasSymbol(String symbol)
+	{
+		return getPositions(symbol).findAny().isPresent();
+	}
+
+	private Stream<Position> getPositions(String symbol)
+	{
+		return getPositions().stream().filter(p -> p.symbol.equals(symbol));
 	}
 }

@@ -14,7 +14,7 @@ public final class AppFileUtils
 	public static final Path INPUT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
 	public static final Path OUTPUT_DIR = Paths.get(System.getProperty("user.home"), "Documents");
 
-	private static final Pattern FILE_PATTERN = Pattern.compile("(.+?)[-_]\\w+[-_]([-\\d]+).CSV");
+	private static final Pattern FILE_PATTERN = Pattern.compile("(.+?)(-Positions-|_Transactions_)([-\\d]+).CSV");
 
 	public static Path getAccountFile(String account, FileType type)
 	{
@@ -68,7 +68,7 @@ public final class AppFileUtils
 		String timeString = null;
 		Matcher m = FILE_PATTERN.matcher(path.getFileName().toString());
 		if (m.find())
-			timeString = m.group(2).replace("-", "");
+			timeString = m.group(3).replace("-", "");
 		return timeString;
 	}
 

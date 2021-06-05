@@ -2,17 +2,22 @@ package com.roddyaj.invest;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.roddyaj.invest.framework.ListCommand;
 import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.framework.RunCommand;
+import com.roddyaj.invest.programs.combined.Combined;
 import com.roddyaj.invest.programs.dataroma.Dataroma;
 import com.roddyaj.invest.programs.options.Options;
 import com.roddyaj.invest.programs.va.ValueAverager;
+import com.roddyaj.invest.programs.va2.PositionManager;
 import com.roddyaj.invest.programs.vf.ValueFinder;
 
 public final class Main
@@ -29,8 +34,17 @@ public final class Main
 	public Main()
 	{
 		Path dataDir = Paths.get(System.getProperty("user.home"), ".invest");
-		populateMap(programs, new ValueFinder(dataDir), new ValueAverager(dataDir), new Options(), new Dataroma());
-		populateMap(commands, new ListCommand(programs), new RunCommand(programs));
+		List<Program> programList = new ArrayList<>();
+
+		programList.add(new ValueFinder(dataDir));
+		programList.add(new ValueAverager(dataDir));
+		programList.add(new Dataroma());
+		programList.add(new PositionManager());
+		programList.add(new Options());
+		programList.add(new Combined());
+
+		populateMap(programs, programList);
+		populateMap(commands, List.of(new ListCommand(programs), new RunCommand(programs)));
 	}
 
 	public void run(String[] args)
@@ -51,7 +65,7 @@ public final class Main
 			System.err.println(String.format("Command '%s' not found", commandName));
 	}
 
-	private static void populateMap(Map<String, Program> map, Program... items)
+	private static void populateMap(Map<String, Program> map, Collection<? extends Program> items)
 	{
 		for (Program item : items)
 			map.put(item.getName(), item);

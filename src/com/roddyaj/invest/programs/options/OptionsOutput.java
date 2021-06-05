@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.Position;
-import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class OptionsOutput
@@ -20,21 +19,6 @@ public class OptionsOutput
 	public final List<Position> currentPositions = new ArrayList<>();
 	public final Map<String, Double> monthToIncome = new HashMap<>();
 
-	// Test code
-	public static void main(String[] args)
-	{
-		OptionsOutput output = new OptionsOutput("test");
-		output.buyToClose.add(new Position("ABC", 50, 123.));
-		output.buyToClose.add(new Position("DEF", 50, 123.));
-		output.callsToSell.add(new CallToSell(new Position("ABC", 50, 123.), 123., 2));
-		output.callsToSell.add(new CallToSell(new Position("DEF", 50, 123.), 123., 2));
-		output.putsToSell.add(new PutToSell("ABC", 1000., 0));
-		output.putsToSell.add(new PutToSell("DEF", 100., 0));
-		output.availableToTrade = 2000.;
-
-		AppFileUtils.showHtml(output.toString(), "options.html");
-	}
-
 	public OptionsOutput(String account)
 	{
 		this.account = account;
@@ -42,6 +26,12 @@ public class OptionsOutput
 
 	@Override
 	public String toString()
+	{
+		final String title = account + " Options";
+		return HtmlFormatter.toDocument(title, getContent());
+	}
+
+	public List<String> getContent()
 	{
 		final String title = account + " Options";
 		List<String> lines = new ArrayList<>();
@@ -53,8 +43,7 @@ public class OptionsOutput
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, "Current Options (" + currentPositions.size() + ")"));
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
 		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Income"));
-
-		return HtmlFormatter.toDocument(title, lines);
+		return lines;
 	}
 
 	private static class MonthlyIncomeFormatter extends HtmlFormatter<Map.Entry<String, Double>>

@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.va.model;
+package com.roddyaj.invest.programs.positions;
 
 import java.time.LocalDate;
 

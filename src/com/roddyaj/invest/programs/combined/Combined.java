@@ -7,8 +7,8 @@ import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.programs.options.OptionsCore;
 import com.roddyaj.invest.programs.options.OptionsOutput;
-import com.roddyaj.invest.programs.va2.PositionManagerCore;
-import com.roddyaj.invest.programs.va2.PositionManagerOutput;
+import com.roddyaj.invest.programs.positions.PositionManagerCore;
+import com.roddyaj.invest.programs.positions.PositionManagerOutput;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.HtmlFormatter;
 

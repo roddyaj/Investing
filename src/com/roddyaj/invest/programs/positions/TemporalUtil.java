@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.va;
+package com.roddyaj.invest.programs.positions;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;

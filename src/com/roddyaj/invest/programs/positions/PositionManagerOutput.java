@@ -1,8 +1,7 @@
-package com.roddyaj.invest.programs.va2;
+package com.roddyaj.invest.programs.positions;
 
 import java.util.List;
 
-import com.roddyaj.invest.programs.va.model.Order;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class PositionManagerOutput

@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.va.model;
+package com.roddyaj.invest.programs.positions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +86,7 @@ public class Order
 
 		private static String color(String s, String color)
 		{
-			return "<font color=\"" + color + "\">" + s + "</font>";
+			return "<span style=\"color:" + color + "\">" + s + "</span>";
 		}
 	}
 }

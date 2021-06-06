@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.va2;
+package com.roddyaj.invest.programs.positions;
 
 import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.model.Input;

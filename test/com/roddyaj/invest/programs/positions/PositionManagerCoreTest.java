@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.va2;
+package com.roddyaj.invest.programs.positions;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -12,7 +12,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		StringBuilder builder = new StringBuilder();
 		builder.append("<tr>");
 		for (Column column : getColumns())
-			builder.append("<th style=\"text-align: ").append(column.align).append("\">").append(column.name).append("</th>");
+			builder.append("<th class=\"").append(column.align).append("\">").append(column.name).append("</th>");
 		builder.append("</tr>");
 		return builder.toString();
 	}
@@ -27,7 +27,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		for (Object element : getObjectElements(object))
 		{
 			Column column = columns.get(i++);
-			builder.append("<td style=\"text-align: ").append(column.align).append("\">");
+			builder.append("<td class=\"").append(column.align).append("\">");
 			if (element != null)
 				builder.append(String.format(column.format, element));
 			builder.append("</td>");
@@ -86,12 +86,15 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 	public static String toDocument(String title, Collection<? extends String> input)
 	{
 		List<String> lines = new ArrayList<>();
-		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>");
+		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\" />");
 		lines.add("<title>" + title + "</title>");
 		lines.add("<style>");
 		lines.add("th, td { padding: 2px 4px; }");
 		lines.add(".heading { margin-bottom: 4px; font-size: large; }");
 		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin: 8px 0px; }");
+		lines.add(".left { text-align: left; }");
+		lines.add(".right { text-align: right; }");
+		lines.add(".center { text-align: center; }");
 		lines.add("</style>");
 		lines.add("</head>\n<body>");
 		lines.addAll(input);

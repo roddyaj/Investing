@@ -1,11 +1,11 @@
-package com.roddyaj.invest.programs.va.model;
+package com.roddyaj.invest.programs.positions;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.roddyaj.invest.util.StringUtils;
+import com.roddyaj.invest.model.Position;
 
 public class Report
 {
@@ -40,7 +40,8 @@ public class Report
 	public String toString()
 	{
 		double delta = position.getMarketValue() - targetValue;
-		double currentPct = StringUtils.parsePercent(position.getValue("% Of Account"));
+//		double currentPct = StringUtils.parsePercent(position.getValue("% Of Account"));
+		double currentPct = 0; // TODO
 		String dirText = p0 == null || p1 == null ? " " : p1.value > p0.value ? "\033[32m↗\033[0m" : "\033[31m↘\033[0m";
 		String p0Text = p0 != null ? p0.toString() : "                   ";
 		String p1Text = p1 != null ? p1.toString() : "                   ";

@@ -33,7 +33,6 @@ public class OptionsOutput
 
 	public List<String> getContent()
 	{
-		final String title = account + " Options";
 		List<String> lines = new ArrayList<>();
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close"));
 		lines.addAll(new CallToSell.CallHtmlFormatter().toBlock(callsToSell, "Calls To Sell"));

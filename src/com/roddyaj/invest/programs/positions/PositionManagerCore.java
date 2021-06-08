@@ -5,6 +5,7 @@ import static com.roddyaj.invest.programs.positions.TemporalUtil.ANNUAL_TRADING_
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ public class PositionManagerCore
 
 	private final PositionManagerOutput output;
 
-//	private final List<Report> reports = new ArrayList<>();
+	private final List<Report> reports = new ArrayList<>();
 //	private final List<String> warnings = new ArrayList<>();
 
 	public PositionManagerCore(Input input)
@@ -51,7 +52,6 @@ public class PositionManagerCore
 				.mapToDouble(p -> p.marketValue).sum();
 		double untrackedPercent = untrackedTotal / account.getTotalValue();
 		accountSettings.createMap(untrackedPercent);
-		System.out.println("untrackedPercent: " + untrackedPercent);
 
 		if (!LocalDate.now().equals(account.getDate()))
 			output.addMessage(Level.WARN, "Account data is not from today: " + account.getDate());
@@ -61,7 +61,7 @@ public class PositionManagerCore
 		output.setOrders(orders);
 
 //		if (reportLevel > 0)
-//			report(reportLevel);
+		report(1);
 
 		return output;
 	}
@@ -95,8 +95,8 @@ public class PositionManagerCore
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position.dayChangePct);
 
-//		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
-//
+		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
+
 //		if (p1.value < p0.value && !accountSettings.getSell(symbol))
 //			warnings.add("Sell not enabled for " + symbol);
 
@@ -149,17 +149,17 @@ public class PositionManagerCore
 		return Math.abs(order.getAmount()) > minOrderAmount && (order.shareCount > 0 || allowSell);
 	}
 
-//	private void report(int reportLevel)
-//	{
-//		System.out.println("\n-------------------------------------- REPORT --------------------------------------\n");
-//
-//		reports.add(new Report("Cash", null, null, 0, accountSettings.getAllocation("cash"), account.getPosition("Cash & Cash Investments")));
-//
-//		double eoyAccountValue = getFutureAccountValue(TemporalUtil.END_OF_YEAR);
-//		System.out.println(String.format("Estimated EOY account value: %6.0f", eoyAccountValue));
-//
-//		System.out.println(Report.toString(reports));
-//
+	private void report(int reportLevel)
+	{
+		System.out.println("\n-------------------------------------- REPORT --------------------------------------\n");
+
+		reports.add(new Report("Cash", null, null, 0, accountSettings.getAllocation("cash"), account.getPosition("Cash & Cash Investments")));
+
+		double eoyAccountValue = getFutureAccountValue(TemporalUtil.END_OF_YEAR);
+		System.out.println(String.format("Estimated EOY account value: %6.0f", eoyAccountValue));
+
+		System.out.println(Report.toString(reports));
+
 //		for (Position position : account.getPositions())
 //		{
 //			if (startsWith(position.getValue("Security Type"), "ETF") && accountSettings.getPosition(position.symbol) == null)
@@ -235,8 +235,8 @@ public class PositionManagerCore
 //			System.out.println();
 //			positions2.stream().sorted((p1, p2) -> p1.getSymbol().compareTo(p2.getSymbol())).forEach(System.out::println);
 //		}
-//	}
-//
+	}
+
 //	private static boolean startsWith(String s1, String s2)
 //	{
 //		return s1 != null && s1.startsWith(s2);

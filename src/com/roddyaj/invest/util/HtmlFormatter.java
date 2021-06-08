@@ -54,7 +54,8 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		if (!objects.isEmpty())
 		{
 			lines.add("<div class=\"block\">");
-			lines.add("<div class=\"heading\"><b>" + title + "</b></div>");
+			if (title != null)
+				lines.add("<div class=\"heading\"><b>" + title + "</b></div>");
 			lines.addAll(format(objects));
 			lines.add("</div>");
 		}
@@ -89,6 +90,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\" />");
 		lines.add("<title>" + title + "</title>");
 		lines.add("<style>");
+		lines.add("body { font: 14px Arial, sans-serif; }");
 		lines.add("th, td { padding: 2px 4px; }");
 		lines.add(".heading { margin-bottom: 4px; font-size: large; }");
 		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin: 8px 0px; }");

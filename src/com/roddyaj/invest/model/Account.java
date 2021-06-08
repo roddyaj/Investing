@@ -76,15 +76,20 @@ public class Account
 		if (positions == null)
 		{
 			Path positionsFile = AppFileUtils.getAccountFile(name, FileType.POSITIONS);
+			if (positionsFile != null)
+			{
+				positions = FileUtils.readCsv(positionsFile).stream().filter(r -> r.getRecordNumber() > 2).map(Position::new)
+						.collect(Collectors.toList());
 
-			positions = positionsFile != null
-					? FileUtils.readCsv(positionsFile).stream().filter(r -> r.getRecordNumber() > 2).map(Position::new).collect(Collectors.toList())
-					: List.of();
-
-			final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
-			Matcher matcher = datePattern.matcher(positionsFile.getFileName().toString());
-			if (matcher.find())
-				date = LocalDate.parse(matcher.group(1));
+				final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
+				Matcher matcher = datePattern.matcher(positionsFile.getFileName().toString());
+				if (matcher.find())
+					date = LocalDate.parse(matcher.group(1));
+			}
+			else
+			{
+				positions = List.of();
+			}
 		}
 		return positions;
 	}
@@ -98,7 +103,8 @@ public class Account
 			if (transactionsFile == null)
 			{
 				AccountSettings accountSettings = getAccountSettings();
-				transactionsFile = AppFileUtils.getAccountFile(accountSettings.getAlias(), FileType.TRANSACTIONS);
+				if (accountSettings != null)
+					transactionsFile = AppFileUtils.getAccountFile(accountSettings.getAlias(), FileType.TRANSACTIONS);
 			}
 
 			final LocalDate yearAgo = LocalDate.now().minusYears(1);

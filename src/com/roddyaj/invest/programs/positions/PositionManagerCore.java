@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Input;
+import com.roddyaj.invest.model.Message.Level;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.model.settings.PositionSettings;
@@ -39,6 +40,12 @@ public class PositionManagerCore
 
 	public PositionManagerOutput run()
 	{
+		if (accountSettings == null)
+		{
+			output.addMessage(Level.INFO, "Account not found: " + account.getName());
+			return output;
+		}
+
 		// Create the allocation map
 		double untrackedTotal = account.getPositions().stream().filter(p -> p.quantity > 0 && !accountSettings.hasAllocation(p.symbol))
 				.mapToDouble(p -> p.marketValue).sum();
@@ -46,8 +53,8 @@ public class PositionManagerCore
 		accountSettings.createMap(untrackedPercent);
 		System.out.println("untrackedPercent: " + untrackedPercent);
 
-//		if (!LocalDate.now().equals(input.account.date))
-//			System.out.println("\n\033[33mAccount data is not from today: " + input.account.date + "\033[0m");
+		if (!LocalDate.now().equals(account.getDate()))
+			output.addMessage(Level.WARN, "Account data is not from today: " + account.getDate());
 
 		List<Order> orders = accountSettings.getRealPositions().map(p -> evaluate(p.getSymbol())).filter(Objects::nonNull)
 				.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).collect(Collectors.toList());

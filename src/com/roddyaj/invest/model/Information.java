@@ -1,5 +1,6 @@
 package com.roddyaj.invest.model;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -19,8 +20,11 @@ public class Information
 		if (optionableStocks == null)
 		{
 			Path file = Paths.get(AppFileUtils.INPUT_DIR.toString(), "Results.csv");
-			optionableStocks = FileUtils.readCsv(file).stream().filter(r -> r.getRecordNumber() > 1).map(OptionableStock::new)
-					.collect(Collectors.toList());
+			if (Files.exists(file))
+				optionableStocks = FileUtils.readCsv(file).stream().filter(r -> r.getRecordNumber() > 1).map(OptionableStock::new)
+						.collect(Collectors.toList());
+			else
+				optionableStocks = List.of();
 		}
 		return optionableStocks;
 	}

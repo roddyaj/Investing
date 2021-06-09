@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.roddyaj.invest.model.AbstractOutput;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.util.HtmlFormatter;
 
-public class OptionsOutput
+public class OptionsOutput extends AbstractOutput
 {
 	private final String account;
 	public final List<Position> buyToClose = new ArrayList<>();
@@ -31,6 +32,7 @@ public class OptionsOutput
 		return HtmlFormatter.toDocument(title, getContent());
 	}
 
+	@Override
 	public List<String> getContent()
 	{
 		List<String> lines = new ArrayList<>();

@@ -31,17 +31,12 @@ public class Message
 		@Override
 		protected List<Object> getObjectElements(Message o)
 		{
-			return List.of(o.text);
+			return List.of(color(o.text, o.level));
 		}
 
-//		private static String color(double d, String format)
-//		{
-//			return color(String.format(format, d), d >= 0 ? "green" : "red");
-//		}
-//
-//		private static String color(String s, String color)
-//		{
-//			return "<span style=\"color:" + color + "\">" + s + "</span>";
-//		}
+		private static String color(String s, Level level)
+		{
+			return color(s, level == Level.ERROR ? "red" : level == Level.WARN ? "orange" : "black");
+		}
 	}
 }

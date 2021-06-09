@@ -84,6 +84,11 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		return String.format("<a href=\"" + url + "\">%s</a>", text, text);
 	}
 
+	public static String color(String text, String color)
+	{
+		return "<span style=\"color:" + color + "\">" + text + "</span>";
+	}
+
 	public static String toDocument(String title, Collection<? extends String> input)
 	{
 		List<String> lines = new ArrayList<>();

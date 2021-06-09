@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.model.Input;
+import com.roddyaj.invest.model.Message;
 import com.roddyaj.invest.programs.options.OptionsCore;
 import com.roddyaj.invest.programs.options.OptionsOutput;
 import com.roddyaj.invest.programs.positions.PositionManagerCore;
@@ -21,10 +22,15 @@ public class Combined implements Program
 
 		Input input = new Input(accountName);
 
-		List<String> lines = new ArrayList<>();
 		PositionManagerOutput positionsOutput = new PositionManagerCore(input).run();
-		lines.addAll(positionsOutput.getContent());
 		OptionsOutput optionsOutput = new OptionsCore(input).run();
+
+		List<String> lines = new ArrayList<>();
+		List<Message> messages = new ArrayList<Message>();
+		messages.addAll(positionsOutput.getMessages());
+		messages.addAll(optionsOutput.getMessages());
+		lines.addAll(new Message.MessageFormatter().toBlock(messages, null));
+		lines.addAll(positionsOutput.getContent());
 		lines.addAll(optionsOutput.getContent());
 		String html = HtmlFormatter.toDocument(input.account.getName(), lines);
 

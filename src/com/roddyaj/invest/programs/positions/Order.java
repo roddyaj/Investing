@@ -83,10 +83,5 @@ public class Order
 		{
 			return color(String.format(format, d), d >= 0 ? "green" : "red");
 		}
-
-		private static String color(String s, String color)
-		{
-			return "<span style=\"color:" + color + "\">" + s + "</span>";
-		}
 	}
 }

@@ -45,8 +45,8 @@ public class CallToSell
 			final String schwab = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
 			final String yahoo = "https://finance.yahoo.com/quote/%s";
 
-			return List.of(toLink(schwab, c.position.symbol), toLink(yahoo, c.position.symbol), c.quantity, c.position.dayChangePct >= 0 ? "Y" : "",
-					c.costPerShare);
+			return List.of(toLinkSymbol(schwab, c.position.symbol), toLinkSymbol(yahoo, c.position.symbol), c.quantity,
+					c.position.dayChangePct >= 0 ? "Y" : "", c.costPerShare);
 		}
 	}
 }

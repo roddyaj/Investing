@@ -61,7 +61,7 @@ public class PutToSell implements Comparable<PutToSell>
 			final String schwab = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
 			final String yahoo = "https://finance.yahoo.com/quote/%s";
 
-			return List.of(toLink(schwab, p.symbol), toLink(yahoo, p.symbol), p.availableAmount, p.underlyingPrice, p.averageReturn);
+			return List.of(toLinkSymbol(schwab, p.symbol), toLinkSymbol(yahoo, p.symbol), p.availableAmount, p.underlyingPrice, p.averageReturn);
 		}
 	}
 }

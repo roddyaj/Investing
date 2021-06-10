@@ -79,9 +79,14 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 
 	protected abstract List<Object> getObjectElements(T object);
 
+	public static String toLinkSymbol(String url, String symbol)
+	{
+		return toLink(String.format(url, symbol), symbol);
+	}
+
 	public static String toLink(String url, String text)
 	{
-		return String.format("<a href=\"" + url + "\">%s</a>", text, text);
+		return String.format("<a href=\"%s\">%s</a>", url, text);
 	}
 
 	public static String color(String text, String color)

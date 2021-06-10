@@ -145,7 +145,7 @@ public class Position implements Comparable<Position>
 		@Override
 		protected List<Object> getObjectElements(Position p)
 		{
-			final String url = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+			final String url = "https://client.schwab.com/Areas/Accounts/Positions";
 			int days = (int)ChronoUnit.DAYS.between(LocalDate.now(), p.option.expiryDate);
 			String moneyText = "OTM".equals(p.option.money) ? "" : "*";
 

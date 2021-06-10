@@ -74,7 +74,7 @@ public class OptionsCore
 		List<Transaction> historicalOptions = input.account.getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
 
 		// Get list of CSP candidates based on historical activity
-		Set<String> symbols = historicalOptions.stream().map(Transaction::getSymbol).collect(Collectors.toSet());
+		Set<String> symbols = historicalOptions.stream().map(Transaction::getSymbol).filter(s -> !s.matches(".*\\d.*")).collect(Collectors.toSet());
 
 		// Add in other candidates
 		Set<String> optionable = input.information.getOptionableStocks().stream().map(r -> r.symbol).collect(Collectors.toSet());

@@ -102,8 +102,10 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		lines.add("<style>");
 		lines.add("body { font: 14px Arial, sans-serif; }");
 		lines.add("th, td { padding: 2px 4px; }");
+		lines.add(".row { display: flex; flex-direction: row; }");
+		lines.add(".column { display: flex; flex-direction: column; margin-right: 8px; }");
 		lines.add(".heading { margin-bottom: 4px; font-size: large; }");
-		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin: 8px 0px; }");
+		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin-bottom: 8px; }");
 		lines.add(".left { text-align: left; }");
 		lines.add(".right { text-align: right; }");
 		lines.add(".center { text-align: center; }");

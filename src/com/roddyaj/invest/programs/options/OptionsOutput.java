@@ -37,6 +37,14 @@ public class OptionsOutput extends AbstractOutput
 	public List<String> getContent()
 	{
 		List<String> lines = new ArrayList<>();
+		lines.addAll(getActionsHtml());
+		lines.addAll(getInfoHtml());
+		return lines;
+	}
+
+	public List<String> getActionsHtml()
+	{
+		List<String> lines = new ArrayList<>();
 
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close"));
 
@@ -46,7 +54,13 @@ public class OptionsOutput extends AbstractOutput
 		Collections.sort(putsToSell);
 		lines.addAll(PutToSell.toBlock(putsToSell, availableToTrade));
 
-		lines.add("<div style=\"padding: 4px 0px;\"></div>");
+		return lines;
+	}
+
+	public List<String> getInfoHtml()
+	{
+		List<String> lines = new ArrayList<>();
+
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, getCurrentOptionsTitle()));
 
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());

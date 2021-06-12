@@ -36,7 +36,7 @@ public class PositionManagerCore
 		account = input.account;
 		settings = input.account.getSettings();
 		accountSettings = input.account.getAccountSettings();
-		output = new PositionManagerOutput(input.account.getName());
+		output = new PositionManagerOutput();
 	}
 
 	public PositionManagerOutput run()

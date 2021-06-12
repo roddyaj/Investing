@@ -37,8 +37,10 @@ public class PutToSell implements Comparable<PutToSell>
 
 	public static List<String> toBlock(Collection<? extends PutToSell> puts, double availableToTrade)
 	{
-		String title = String.format("<div class=\"heading\"><b>Candidate Puts To Sell</b>&nbsp; $%.2f available to trade</div>", availableToTrade);
-		return new PutHtmlFormatter().toBlockHtmlTitle(puts, title);
+		String title = HtmlFormatter.toTitle("Candidate Puts To Sell");
+		String info = String.format("<div style=\"margin-left: 8px;\">$%.2f available to trade</div>", availableToTrade);
+		String heading = "<div class=\"heading\" style=\"display: flex; align-items: center;\">" + title + info + "</div>";
+		return new PutHtmlFormatter().toBlockHtmlTitle(puts, heading);
 	}
 
 	public static class PutHtmlFormatter extends HtmlFormatter<PutToSell>

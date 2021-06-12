@@ -37,18 +37,14 @@ public class Combined implements Program
 		List<Message> messages = new ArrayList<Message>();
 		messages.addAll(positionsOutput.getMessages());
 		messages.addAll(optionsOutput.getMessages());
-		lines.addAll(new Message.MessageFormatter().toBlock(messages, null));
+		lines.addAll(new Message.MessageFormatter().toBlock(messages, "Messages"));
 
 		// Main content blocks
-		lines.add("<div class=\"row\">");
-		lines.add("<div class=\"column\">");
-		lines.addAll(positionsOutput.getContent());
-		lines.addAll(optionsOutput.getActionsHtml());
-		lines.add("</div>");
-		lines.add("<div class=\"column\">");
-		lines.addAll(optionsOutput.getInfoHtml());
-		lines.add("</div>");
-		lines.add("</div>");
+		List<String> columnLines = new ArrayList<>();
+		columnLines.addAll(HtmlFormatter.toColumn(positionsOutput.getContent()));
+		columnLines.addAll(HtmlFormatter.toColumn(optionsOutput.getActionsHtml()));
+		columnLines.addAll(HtmlFormatter.toColumn(optionsOutput.getInfoHtml()));
+		lines.addAll(HtmlFormatter.toRow(columnLines));
 
 		return HtmlFormatter.toDocument(input.account.getName(), lines);
 	}

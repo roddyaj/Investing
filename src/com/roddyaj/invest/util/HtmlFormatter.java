@@ -41,7 +41,9 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 	{
 		List<String> lines = new ArrayList<>(3 + objects.size());
 		lines.add("<table>");
-		lines.add(getHeader());
+		String header = getHeader();
+		if (header != null)
+			lines.add(header);
 		for (T object : objects)
 			lines.add(format(object));
 		lines.add("</table>");
@@ -50,25 +52,18 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 
 	public List<String> toBlock(Collection<? extends T> objects, String title)
 	{
-		List<String> lines = new ArrayList<>();
-		if (!objects.isEmpty())
-		{
-			lines.add("<div class=\"block\">");
-			if (title != null)
-				lines.add("<div class=\"heading\"><b>" + title + "</b></div>");
-			lines.addAll(format(objects));
-			lines.add("</div>");
-		}
-		return lines;
+		String headingHtml = title != null ? toHeading(title) : null;
+		return toBlockHtmlTitle(objects, headingHtml);
 	}
 
-	public List<String> toBlockHtmlTitle(Collection<? extends T> objects, String titleHtml)
+	public List<String> toBlockHtmlTitle(Collection<? extends T> objects, String headingHtml)
 	{
 		List<String> lines = new ArrayList<>();
 		if (!objects.isEmpty())
 		{
 			lines.add("<div class=\"block\">");
-			lines.add(titleHtml);
+			if (headingHtml != null)
+				lines.add(headingHtml);
 			lines.addAll(format(objects));
 			lines.add("</div>");
 		}
@@ -78,6 +73,57 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 	protected abstract List<Column> getColumns();
 
 	protected abstract List<Object> getObjectElements(T object);
+
+	public static String toDocument(String title, Collection<? extends String> input)
+	{
+		List<String> lines = new ArrayList<>();
+		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\" />");
+		lines.add("<title>" + title + "</title>");
+		lines.add("<style>");
+		lines.add("body { font: 14px Arial, sans-serif; }");
+		lines.add("th, td { padding: 2px 4px; }");
+		lines.add(".row { display: flex; flex-direction: row; }");
+		lines.add(".column { display: flex; flex-direction: column; margin-right: 8px; }");
+		lines.add(".heading { margin-bottom: 4px; }");
+		lines.add(".title { font-size: large; font-weight: bold; }");
+		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin-bottom: 8px; }");
+		lines.add(".left { text-align: left; }");
+		lines.add(".right { text-align: right; }");
+		lines.add(".center { text-align: center; }");
+		lines.add("</style>");
+		lines.add("</head>\n<body>");
+		lines.addAll(input);
+		lines.add("</body>\n</html>");
+		return String.join("\n", lines);
+	}
+
+	public static List<String> toColumn(Collection<? extends String> input)
+	{
+		List<String> lines = new ArrayList<>();
+		lines.add("<div class=\"column\">");
+		lines.addAll(input);
+		lines.add("</div>");
+		return lines;
+	}
+
+	public static List<String> toRow(Collection<? extends String> input)
+	{
+		List<String> lines = new ArrayList<>();
+		lines.add("<div class=\"row\">");
+		lines.addAll(input);
+		lines.add("</div>");
+		return lines;
+	}
+
+	public static String toTitle(String text)
+	{
+		return "<div class=\"title\">" + text + "</div>";
+	}
+
+	public static String toHeading(String text)
+	{
+		return "<div class=\"heading title\">" + text + "</div>";
+	}
 
 	public static String toLinkSymbol(String url, String symbol)
 	{
@@ -92,28 +138,6 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 	public static String color(String text, String color)
 	{
 		return "<span style=\"color:" + color + "\">" + text + "</span>";
-	}
-
-	public static String toDocument(String title, Collection<? extends String> input)
-	{
-		List<String> lines = new ArrayList<>();
-		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\" />");
-		lines.add("<title>" + title + "</title>");
-		lines.add("<style>");
-		lines.add("body { font: 14px Arial, sans-serif; }");
-		lines.add("th, td { padding: 2px 4px; }");
-		lines.add(".row { display: flex; flex-direction: row; }");
-		lines.add(".column { display: flex; flex-direction: column; margin-right: 8px; }");
-		lines.add(".heading { margin-bottom: 4px; font-size: large; }");
-		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin-bottom: 8px; }");
-		lines.add(".left { text-align: left; }");
-		lines.add(".right { text-align: right; }");
-		lines.add(".center { text-align: center; }");
-		lines.add("</style>");
-		lines.add("</head>\n<body>");
-		lines.addAll(input);
-		lines.add("</body>\n</html>");
-		return String.join("\n", lines);
 	}
 
 	public enum Align

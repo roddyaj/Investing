@@ -23,6 +23,12 @@ public class Message
 	public static class MessageFormatter extends HtmlFormatter<Message>
 	{
 		@Override
+		public String getHeader()
+		{
+			return null;
+		}
+
+		@Override
 		protected List<Column> getColumns()
 		{
 			return List.of(new Column("Message", "%s", Align.L));

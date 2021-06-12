@@ -1,6 +1,7 @@
 package com.roddyaj.invest.programs.options;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,14 +37,31 @@ public class OptionsOutput extends AbstractOutput
 	public List<String> getContent()
 	{
 		List<String> lines = new ArrayList<>();
+
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close"));
+
+		Collections.sort(callsToSell);
 		lines.addAll(new CallToSell.CallHtmlFormatter().toBlock(callsToSell, "Calls To Sell"));
+
+		Collections.sort(putsToSell);
 		lines.addAll(PutToSell.toBlock(putsToSell, availableToTrade));
+
 		lines.add("<div style=\"padding: 4px 0px;\"></div>");
-		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, "Current Options (" + currentPositions.size() + ")"));
+		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, getCurrentOptionsTitle()));
+
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
 		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Income"));
+
 		return lines;
+	}
+
+	private String getCurrentOptionsTitle()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("Current Options (");
+		sb.append(currentPositions.size());
+		sb.append(')');
+		return sb.toString();
 	}
 
 	private static class MonthlyIncomeFormatter extends HtmlFormatter<Map.Entry<String, Double>>

@@ -1,9 +1,8 @@
 package com.roddyaj.invest.programs.options;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,11 +16,14 @@ public class OptionsCore
 {
 	private final Input input;
 
+	private final List<Transaction> historicalOptions;
+
 	private final OptionsOutput output;
 
 	public OptionsCore(Input input)
 	{
 		this.input = input;
+		historicalOptions = input.account.getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
 		output = new OptionsOutput(input.account.getName());
 	}
 
@@ -61,7 +63,8 @@ public class OptionsCore
 				if (availableCalls > 0)
 				{
 					double costPerShare = symbolToLast100Buy.getOrDefault(position.symbol, position.costBasis / position.quantity);
-					output.callsToSell.add(new CallToSell(position, costPerShare, availableCalls));
+					double averageReturn = calculateAverageReturn(position.symbol, historicalOptions);
+					output.callsToSell.add(new CallToSell(position, costPerShare, availableCalls, averageReturn));
 				}
 			}
 		}
@@ -71,18 +74,16 @@ public class OptionsCore
 	{
 		final double MAX_ALLOCATION = 2500;
 
-		List<Transaction> historicalOptions = input.account.getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
-
 		// Get list of CSP candidates based on historical activity
 		Set<String> symbols = historicalOptions.stream().map(Transaction::getSymbol).filter(s -> !s.matches(".*\\d.*")).collect(Collectors.toSet());
 
-		// Add in other candidates
-		Set<String> optionable = input.information.getOptionableStocks().stream().map(r -> r.symbol).collect(Collectors.toSet());
-		String[] guruCodes = new String[] { "SAM" };
-		Set<String> guruPicks = input.information.getDataromaStocks(guruCodes).stream().map(r -> r.symbol).collect(Collectors.toSet());
-		Set<String> intersection = new HashSet<>(optionable);
-		intersection.retainAll(guruPicks);
-		symbols.addAll(intersection);
+//		// Add in other candidates
+//		Set<String> optionable = input.information.getOptionableStocks().stream().map(r -> r.symbol).collect(Collectors.toSet());
+//		String[] guruCodes = new String[] { "SAM" };
+//		Set<String> guruPicks = input.information.getDataromaStocks(guruCodes).stream().map(r -> r.symbol).collect(Collectors.toSet());
+//		Set<String> intersection = new HashSet<>(optionable);
+//		intersection.retainAll(guruPicks);
+//		symbols.addAll(intersection);
 
 		// Create the orders with amount available
 		for (String symbol : symbols)
@@ -107,11 +108,8 @@ public class OptionsCore
 		// Calculate historical return on each one
 		for (PutToSell put : output.putsToSell)
 		{
-			put.averageReturn = historicalOptions.stream().filter(t -> t.symbol.equals(put.symbol) && t.action.equals("Sell to Open"))
-					.collect(Collectors.averagingDouble(t -> t.annualReturn));
+			put.averageReturn = calculateAverageReturn(put.symbol, historicalOptions);
 		}
-
-		Collections.sort(output.putsToSell);
 	}
 
 	private void availableToTrade()
@@ -132,10 +130,16 @@ public class OptionsCore
 	private void monthlyIncome()
 	{
 		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
-		for (Transaction transaction : input.account.getTransactions())
+		for (Transaction transaction : historicalOptions)
 		{
-			if (transaction.isOption() && (transaction.action.startsWith("Sell to") || transaction.action.startsWith("Buy to")))
+			if (transaction.action.startsWith("Sell to") || transaction.action.startsWith("Buy to"))
 				output.monthToIncome.merge(transaction.date.format(format), transaction.amount, Double::sum);
 		}
+	}
+
+	private static double calculateAverageReturn(String symbol, Collection<? extends Transaction> historicalOptions)
+	{
+		return historicalOptions.stream().filter(t -> t.symbol.equals(symbol) && t.action.equals("Sell to Open"))
+				.collect(Collectors.averagingDouble(t -> t.annualReturn));
 	}
 }

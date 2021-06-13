@@ -145,11 +145,12 @@ public class Position implements Comparable<Position>
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("#", "%d", Align.R));
-			columns.add(new Column("Type", "%s", Align.C));
+			columns.add(new Column("", "%s", Align.C));
 			columns.add(new Column("Expiration", "%s", Align.L));
-			columns.add(new Column("Days", "%d", Align.R));
-			columns.add(new Column("Strike", "$%.2f", Align.R));
-			columns.add(new Column("U. Price", "$%.2f", Align.R));
+			columns.add(new Column("DTE", "%d", Align.R));
+			columns.add(new Column("Strike", "%.2f", Align.R));
+			columns.add(new Column("Price", "%.2f", Align.R));
+			columns.add(new Column("Return", "%.0f%%", Align.R));
 			columns.add(new Column("", "%s", Align.C));
 			return columns;
 		}
@@ -160,9 +161,10 @@ public class Position implements Comparable<Position>
 			final String url = "https://client.schwab.com/Areas/Accounts/Positions";
 			int days = (int)ChronoUnit.DAYS.between(LocalDate.now(), p.option.expiryDate);
 			String moneyText = "OTM".equals(p.option.money) ? "" : "*";
+			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / days);
 
 			return List.of(toLink(url, p.symbol), p.quantity, p.option.type, p.option.expiryDate, days, p.option.strike,
-					p.option.getUnderlyingPrice(), moneyText);
+					p.option.getUnderlyingPrice(), annualReturn, moneyText);
 		}
 	}
 }

@@ -47,7 +47,7 @@ public class CallToSell implements Comparable<CallToSell>
 			columns.add(new Column("#", "%d", Align.R));
 			columns.add(new Column("Favorable", "%s", Align.C));
 			columns.add(new Column("Cost/Share", "$%.2f", Align.R));
-			columns.add(new Column("Avg. Return", "%.0f%%", Align.R));
+			columns.add(new Column("Return", "%.0f%%", Align.R));
 			return columns;
 		}
 

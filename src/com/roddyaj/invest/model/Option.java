@@ -33,4 +33,11 @@ public class Option
 	{
 		return type == 'P' ? strike - intrinsicValue : strike + intrinsicValue;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "Option [symbol=" + symbol + ", expiryDate=" + expiryDate + ", strike=" + strike + ", type=" + type + ", money=" + money
+				+ ", intrinsicValue=" + intrinsicValue + ", getUnderlyingPrice=" + getUnderlyingPrice() + "]";
+	}
 }

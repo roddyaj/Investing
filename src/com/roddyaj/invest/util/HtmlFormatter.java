@@ -50,20 +50,15 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		return lines;
 	}
 
-	public List<String> toBlock(Collection<? extends T> objects, String title)
-	{
-		String headingHtml = title != null ? toHeading(title) : null;
-		return toBlockHtmlTitle(objects, headingHtml);
-	}
-
-	public List<String> toBlockHtmlTitle(Collection<? extends T> objects, String headingHtml)
+	public List<String> toBlock(Collection<? extends T> objects, String title, String info)
 	{
 		List<String> lines = new ArrayList<>();
 		if (!objects.isEmpty())
 		{
 			lines.add("<div class=\"block\">");
-			if (headingHtml != null)
-				lines.add(headingHtml);
+			String heading = toHeading(title, info);
+			if (heading != null)
+				lines.add(heading);
 			lines.addAll(format(objects));
 			lines.add("</div>");
 		}
@@ -82,11 +77,13 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		lines.add("<style>");
 		lines.add("body { font: 14px Arial, sans-serif; }");
 		lines.add("th, td { padding: 2px 4px; }");
+		lines.add("a:link { text-decoration: none; }");
+		lines.add("a:hover { text-decoration: underline; }");
 		lines.add(".row { display: flex; flex-direction: row; }");
 		lines.add(".column { display: flex; flex-direction: column; margin-right: 8px; }");
-		lines.add(".heading { margin-bottom: 4px; }");
+		lines.add(".heading { display: flex; align-items: center; margin-bottom: 4px; }");
 		lines.add(".title { font-size: large; font-weight: bold; }");
-		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin-bottom: 8px; }");
+		lines.add(".block { border-style: solid; border-width: 1px; padding: 4px; margin-bottom: 8px; background-color: #F7F7F7 }");
 		lines.add(".left { text-align: left; }");
 		lines.add(".right { text-align: right; }");
 		lines.add(".center { text-align: center; }");
@@ -99,7 +96,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 
 	public static List<String> toColumn(Collection<? extends String> input)
 	{
-		List<String> lines = new ArrayList<>();
+		List<String> lines = new ArrayList<>(input.size() + 2);
 		lines.add("<div class=\"column\">");
 		lines.addAll(input);
 		lines.add("</div>");
@@ -108,21 +105,25 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 
 	public static List<String> toRow(Collection<? extends String> input)
 	{
-		List<String> lines = new ArrayList<>();
+		List<String> lines = new ArrayList<>(input.size() + 2);
 		lines.add("<div class=\"row\">");
 		lines.addAll(input);
 		lines.add("</div>");
 		return lines;
 	}
 
-	public static String toTitle(String text)
+	public static String toHeading(String title, String info)
 	{
-		return "<div class=\"title\">" + text + "</div>";
-	}
+		if (title == null)
+			return null;
 
-	public static String toHeading(String text)
-	{
-		return "<div class=\"heading title\">" + text + "</div>";
+		StringBuilder sb = new StringBuilder();
+		sb.append("<div class=\"heading\">");
+		sb.append("<div class=\"title\">").append(title).append("</div>");
+		if (info != null)
+			sb.append("<div style=\"margin-left: 8px;\">").append(info).append("</div>");
+		sb.append("</div>");
+		return sb.toString();
 	}
 
 	public static String toLinkSymbol(String url, String symbol)

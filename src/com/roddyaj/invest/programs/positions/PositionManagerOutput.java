@@ -27,7 +27,7 @@ public class PositionManagerOutput extends AbstractOutput
 	{
 		final String title = "Orders";
 		List<String> lines = new ArrayList<>();
-		lines.addAll(new Order.OrderFormatter().toBlock(orders, title));
+		lines.addAll(new Order.OrderFormatter().toBlock(orders, title, null));
 		return lines;
 	}
 }

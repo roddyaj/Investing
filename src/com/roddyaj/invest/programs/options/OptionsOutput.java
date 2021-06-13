@@ -46,10 +46,11 @@ public class OptionsOutput extends AbstractOutput
 	{
 		List<String> lines = new ArrayList<>();
 
-		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close"));
+		String info = String.format("Frees up $%.0f", buyToClose.stream().mapToDouble(Position::getMoneyInPlay).sum());
+		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close", info));
 
 		Collections.sort(callsToSell);
-		lines.addAll(new CallToSell.CallHtmlFormatter().toBlock(callsToSell, "Calls To Sell"));
+		lines.addAll(new CallToSell.CallHtmlFormatter().toBlock(callsToSell, "Calls To Sell", null));
 
 		Collections.sort(putsToSell);
 		lines.addAll(PutToSell.toBlock(putsToSell, availableToTrade));
@@ -61,21 +62,18 @@ public class OptionsOutput extends AbstractOutput
 	{
 		List<String> lines = new ArrayList<>();
 
-		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, getCurrentOptionsTitle()));
+		long callsCount = currentPositions.stream().filter(Position::isCallOption).count();
+		double callsInPlay = currentPositions.stream().filter(Position::isCallOption).mapToDouble(Position::getMoneyInPlay).sum();
+		long putsCount = currentPositions.stream().filter(Position::isPutOption).count();
+		double putsInPlay = currentPositions.stream().filter(Position::isPutOption).mapToDouble(Position::getMoneyInPlay).sum();
+		String info = String.format("C: %d $%.0f &nbsp;P: %d $%.0f &nbsp;T: %d $%.0f", callsCount, callsInPlay, putsCount, putsInPlay,
+				callsCount + putsCount, callsInPlay + putsInPlay);
+		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, "Current Options", info));
 
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
-		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Income"));
+		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Income", null));
 
 		return lines;
-	}
-
-	private String getCurrentOptionsTitle()
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("Current Options (");
-		sb.append(currentPositions.size());
-		sb.append(')');
-		return sb.toString();
 	}
 
 	private static class MonthlyIncomeFormatter extends HtmlFormatter<Map.Entry<String, Double>>

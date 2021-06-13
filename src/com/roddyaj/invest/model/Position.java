@@ -81,21 +81,33 @@ public class Position implements Comparable<Position>
 		return marketValue;
 	}
 
+	public double getMoneyInPlay()
+	{
+		return quantity * (option.type == 'P' ? option.strike : option.getUnderlyingPrice()) * -100;
+	}
+
+//	@Override
+//	public String toString()
+//	{
+//		return isOption() ? toStringOption() : toStringStock();
+//	}
+//
+//	private String toStringStock()
+//	{
+//		return String.format("%-5s %3d %7.2f %7.2f %7.2f", symbol, quantity, marketValue, costBasis, dayChangePct);
+//	}
+//
+//	private String toStringOption()
+//	{
+//		String moneyText = "OTM".equals(option.money) ? " " : "*";
+//		return String.format("%-5s %2d %s %5.2f %s %s", symbol, quantity, option.expiryDate, option.strike, option.type, moneyText);
+//	}
+
 	@Override
 	public String toString()
 	{
-		return isOption() ? toStringOption() : toStringStock();
-	}
-
-	private String toStringStock()
-	{
-		return String.format("%-5s %3d %7.2f %7.2f %7.2f", symbol, quantity, marketValue, costBasis, dayChangePct);
-	}
-
-	private String toStringOption()
-	{
-		String moneyText = "OTM".equals(option.money) ? " " : "*";
-		return String.format("%-5s %2d %s %5.2f %s %s", symbol, quantity, option.expiryDate, option.strike, option.type, moneyText);
+		return "Position [symbol=" + symbol + ", quantity=" + quantity + ", price=" + price + ", marketValue=" + marketValue + ", dayChangePct="
+				+ dayChangePct + ", costBasis=" + costBasis + ", option=" + option + ", getMoneyInPlay=" + getMoneyInPlay() + "]";
 	}
 
 	@Override

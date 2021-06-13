@@ -37,7 +37,7 @@ public class Combined implements Program
 		List<Message> messages = new ArrayList<Message>();
 		messages.addAll(positionsOutput.getMessages());
 		messages.addAll(optionsOutput.getMessages());
-		lines.addAll(new Message.MessageFormatter().toBlock(messages, "Messages"));
+		lines.addAll(new Message.MessageFormatter().toBlock(messages, "Messages", null));
 
 		// Main content blocks
 		List<String> columnLines = new ArrayList<>();
@@ -46,6 +46,6 @@ public class Combined implements Program
 		columnLines.addAll(HtmlFormatter.toColumn(optionsOutput.getInfoHtml()));
 		lines.addAll(HtmlFormatter.toRow(columnLines));
 
-		return HtmlFormatter.toDocument(input.account.getName(), lines);
+		return HtmlFormatter.toDocument(input.account.getName().replace('_', ' '), lines);
 	}
 }

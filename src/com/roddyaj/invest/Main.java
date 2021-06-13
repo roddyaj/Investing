@@ -1,7 +1,5 @@
 package com.roddyaj.invest;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,7 +15,6 @@ import com.roddyaj.invest.programs.combined.Combined;
 import com.roddyaj.invest.programs.dataroma.Dataroma;
 import com.roddyaj.invest.programs.options.Options;
 import com.roddyaj.invest.programs.positions.PositionManager;
-import com.roddyaj.invest.programs.vf.ValueFinder;
 
 public final class Main
 {
@@ -32,14 +29,12 @@ public final class Main
 
 	public Main()
 	{
-		Path dataDir = Paths.get(System.getProperty("user.home"), ".invest");
 		List<Program> programList = new ArrayList<>();
 
 		programList.add(new PositionManager());
 		programList.add(new Options());
 		programList.add(new Combined());
 		programList.add(new Dataroma());
-		programList.add(new ValueFinder(dataDir));
 
 		populateMap(programs, programList);
 		populateMap(commands, List.of(new ListCommand(programs), new RunCommand(programs)));

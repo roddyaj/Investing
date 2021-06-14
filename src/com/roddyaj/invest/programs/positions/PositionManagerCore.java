@@ -2,10 +2,6 @@ package com.roddyaj.invest.programs.positions;
 
 import static com.roddyaj.invest.programs.positions.TemporalUtil.ANNUAL_TRADING_DAYS;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
@@ -156,8 +152,6 @@ public class PositionManagerCore
 
 	private void report(int reportLevel)
 	{
-		System.out.println("\n-------------------------------------- REPORT --------------------------------------\n");
-
 		reports.add(new Report("Cash", null, null, 0, accountSettings.getAllocation("cash"), account.getPosition("Cash & Cash Investments")));
 
 		double eoyAccountValue = getFutureAccountValue(TemporalUtil.END_OF_YEAR);
@@ -171,19 +165,19 @@ public class PositionManagerCore
 				output.addMessage(Level.WARN, "Position " + position.symbol + " is not being tracked");
 		}
 
-		// Write CSV report
-		Path csvPath = Paths.get(settings.getDefaultDataDir(), "report.csv");
-		List<Report> csvReports = reports.stream().filter(r -> r.targetPct > 0).collect(Collectors.toList());
-		csvReports.add(new Report("Stocks", null, null, 0, accountSettings.getAllocation("stocks"), null));
-		try
-		{
-			Files.writeString(csvPath, Report.toCsvString(csvReports));
-			System.out.println("\nWrote " + csvPath);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+//		// Write CSV report
+//		Path csvPath = Paths.get(settings.getDefaultDataDir(), "report.csv");
+//		List<Report> csvReports = reports.stream().filter(r -> r.targetPct > 0).collect(Collectors.toList());
+//		csvReports.add(new Report("Stocks", null, null, 0, accountSettings.getAllocation("stocks"), null));
+//		try
+//		{
+//			Files.writeString(csvPath, Report.toCsvString(csvReports));
+//			System.out.println("\nWrote " + csvPath);
+//		}
+//		catch (IOException e)
+//		{
+//			e.printStackTrace();
+//		}
 
 		if (reportLevel >= 2)
 		{

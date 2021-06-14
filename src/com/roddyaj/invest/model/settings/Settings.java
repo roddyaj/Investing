@@ -12,6 +12,10 @@ public class Settings
 
 	private double defaultAnnualGrowthPct;
 
+	private String[] optionsExclude;
+
+	private String[] optionsInclude;
+
 	private SymbolInfo[] symbolInfos;
 
 	private AccountSettings[] accounts;
@@ -38,6 +42,30 @@ public class Settings
 	public void setDefaultAnnualGrowthPct(double defaultAnnualGrowthPct)
 	{
 		this.defaultAnnualGrowthPct = defaultAnnualGrowthPct;
+	}
+
+	@JsonProperty("optionsExclude")
+	public String[] getOptionsExclude()
+	{
+		return optionsExclude;
+	}
+
+	@JsonProperty("optionsExclude")
+	public void setOptionsExclude(String[] optionsExclude)
+	{
+		this.optionsExclude = optionsExclude;
+	}
+
+	@JsonProperty("optionsInclude")
+	public String[] getOptionsInclude()
+	{
+		return optionsInclude;
+	}
+
+	@JsonProperty("optionsInclude")
+	public void setOptionsInclude(String[] optionsInclude)
+	{
+		this.optionsInclude = optionsInclude;
 	}
 
 	@JsonProperty("symbolInfos")
@@ -73,5 +101,15 @@ public class Settings
 	{
 		return Arrays.stream(symbolInfos).filter(s -> s.getSymbol().equals(symbol)).mapToDouble(s -> s.getAnnualGrowthPct()).findAny()
 				.orElse(defaultAnnualGrowthPct) / 100;
+	}
+
+	public boolean excludeOption(String symbol)
+	{
+		return Arrays.asList(optionsExclude).contains(symbol);
+	}
+
+	public boolean includeOption(String symbol)
+	{
+		return Arrays.asList(optionsInclude).contains(symbol);
 	}
 }

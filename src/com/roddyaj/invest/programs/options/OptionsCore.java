@@ -54,7 +54,7 @@ public class OptionsCore
 
 		for (Position position : input.account.getPositions())
 		{
-			if (!position.isOption() && position.quantity >= 100)
+			if (!position.isOption() && position.quantity >= 100 && !input.account.getSettings().excludeOption(position.symbol))
 			{
 				int totalCallsSold = input.account.getPositions().stream().filter(p -> p.symbol.equals(position.symbol) && p.isCallOption())
 						.mapToInt(p -> p.quantity).sum();

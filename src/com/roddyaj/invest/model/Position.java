@@ -18,6 +18,7 @@ public class Position implements Comparable<Position>
 	public final double marketValue;
 	public final double dayChangePct;
 	public final double costBasis;
+	public final String securityType;
 
 	public final Option option;
 
@@ -31,7 +32,7 @@ public class Position implements Comparable<Position>
 		costBasis = StringUtils.parsePrice(record.get(9));
 		double intrinsicValue = record.size() > 22 ? StringUtils.parseDouble(record.get(22)) : 0;
 		String money = record.size() > 23 ? record.get(23) : null;
-		String securityType = record.size() > 24 ? record.get(24) : null;
+		securityType = record.size() > 24 ? record.get(24) : null;
 
 		if ("Option".equals(securityType))
 		{
@@ -54,6 +55,7 @@ public class Position implements Comparable<Position>
 		dayChangePct = 0;
 		costBasis = 0;
 		option = null;
+		securityType = null;
 	}
 
 	public boolean isOption()
@@ -83,7 +85,7 @@ public class Position implements Comparable<Position>
 
 	public double getMoneyInPlay()
 	{
-		return quantity * (option.type == 'P' ? option.strike : option.getUnderlyingPrice()) * -100;
+		return option != null ? quantity * (option.type == 'P' ? option.strike : option.getUnderlyingPrice()) * -100 : marketValue;
 	}
 
 //	@Override

@@ -75,7 +75,8 @@ public class OptionsCore
 		final double MAX_ALLOCATION = 2500;
 
 		// Get list of CSP candidates based on historical activity
-		Set<String> symbols = historicalOptions.stream().map(Transaction::getSymbol).filter(s -> !s.matches(".*\\d.*")).collect(Collectors.toSet());
+		Set<String> symbols = historicalOptions.stream().map(Transaction::getSymbol)
+				.filter(s -> !input.account.getSettings().excludeOption(s) && !s.matches(".*\\d.*")).collect(Collectors.toSet());
 
 //		// Add in other candidates
 //		Set<String> optionable = input.information.getOptionableStocks().stream().map(r -> r.symbol).collect(Collectors.toSet());

@@ -46,7 +46,7 @@ public class OptionsOutput extends AbstractOutput
 	{
 		List<String> lines = new ArrayList<>();
 
-		String info = String.format("Frees up $%.0f", buyToClose.stream().mapToDouble(Position::getMoneyInPlay).sum());
+		String info = String.format("Frees up $%.0f", buyToClose.stream().filter(Position::isPutOption).mapToDouble(Position::getMoneyInPlay).sum());
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close", info));
 
 		Collections.sort(callsToSell);
@@ -71,7 +71,7 @@ public class OptionsOutput extends AbstractOutput
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, "Current Options", info));
 
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
-		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Income", null));
+		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Options Income", null));
 
 		return lines;
 	}

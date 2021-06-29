@@ -75,6 +75,6 @@ public class PositionSettings
 	{
 		String symbolText = "\"" + symbol + "\",";
 		String sellText = sell != null && sell.booleanValue() ? ", \"sell\": true" : "";
-		return String.format("        { \"symbol\": %-7s \"t0\": \"%s\", \"v0\": %5.0f%s },", symbolText, t0, v0, sellText);
+		return String.format("        { \"symbol\": %-8s \"t0\": \"%s\", \"v0\": %5.0f%s },", symbolText, t0, v0, sellText);
 	}
 }

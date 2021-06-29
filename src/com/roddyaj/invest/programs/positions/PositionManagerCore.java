@@ -62,7 +62,7 @@ public class PositionManagerCore
 				.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).collect(Collectors.toList());
 		output.setOrders(orders);
 
-		report(1);
+		report(2);
 
 		return output;
 	}
@@ -88,8 +88,9 @@ public class PositionManagerCore
 		if (!account.hasSymbol(symbol))
 		{
 			if (targetValue > 0)
-				System.out.println(String.format("Initiate new position in %-4s for $%.2f", symbol, targetValue));
-			return null;
+				return new Order(symbol, 0, targetValue, 0);
+			else
+				return null;
 		}
 
 		double delta = targetValue - position.getMarketValue();

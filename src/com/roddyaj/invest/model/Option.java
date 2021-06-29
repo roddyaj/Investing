@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import com.roddyaj.invest.util.StringUtils;
 
@@ -13,11 +14,13 @@ public class Option
 	public final String money;
 	public final double intrinsicValue;
 
+	// Transaction constructor
 	public Option(String optionText)
 	{
 		this(optionText, null, 0);
 	}
 
+	// Position constructor
 	public Option(String optionText, String money, double intrinsicValue)
 	{
 		String[] tokens = optionText.split(" ");
@@ -29,6 +32,28 @@ public class Option
 		this.intrinsicValue = intrinsicValue;
 	}
 
+	// Test constructor
+	public Option(String symbol, LocalDate expiryDate, double strike, char type)
+	{
+		this(symbol, expiryDate, strike, type, null, 0);
+	}
+
+	// Full constructor
+	public Option(String symbol, LocalDate expiryDate, double strike, char type, String money, double intrinsicValue)
+	{
+		this.symbol = symbol;
+		this.expiryDate = expiryDate;
+		this.strike = strike;
+		this.type = type;
+		this.money = money;
+		this.intrinsicValue = intrinsicValue;
+	}
+
+	public int getDTE()
+	{
+		return (int)ChronoUnit.DAYS.between(LocalDate.now(), expiryDate);
+	}
+
 	public double getUnderlyingPrice()
 	{
 		return type == 'P' ? strike - intrinsicValue : strike + intrinsicValue;
@@ -37,7 +62,6 @@ public class Option
 	@Override
 	public String toString()
 	{
-		return "Option [symbol=" + symbol + ", expiryDate=" + expiryDate + ", strike=" + strike + ", type=" + type + ", money=" + money
-				+ ", intrinsicValue=" + intrinsicValue + ", getUnderlyingPrice=" + getUnderlyingPrice() + "]";
+		return String.format("%s %s %s %.2f %.2f %s", symbol, type, expiryDate, strike, getUnderlyingPrice(), money);
 	}
 }

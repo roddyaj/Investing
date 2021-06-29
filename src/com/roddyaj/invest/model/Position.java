@@ -1,7 +1,5 @@
 package com.roddyaj.invest.model;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,8 +106,8 @@ public class Position implements Comparable<Position>
 	@Override
 	public String toString()
 	{
-		return "Position [symbol=" + symbol + ", quantity=" + quantity + ", price=" + price + ", marketValue=" + marketValue + ", dayChangePct="
-				+ dayChangePct + ", costBasis=" + costBasis + ", option=" + option + ", getMoneyInPlay=" + getMoneyInPlay() + "]";
+		return symbol + ", quantity=" + quantity + ", price=" + price + ", marketValue=" + marketValue + ", dayChangePct=" + dayChangePct
+				+ ", costBasis=" + costBasis + ", option=[" + option + "], getMoneyInPlay=" + getMoneyInPlay();
 	}
 
 	@Override
@@ -161,12 +159,12 @@ public class Position implements Comparable<Position>
 		protected List<Object> getObjectElements(Position p)
 		{
 			final String url = "https://client.schwab.com/Areas/Accounts/Positions";
-			int days = (int)ChronoUnit.DAYS.between(LocalDate.now(), p.option.expiryDate);
 			String moneyText = "OTM".equals(p.option.money) ? "" : "*";
-			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / days);
+			int dte = p.option.getDTE();
+			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / dte);
 
-			return List.of(toLink(url, p.symbol), p.quantity, p.option.type, p.option.expiryDate, days, p.option.strike,
-					p.option.getUnderlyingPrice(), annualReturn, moneyText);
+			return List.of(toLink(url, p.symbol), p.quantity, p.option.type, p.option.expiryDate, dte, p.option.strike, p.option.getUnderlyingPrice(),
+					annualReturn, moneyText);
 		}
 	}
 }

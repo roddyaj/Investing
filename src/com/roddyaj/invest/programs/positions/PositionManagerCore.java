@@ -53,7 +53,7 @@ public class PositionManagerCore
 		double untrackedTotal = account.getPositions().stream().filter(p -> p.quantity > 0 && !accountSettings.hasAllocation(p.symbol))
 				.mapToDouble(p -> p.marketValue).sum();
 		double untrackedPercent = untrackedTotal / account.getTotalValue();
-		accountSettings.createMap(untrackedPercent);
+		accountSettings.createMap(untrackedPercent, output);
 
 		if (!LocalDate.now().equals(account.getDate()))
 			output.addMessage(Level.WARN, "Account data is not from today: " + account.getDate());

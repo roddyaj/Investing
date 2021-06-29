@@ -7,11 +7,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.roddyaj.invest.model.Message.Level;
+import com.roddyaj.invest.model.Output;
+
 public class AllocationMap
 {
 	private final Map<String, Double> allocationMap = new HashMap<>();
 
-	public AllocationMap(Allocation[] allocations, double untrackedPercent)
+	public AllocationMap(Allocation[] allocations, double untrackedPercent, Output output)
 	{
 		// Create a map of category => percent from the config
 		Map<String, Double> map = new HashMap<>();
@@ -46,7 +49,7 @@ public class AllocationMap
 		{
 			double childSum = getChildren(parent, map).mapToDouble(e -> e.getValue().doubleValue()).sum();
 			if (Math.abs(1 - childSum) > 0.00001)
-				System.out.println("\033[33mCategory '" + parent + "' doesn't add up to 100%: " + (childSum * 100) + "\033[0m");
+				output.addMessage(Level.WARN, "Category '" + parent + "' doesn't add up to 100%: " + (childSum * 100));
 		}
 
 		// Create the allocation map with final percentages
@@ -67,7 +70,7 @@ public class AllocationMap
 		// Validate total percent
 		double totalPercent = allocationMap.values().stream().mapToDouble(Double::doubleValue).sum();
 		if (Math.abs(1 - totalPercent) > 0.00001)
-			System.out.println("\033[33mTotal doesn't add up to 100%: " + (totalPercent * 100) + "\033[0m");
+			output.addMessage(Level.WARN, "Total doesn't add up to 100%: " + (totalPercent * 100));
 
 //		for (Map.Entry<String, Double> entry : allocationMap.entrySet())
 //			System.out.println(entry.getKey() + " " + entry.getValue() * 100);

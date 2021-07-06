@@ -99,8 +99,8 @@ public class PositionManagerCore
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 
-		if (p1.value < p0.value && !accountSettings.getSell(symbol))
-			output.addMessage(Level.WARN, "Sell not enabled for " + symbol);
+//		if (p1.value < p0.value && !accountSettings.getSell(symbol))
+//			output.addMessage(Level.WARN, "Sell not enabled for " + symbol);
 
 		if (allowOrder(order, position))
 			return order;

@@ -1,6 +1,7 @@
 package com.roddyaj.invest.programs.options;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -85,6 +86,9 @@ public class OptionsCore
 //		Set<String> intersection = new HashSet<>(optionable);
 //		intersection.retainAll(guruPicks);
 //		symbols.addAll(intersection);
+
+		// Add in more
+		symbols.addAll(Arrays.asList(input.account.getSettings().getOptionsInclude()));
 
 		// Create the orders with amount available
 		for (String symbol : symbols)

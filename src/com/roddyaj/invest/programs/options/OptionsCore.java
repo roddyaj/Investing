@@ -41,7 +41,7 @@ public class OptionsCore
 
 	private void analyzeBuyToClose()
 	{
-		input.account.getPositions().stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .15).forEach(output.buyToClose::add);
+		input.account.getPositions().stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .25).forEach(output.buyToClose::add);
 	}
 
 	private void analyzeCallsToSell()

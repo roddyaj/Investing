@@ -47,7 +47,7 @@ public class CallToSell implements Comparable<CallToSell>
 			columns.add(new Column("#", "%d", Align.R));
 			columns.add(new Column("Favorable", "%s", Align.C));
 			columns.add(new Column("Cost/Share", "$%.2f", Align.R));
-			columns.add(new Column("Return", "%.0f%%", Align.R));
+//			columns.add(new Column("Return", "%.0f%%", Align.R));
 			return columns;
 		}
 
@@ -58,7 +58,7 @@ public class CallToSell implements Comparable<CallToSell>
 			final String yahoo = "https://finance.yahoo.com/quote/%s";
 
 			return List.of(toLinkSymbol(schwab, c.position.symbol), toLinkSymbol(yahoo, c.position.symbol), c.quantity,
-					c.position.dayChangePct >= 0 ? "Y" : "", c.costPerShare, c.averageReturn);
+					c.position.dayChangePct >= 0 ? "Y" : "", c.costPerShare);
 		}
 	}
 }

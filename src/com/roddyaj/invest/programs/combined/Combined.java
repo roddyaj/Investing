@@ -24,12 +24,10 @@ public class Combined implements Program
 		PositionManagerOutput positionsOutput = new PositionManagerCore(input).run();
 		OptionsOutput optionsOutput = new OptionsCore(input).run();
 
-		String html = formatHtml(input, positionsOutput, optionsOutput);
-
-		AppFileUtils.showHtml(html, input.account.getName() + ".html");
+		showHtml(input, positionsOutput, optionsOutput);
 	}
 
-	private String formatHtml(Input input, PositionManagerOutput positionsOutput, OptionsOutput optionsOutput)
+	private void showHtml(Input input, PositionManagerOutput positionsOutput, OptionsOutput optionsOutput)
 	{
 		List<String> lines = new ArrayList<>();
 
@@ -46,6 +44,8 @@ public class Combined implements Program
 		columnLines.addAll(HtmlFormatter.toColumn(optionsOutput.getInfoHtml()));
 		lines.addAll(HtmlFormatter.toRow(columnLines));
 
-		return HtmlFormatter.toDocument(input.account.getName().replace('_', ' '), lines);
+		String html = HtmlFormatter.toDocument(input.account.getName().replace('_', ' '), lines);
+
+		AppFileUtils.showHtml(html, input.account.getName() + ".html");
 	}
 }

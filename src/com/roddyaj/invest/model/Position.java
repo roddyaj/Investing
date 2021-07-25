@@ -150,7 +150,7 @@ public class Position implements Comparable<Position>
 			columns.add(new Column("DTE", "%d", Align.R));
 			columns.add(new Column("Strike", "%.2f", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
-			columns.add(new Column("Return", "%.0f%%", Align.R));
+//			columns.add(new Column("Return", "%.0f%%", Align.R));
 			columns.add(new Column("", "%s", Align.C));
 			return columns;
 		}
@@ -161,10 +161,10 @@ public class Position implements Comparable<Position>
 			final String url = "https://client.schwab.com/Areas/Accounts/Positions";
 			String moneyText = "OTM".equals(p.option.money) ? "" : "*";
 			int dte = p.option.getDTE();
-			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / dte);
+//			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / dte);
 
 			return List.of(toLink(url, p.symbol), p.quantity, p.option.type, p.option.expiryDate, dte, p.option.strike, p.option.getUnderlyingPrice(),
-					annualReturn, moneyText);
+					moneyText);
 		}
 	}
 }

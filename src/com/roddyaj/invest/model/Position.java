@@ -139,6 +139,8 @@ public class Position implements Comparable<Position>
 
 	public static class OptionHtmlFormatter extends HtmlFormatter<Position>
 	{
+		private static final String URL = "https://client.schwab.com/Areas/Accounts/Positions";
+
 		@Override
 		protected List<Column> getColumns()
 		{
@@ -150,21 +152,20 @@ public class Position implements Comparable<Position>
 			columns.add(new Column("DTE", "%d", Align.R));
 			columns.add(new Column("Strike", "%.2f", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
-//			columns.add(new Column("Return", "%.0f%%", Align.R));
 			columns.add(new Column("", "%s", Align.C));
+//			columns.add(new Column("Return", "%.0f%%", Align.R));
 			return columns;
 		}
 
 		@Override
 		protected List<Object> getObjectElements(Position p)
 		{
-			final String url = "https://client.schwab.com/Areas/Accounts/Positions";
-			String moneyText = "OTM".equals(p.option.money) ? "" : "*";
+			String link = toLink(URL, p.symbol);
 			int dte = p.option.getDTE();
+			String moneyText = "OTM".equals(p.option.money) ? "" : dte < 5 ? "**" : "*";
 //			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / dte);
 
-			return List.of(toLink(url, p.symbol), p.quantity, p.option.type, p.option.expiryDate, dte, p.option.strike, p.option.getUnderlyingPrice(),
-					moneyText);
+			return List.of(link, p.quantity, p.option.type, p.option.expiryDate, dte, p.option.strike, p.option.getUnderlyingPrice(), moneyText);
 		}
 	}
 }

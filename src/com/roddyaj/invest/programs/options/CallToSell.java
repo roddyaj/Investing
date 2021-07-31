@@ -11,14 +11,12 @@ public class CallToSell implements Comparable<CallToSell>
 	public final Position position;
 	public final double costPerShare;
 	public final int quantity;
-	public final double averageReturn;
 
-	public CallToSell(Position position, double costPerShare, int quantity, double averageReturn)
+	public CallToSell(Position position, int quantity)
 	{
 		this.position = position;
-		this.costPerShare = costPerShare;
+		this.costPerShare = position.costBasis / position.quantity;
 		this.quantity = quantity;
-		this.averageReturn = averageReturn;
 	}
 
 	@Override
@@ -30,14 +28,14 @@ public class CallToSell implements Comparable<CallToSell>
 	@Override
 	public int compareTo(CallToSell o)
 	{
-		int result = Double.compare(o.averageReturn, averageReturn);
-		if (result == 0)
-			result = position.symbol.compareTo(o.position.symbol);
-		return result;
+		return position.symbol.compareTo(o.position.symbol);
 	}
 
 	public static class CallHtmlFormatter extends HtmlFormatter<CallToSell>
 	{
+		private static final String SCHWAB = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
+
 		@Override
 		protected List<Column> getColumns()
 		{
@@ -45,20 +43,21 @@ public class CallToSell implements Comparable<CallToSell>
 			columns.add(new Column("Schwab", "%s", Align.L));
 			columns.add(new Column("Yahoo", "%s", Align.L));
 			columns.add(new Column("#", "%d", Align.R));
-			columns.add(new Column("Favorable", "%s", Align.C));
-			columns.add(new Column("Cost/Share", "$%.2f", Align.R));
-//			columns.add(new Column("Return", "%.0f%%", Align.R));
+			columns.add(new Column("Cost", "%.2f", Align.R));
+			columns.add(new Column("", "%s", Align.C));
+			columns.add(new Column("Price", "%.2f", Align.R));
+			columns.add(new Column("Day Chg", "%s", Align.R));
 			return columns;
 		}
 
 		@Override
 		protected List<Object> getObjectElements(CallToSell c)
 		{
-			final String schwab = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
-			final String yahoo = "https://finance.yahoo.com/quote/%s";
-
-			return List.of(toLinkSymbol(schwab, c.position.symbol), toLinkSymbol(yahoo, c.position.symbol), c.quantity,
-					c.position.dayChangePct >= 0 ? "Y" : "", c.costPerShare);
+			String schwab = toLinkSymbol(SCHWAB, c.position.symbol);
+			String yahoo = toLinkSymbol(YAHOO, c.position.symbol);
+			String dir = color(c.position.price >= c.costPerShare ? "&#8599;" : "&#8600;", c.position.price >= c.costPerShare ? "green" : "red");
+			String changeColored = color(c.position.dayChangePct, "%.2f%%");
+			return List.of(schwab, yahoo, c.quantity, c.costPerShare, dir, c.position.price, changeColored);
 		}
 	}
 }

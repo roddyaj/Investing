@@ -78,10 +78,5 @@ public class Order
 			String changeColored = color(o.changePct, "%.2f%%");
 			return List.of(link, actionColored, Math.abs(o.shareCount), o.price, o.getAmount(), changeColored);
 		}
-
-		private static String color(double d, String format)
-		{
-			return color(String.format(format, d), d >= 0 ? "green" : "red");
-		}
 	}
 }

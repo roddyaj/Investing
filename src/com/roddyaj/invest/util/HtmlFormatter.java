@@ -58,10 +58,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 			lines.add("<div class=\"block\">");
 			String heading = toHeading(title, info);
 			if (heading != null)
-			{
 				lines.add(heading);
-				lines.add("<hr size=\"1\" />");
-			}
 			lines.addAll(format(objects));
 			lines.add("</div>");
 		}
@@ -85,7 +82,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		lines.add("a:hover { text-decoration: underline; }");
 		lines.add(".row { display: flex; flex-direction: row; }");
 		lines.add(".column { display: flex; flex-direction: column; margin-right: 8px; }");
-		lines.add(".heading { display: flex; align-items: center; margin-bottom: 4px; }");
+		lines.add(".heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid; }");
 		lines.add(".title { font-size: large; font-weight: bold; }");
 		lines.add(
 				".block { border-style: solid; border-width: 1px; border-radius: 4px; padding: 4px; margin-bottom: 8px; background-color: #F7F7F7; }");
@@ -144,6 +141,11 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 	public static String color(String text, String color)
 	{
 		return "<span style=\"color:" + color + "\">" + text + "</span>";
+	}
+
+	public static String color(double d, String format)
+	{
+		return color(String.format(format, d), d >= 0 ? "green" : "red");
 	}
 
 	public enum Align

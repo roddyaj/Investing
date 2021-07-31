@@ -3,9 +3,8 @@ package com.roddyaj.invest.programs.options;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,13 +45,6 @@ public class OptionsCore
 
 	private void analyzeCallsToSell()
 	{
-		Map<String, Double> symbolToLast100Buy = new HashMap<>();
-		for (Transaction t : input.account.getTransactions())
-		{
-			if (!t.isOption() && t.action.equals("Buy") && t.quantity == 100 && !symbolToLast100Buy.containsKey(t.symbol))
-				symbolToLast100Buy.put(t.symbol, t.price);
-		}
-
 		for (Position position : input.account.getPositions())
 		{
 			if (!position.isOption() && position.quantity >= 100 && !input.account.getSettings().excludeOption(position.symbol))
@@ -63,9 +55,7 @@ public class OptionsCore
 				int availableCalls = (int)Math.floor(availableShares / 100.0);
 				if (availableCalls > 0)
 				{
-					double costPerShare = symbolToLast100Buy.getOrDefault(position.symbol, position.costBasis / position.quantity);
-					double averageReturn = calculateAverageReturn(position.symbol, historicalOptions);
-					output.callsToSell.add(new CallToSell(position, costPerShare, availableCalls, averageReturn));
+					output.callsToSell.add(new CallToSell(position, availableCalls));
 				}
 			}
 		}
@@ -75,9 +65,11 @@ public class OptionsCore
 	{
 		final double MAX_ALLOCATION = 2500;
 
-		// Get list of CSP candidates based on historical activity
-		Set<String> symbols = historicalOptions.stream().map(Transaction::getSymbol)
-				.filter(s -> !input.account.getSettings().excludeOption(s) && !s.matches(".*\\d.*")).collect(Collectors.toSet());
+		Set<String> symbols = new HashSet<>();
+
+//		// Get list of CSP candidates based on historical activity
+//		symbols.addAll(historicalOptions.stream().map(Transaction::getSymbol)
+//				.filter(s -> !input.account.getSettings().excludeOption(s) && !s.matches(".*\\d.*")).collect(Collectors.toSet()));
 
 //		// Add in other candidates
 //		Set<String> optionable = input.information.getOptionableStocks().stream().map(r -> r.symbol).collect(Collectors.toSet());
@@ -87,7 +79,7 @@ public class OptionsCore
 //		intersection.retainAll(guruPicks);
 //		symbols.addAll(intersection);
 
-		// Add in more
+		// Add in options from the config
 		symbols.addAll(Arrays.asList(input.account.getSettings().getOptionsInclude()));
 
 		// Create the orders with amount available

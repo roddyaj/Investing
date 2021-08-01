@@ -11,6 +11,7 @@ public class AccountSettings
 	private String name;
 	private String alias;
 	private double annualContrib;
+	private double maxOptionPosition;
 	private Allocation[] allocations;
 	private PositionSettings[] positions;
 	private AllocationMap allocation;
@@ -54,6 +55,18 @@ public class AccountSettings
 	public void setAnnualContrib(double annualContrib)
 	{
 		this.annualContrib = annualContrib;
+	}
+
+	@JsonProperty("maxOptionPosition")
+	public double getMaxOptionPosition()
+	{
+		return maxOptionPosition;
+	}
+
+	@JsonProperty("maxOptionPosition")
+	public void setMaxOptionPosition(double maxOptionPosition)
+	{
+		this.maxOptionPosition = maxOptionPosition;
 	}
 
 	@JsonProperty("allocations")

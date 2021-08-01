@@ -26,7 +26,10 @@ public class AllocationMap
 		if (untrackedCategory != null)
 		{
 			double factor = getTotalAllocation(getParent(untrackedCategory), map);
-			map.put(untrackedCategory, untrackedPercent / factor);
+			double untrackedPctAdjusted = untrackedPercent / factor;
+			map.put(untrackedCategory, untrackedPctAdjusted);
+			System.out.println("Untracked percent: " + String.format("%.2f", untrackedPctAdjusted * 100));
+			System.out.println("Tracked percent:   " + String.format("%.2f", (1 - untrackedPctAdjusted) * 100));
 		}
 
 		// Calculate any relative values

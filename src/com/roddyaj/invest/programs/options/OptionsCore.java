@@ -63,8 +63,6 @@ public class OptionsCore
 
 	private void analyzePutsToSell()
 	{
-		final double MAX_ALLOCATION = 2500;
-
 		Set<String> symbols = new HashSet<>();
 
 //		// Get list of CSP candidates based on historical activity
@@ -93,13 +91,13 @@ public class OptionsCore
 				double price = symbolPositions.stream().mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.price).findFirst()
 						.orElse(0);
 				double totalInvested = (shareCount + putsSold * -100) * price;
-				double available = MAX_ALLOCATION - totalInvested;
+				double available = input.account.getAccountSettings().getMaxOptionPosition() - totalInvested;
 				double canSellCount = available / (price * 100); // Hack: using price in place of strike since we don't have strike
 				if (canSellCount > 0.9)
 					output.putsToSell.add(new PutToSell(symbol, available, input.getPrice(symbol)));
 			}
 			else
-				output.putsToSell.add(new PutToSell(symbol, MAX_ALLOCATION, input.getPrice(symbol)));
+				output.putsToSell.add(new PutToSell(symbol, input.account.getAccountSettings().getMaxOptionPosition(), input.getPrice(symbol)));
 		}
 
 		// Calculate historical return on each one

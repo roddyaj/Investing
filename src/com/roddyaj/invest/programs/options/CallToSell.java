@@ -28,7 +28,7 @@ public class CallToSell implements Comparable<CallToSell>
 	@Override
 	public int compareTo(CallToSell o)
 	{
-		return position.symbol.compareTo(o.position.symbol);
+		return Double.compare(o.position.dayChangePct, position.dayChangePct);
 	}
 
 	public static class CallHtmlFormatter extends HtmlFormatter<CallToSell>

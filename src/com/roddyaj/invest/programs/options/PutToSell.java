@@ -49,8 +49,8 @@ public class PutToSell implements Comparable<PutToSell>
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Schwab", "%s", Align.L));
 			columns.add(new Column("Yahoo", "%s", Align.L));
-			columns.add(new Column("Max", "$%.0f", Align.R));
-			columns.add(new Column("U. Price", "$%.2f", Align.R));
+			columns.add(new Column("Avail", "%.0f", Align.R));
+			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Return", "%.0f%%", Align.R));
 			return columns;
 		}

@@ -86,6 +86,12 @@ public class Position implements Comparable<Position>
 		return option != null ? quantity * (option.type == 'P' ? option.strike : option.getUnderlyingPrice()) * -100 : marketValue;
 	}
 
+	public double getOptionValueRatio()
+	{
+		double linearValue = ((double)option.getDteCurrent() / option.getDteOriginal()) * (costBasis + (quantity * .65));
+		return marketValue / linearValue;
+	}
+
 //	@Override
 //	public String toString()
 //	{
@@ -161,7 +167,7 @@ public class Position implements Comparable<Position>
 		protected List<Object> getObjectElements(Position p)
 		{
 			String link = toLink(URL, p.symbol);
-			int dte = p.option.getDTE();
+			int dte = p.option.getDteCurrent();
 			String moneyText = "OTM".equals(p.option.money) ? "" : dte < 5 ? "**" : "*";
 //			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / dte);
 

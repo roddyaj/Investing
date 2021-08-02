@@ -13,6 +13,7 @@ public class Option
 	public final char type;
 	public final String money;
 	public final double intrinsicValue;
+	public LocalDate initialDate;
 
 	// Transaction constructor
 	public Option(String optionText)
@@ -49,9 +50,14 @@ public class Option
 		this.intrinsicValue = intrinsicValue;
 	}
 
-	public int getDTE()
+	public int getDteCurrent()
 	{
 		return (int)ChronoUnit.DAYS.between(LocalDate.now(), expiryDate);
+	}
+
+	public int getDteOriginal()
+	{
+		return initialDate != null ? (int)ChronoUnit.DAYS.between(initialDate, expiryDate) : -1;
 	}
 
 	public double getUnderlyingPrice()

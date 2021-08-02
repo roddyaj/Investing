@@ -29,6 +29,7 @@ public class OptionsCore
 
 	public OptionsOutput run()
 	{
+		populateOptionDates();
 		analyzeBuyToClose();
 		analyzeCallsToSell();
 		analyzePutsToSell();
@@ -38,9 +39,23 @@ public class OptionsCore
 		return output;
 	}
 
+	private void populateOptionDates()
+	{
+		for (Position position : input.account.getPositions())
+		{
+			if (position.option != null)
+			{
+				Transaction recentTransaction = historicalOptions.stream()
+						.filter(o -> o.symbol.equals(position.symbol) && "Sell to Open".equals(o.action)).findFirst().orElse(null);
+				if (recentTransaction != null)
+					position.option.initialDate = recentTransaction.date;
+			}
+		}
+	}
+
 	private void analyzeBuyToClose()
 	{
-		input.account.getPositions().stream().filter(p -> p.isOption() && (p.marketValue / p.costBasis) <= .25).forEach(output.buyToClose::add);
+		input.account.getPositions().stream().filter(p -> p.isOption() && p.getOptionValueRatio() <= .65).forEach(output.buyToClose::add);
 	}
 
 	private void analyzeCallsToSell()

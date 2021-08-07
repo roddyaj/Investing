@@ -3,6 +3,7 @@ package com.roddyaj.invest.programs.positions;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class Order
@@ -13,15 +14,15 @@ public class Order
 
 	public final double price;
 
-	// TODO doesn't really belong here
-	public final double changePct;
+	// Note, this may be null if there is no position
+	public final Position position;
 
-	public Order(String symbol, int shareCount, double price, double changePct)
+	public Order(String symbol, int shareCount, double price, Position position)
 	{
 		this.symbol = symbol;
 		this.shareCount = shareCount;
 		this.price = price;
-		this.changePct = changePct;
+		this.position = position;
 	}
 
 	public double getAmount()
@@ -33,7 +34,8 @@ public class Order
 	public String toString()
 	{
 		String action = shareCount >= 0 ? green("Buy ") : red("Sell");
-		return String.format("%-4s %s %2d | %6.2f = %4.0f, %s", symbol, action, Math.abs(shareCount), price, getAmount(), color(changePct));
+		double dayChangePct = position != null ? position.dayChangePct : 0;
+		return String.format("%-4s %s %2d | %6.2f = %4.0f, %s", symbol, action, Math.abs(shareCount), price, getAmount(), color(dayChangePct));
 	}
 
 	private static String color(double d)
@@ -63,7 +65,8 @@ public class Order
 			columns.add(new Column("#", "%d", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Total", "%.0f", Align.R));
-			columns.add(new Column("Change", "%s", Align.R));
+			columns.add(new Column("Day", "%s", Align.R));
+			columns.add(new Column("Total", "%s", Align.R));
 			return columns;
 		}
 
@@ -75,8 +78,9 @@ public class Order
 			String link = String.format("<a href=\"" + url + "\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.shareCount) + "');\">%s</a>",
 					o.symbol, o.symbol);
 			String actionColored = color(action, action.equals("Buy") ? "green" : "red");
-			String changeColored = color(o.changePct, "%.2f%%");
-			return List.of(link, actionColored, Math.abs(o.shareCount), o.price, o.getAmount(), changeColored);
+			String dayChangeColored = o.position != null ? color(o.position.dayChangePct, "%.2f%%") : "";
+			String gainLossPctColored = o.position != null ? color(o.position.gainLossPct, "%.2f%%") : "";
+			return List.of(link, actionColored, Math.abs(o.shareCount), o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
 		}
 	}
 }

@@ -9,21 +9,20 @@ import com.roddyaj.invest.util.HtmlFormatter;
 public class CallToSell implements Comparable<CallToSell>
 {
 	public final Position position;
-	public final double costPerShare;
 	public final int quantity;
 
 	public CallToSell(Position position, int quantity)
 	{
 		this.position = position;
-		this.costPerShare = position.costBasis / position.quantity;
 		this.quantity = quantity;
 	}
 
-	@Override
-	public String toString()
-	{
-		return String.format("%-4s %d %s (bought at $%5.2f)", position.symbol, quantity, position.dayChangePct >= 0 ? "Y" : " ", costPerShare);
-	}
+//	@Override
+//	public String toString()
+//	{
+//		return String.format("%-4s %d %s (bought at $%5.2f)", position.symbol, quantity, position.dayChangePct >= 0 ? "Y" : " ",
+//				position.getCostPerShare());
+//	}
 
 	@Override
 	public int compareTo(CallToSell o)
@@ -46,7 +45,7 @@ public class CallToSell implements Comparable<CallToSell>
 			columns.add(new Column("Cost", "%.2f", Align.R));
 			columns.add(new Column("", "%s", Align.C));
 			columns.add(new Column("Price", "%.2f", Align.R));
-			columns.add(new Column("Day Chg", "%s", Align.R));
+			columns.add(new Column("Day", "%s", Align.R));
 			return columns;
 		}
 
@@ -55,9 +54,10 @@ public class CallToSell implements Comparable<CallToSell>
 		{
 			String schwab = toLinkSymbol(SCHWAB, c.position.symbol);
 			String yahoo = toLinkSymbol(YAHOO, c.position.symbol);
-			String dir = color(c.position.price >= c.costPerShare ? "&#8599;" : "&#8600;", c.position.price >= c.costPerShare ? "green" : "red");
+			double costPerShare = c.position.getCostPerShare();
+			String dir = color(c.position.price >= costPerShare ? "&#8599;" : "&#8600;", c.position.price >= costPerShare ? "green" : "red");
 			String changeColored = color(c.position.dayChangePct, "%.2f%%");
-			return List.of(schwab, yahoo, c.quantity, c.costPerShare, dir, c.position.price, changeColored);
+			return List.of(schwab, yahoo, c.quantity, costPerShare, dir, c.position.price, changeColored);
 		}
 	}
 }

@@ -88,14 +88,14 @@ public class PositionManagerCore
 		if (!account.hasSymbol(symbol))
 		{
 			if (targetValue > 0)
-				return new Order(symbol, 0, targetValue, 0);
+				return new Order(symbol, 0, targetValue, null);
 			else
 				return null;
 		}
 
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
-		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position.dayChangePct);
+		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position);
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 

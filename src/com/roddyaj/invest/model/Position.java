@@ -16,6 +16,7 @@ public class Position implements Comparable<Position>
 	public final double marketValue;
 	public final double dayChangePct;
 	public final double costBasis;
+	public final double gainLossPct;
 	public final String securityType;
 
 	public final Option option;
@@ -28,6 +29,7 @@ public class Position implements Comparable<Position>
 		marketValue = StringUtils.parsePrice(record.get(6));
 		dayChangePct = StringUtils.parsePercent(record.get(8));
 		costBasis = StringUtils.parsePrice(record.get(9));
+		gainLossPct = StringUtils.parsePercent(record.get(11));
 		double intrinsicValue = record.size() > 22 ? StringUtils.parseDouble(record.get(22)) : 0;
 		String money = record.size() > 23 ? record.get(23) : null;
 		securityType = record.size() > 24 ? record.get(24) : null;
@@ -52,6 +54,7 @@ public class Position implements Comparable<Position>
 		marketValue = quantity * price;
 		dayChangePct = 0;
 		costBasis = 0;
+		gainLossPct = 0;
 		option = null;
 		securityType = null;
 	}
@@ -90,6 +93,11 @@ public class Position implements Comparable<Position>
 	{
 		double linearValue = ((double)option.getDteCurrent() / option.getDteOriginal()) * (costBasis + (quantity * .65));
 		return marketValue / linearValue;
+	}
+
+	public double getCostPerShare()
+	{
+		return costBasis / quantity;
 	}
 
 //	@Override

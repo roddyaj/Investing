@@ -13,6 +13,7 @@ import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.framework.RunCommand;
 import com.roddyaj.invest.programs.combined.Combined;
 import com.roddyaj.invest.programs.dataroma.Dataroma;
+import com.roddyaj.invest.programs.gather.lynalden.Lyn;
 import com.roddyaj.invest.programs.options.Options;
 import com.roddyaj.invest.programs.positions.PositionManager;
 
@@ -35,6 +36,7 @@ public final class Main
 		programList.add(new Options());
 		programList.add(new Combined());
 		programList.add(new Dataroma());
+		programList.add(new Lyn());
 
 		populateMap(programs, programList);
 		populateMap(commands, List.of(new ListCommand(programs), new RunCommand(programs)));

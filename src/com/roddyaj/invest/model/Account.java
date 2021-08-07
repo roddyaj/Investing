@@ -139,7 +139,7 @@ public class Account
 		return getPositions(symbol).findAny().isPresent();
 	}
 
-	private Stream<Position> getPositions(String symbol)
+	public Stream<Position> getPositions(String symbol)
 	{
 		return getPositions().stream().filter(p -> p.symbol.equals(symbol));
 	}

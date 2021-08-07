@@ -29,7 +29,7 @@ public class OptionsCore
 
 	public OptionsOutput run()
 	{
-		populateOptionDates();
+		setUp();
 		analyzeBuyToClose();
 		analyzeCallsToSell();
 		analyzePutsToSell();
@@ -39,23 +39,31 @@ public class OptionsCore
 		return output;
 	}
 
-	private void populateOptionDates()
+	private void setUp()
 	{
 		for (Position position : input.account.getPositions())
 		{
-			if (position.option != null)
+			if (position.isOption())
 			{
+				// Set the opening date
 				Transaction recentTransaction = historicalOptions.stream()
 						.filter(o -> o.symbol.equals(position.symbol) && "Sell to Open".equals(o.action)).findFirst().orElse(null);
 				if (recentTransaction != null)
 					position.option.initialDate = recentTransaction.date;
+
+				// Set the underlying position if available
+				Position underlying = input.account.getPositions(position.symbol).filter(p -> !p.isOption()).findAny().orElse(null);
+				position.option.underlying = underlying;
 			}
 		}
 	}
 
 	private void analyzeBuyToClose()
 	{
-		input.account.getPositions().stream().filter(p -> p.isOption() && p.getOptionValueRatio() <= .65).forEach(output.buyToClose::add);
+		input.account.getPositions().stream()
+				.filter(p -> p.isOption() && p.getOptionValueRatio() <= .65
+						&& (p.isPutOption() || p.option.getUnderlyingPrice() > p.option.underlying.getCostPerShare()))
+				.forEach(output.buyToClose::add);
 	}
 
 	private void analyzeCallsToSell()
@@ -100,7 +108,7 @@ public class OptionsCore
 		{
 			double price = input.getPrice(symbol);
 
-			List<Position> symbolPositions = input.account.getPositions().stream().filter(p -> p.symbol.equals(symbol)).collect(Collectors.toList());
+			List<Position> symbolPositions = input.account.getPositions(symbol).collect(Collectors.toList());
 			if (!symbolPositions.isEmpty())
 			{
 				Position underlying = symbolPositions.stream().filter(p -> !p.isOption()).findFirst().orElse(null);

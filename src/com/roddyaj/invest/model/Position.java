@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.csv.CSVRecord;
@@ -166,6 +167,7 @@ public class Position implements Comparable<Position>
 			columns.add(new Column("DTE", "%d", Align.R));
 			columns.add(new Column("Strike", "%.2f", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
+//			columns.add(new Column("Cost", "%.2f", Align.R));
 			columns.add(new Column("", "%s", Align.C));
 //			columns.add(new Column("Return", "%.0f%%", Align.R));
 			return columns;
@@ -176,10 +178,12 @@ public class Position implements Comparable<Position>
 		{
 			String link = toLink(URL, p.symbol);
 			int dte = p.option.getDteCurrent();
+//			Double underlyingCostPerShare = p.option.underlying != null ? p.option.underlying.getCostPerShare() : null;
 			String moneyText = "OTM".equals(p.option.money) ? "" : dte < 5 ? "**" : "*";
 //			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / dte);
 
-			return List.of(link, p.quantity, p.option.type, p.option.expiryDate, dte, p.option.strike, p.option.getUnderlyingPrice(), moneyText);
+			return Arrays.asList(link, p.quantity, p.option.type, p.option.expiryDate, dte, p.option.strike, p.option.getUnderlyingPrice(),
+					moneyText);
 		}
 	}
 }

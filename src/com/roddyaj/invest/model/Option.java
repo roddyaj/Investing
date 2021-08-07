@@ -15,6 +15,9 @@ public class Option
 	public final double intrinsicValue;
 	public LocalDate initialDate;
 
+	// Note, this can be null
+	public Position underlying;
+
 	// Transaction constructor
 	public Option(String optionText)
 	{

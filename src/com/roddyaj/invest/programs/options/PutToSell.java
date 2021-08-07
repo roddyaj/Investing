@@ -1,9 +1,11 @@
 package com.roddyaj.invest.programs.options;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class PutToSell implements Comparable<PutToSell>
@@ -12,12 +14,15 @@ public class PutToSell implements Comparable<PutToSell>
 	public final double availableAmount;
 	public final double underlyingPrice;
 	public double averageReturn;
+	// Note, this may be null
+	public Position position;
 
-	public PutToSell(String symbol, double availableAmount, double underlyingPrice)
+	public PutToSell(String symbol, double availableAmount, double underlyingPrice, Position position)
 	{
 		this.symbol = symbol;
 		this.availableAmount = availableAmount;
 		this.underlyingPrice = underlyingPrice;
+		this.position = position;
 	}
 
 	@Override
@@ -29,9 +34,13 @@ public class PutToSell implements Comparable<PutToSell>
 	@Override
 	public int compareTo(PutToSell o)
 	{
-		int result = Double.compare(o.averageReturn, averageReturn);
+		int result = Double.compare(o.position != null ? o.position.dayChangePct : 0, position != null ? position.dayChangePct : 0);
 		if (result == 0)
-			result = symbol.compareTo(o.symbol);
+		{
+			result = Double.compare(o.averageReturn, averageReturn);
+			if (result == 0)
+				result = symbol.compareTo(o.symbol);
+		}
 		return result;
 	}
 
@@ -43,6 +52,9 @@ public class PutToSell implements Comparable<PutToSell>
 
 	public static class PutHtmlFormatter extends HtmlFormatter<PutToSell>
 	{
+		private static final String SCHWAB = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
+		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
+
 		@Override
 		protected List<Column> getColumns()
 		{
@@ -51,6 +63,7 @@ public class PutToSell implements Comparable<PutToSell>
 			columns.add(new Column("Yahoo", "%s", Align.L));
 			columns.add(new Column("Avail", "%.0f", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
+			columns.add(new Column("Day", "%s", Align.R));
 			columns.add(new Column("Return", "%.0f%%", Align.R));
 			return columns;
 		}
@@ -58,10 +71,11 @@ public class PutToSell implements Comparable<PutToSell>
 		@Override
 		protected List<Object> getObjectElements(PutToSell p)
 		{
-			final String schwab = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
-			final String yahoo = "https://finance.yahoo.com/quote/%s";
-
-			return List.of(toLinkSymbol(schwab, p.symbol), toLinkSymbol(yahoo, p.symbol), p.availableAmount, p.underlyingPrice, p.averageReturn);
+			String schwabLink = toLinkSymbol(SCHWAB, p.symbol);
+			String yahooLink = toLinkSymbol(YAHOO, p.symbol);
+			Double underlyingPrice = p.underlyingPrice != 0 ? p.underlyingPrice : null;
+			String dayChangePct = p.position != null ? color(p.position.dayChangePct, "%.2f%%") : null;
+			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, underlyingPrice, dayChangePct, p.averageReturn);
 		}
 	}
 }

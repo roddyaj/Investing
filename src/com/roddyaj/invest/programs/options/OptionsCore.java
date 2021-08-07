@@ -98,21 +98,22 @@ public class OptionsCore
 		// Create the orders with amount available
 		for (String symbol : symbols)
 		{
+			double price = input.getPrice(symbol);
+
 			List<Position> symbolPositions = input.account.getPositions().stream().filter(p -> p.symbol.equals(symbol)).collect(Collectors.toList());
 			if (!symbolPositions.isEmpty())
 			{
-				int shareCount = symbolPositions.stream().filter(p -> !p.isOption()).mapToInt(p -> p.quantity).sum();
+				Position underlying = symbolPositions.stream().filter(p -> !p.isOption()).findFirst().orElse(null);
+				int shareCount = underlying != null ? underlying.quantity : 0;
 				int putsSold = symbolPositions.stream().filter(p -> p.isPutOption()).mapToInt(p -> p.quantity).sum();
-				double price = symbolPositions.stream().mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.price).findFirst()
-						.orElse(0);
 				double totalInvested = (shareCount + putsSold * -100) * price;
 				double available = input.account.getAccountSettings().getMaxOptionPosition() - totalInvested;
 				double canSellCount = available / (price * 100); // Hack: using price in place of strike since we don't have strike
 				if (canSellCount > 0.9)
-					output.putsToSell.add(new PutToSell(symbol, available, input.getPrice(symbol)));
+					output.putsToSell.add(new PutToSell(symbol, available, price, underlying));
 			}
 			else
-				output.putsToSell.add(new PutToSell(symbol, input.account.getAccountSettings().getMaxOptionPosition(), input.getPrice(symbol)));
+				output.putsToSell.add(new PutToSell(symbol, input.account.getAccountSettings().getMaxOptionPosition(), price, null));
 		}
 
 		// Calculate historical return on each one

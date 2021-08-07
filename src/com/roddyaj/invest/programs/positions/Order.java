@@ -17,6 +17,8 @@ public class Order
 	// Note, this may be null if there is no position
 	public final Position position;
 
+	public boolean optional;
+
 	public Order(String symbol, int shareCount, double price, Position position)
 	{
 		this.symbol = symbol;

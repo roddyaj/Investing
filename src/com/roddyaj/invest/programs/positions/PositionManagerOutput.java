@@ -2,6 +2,7 @@ package com.roddyaj.invest.programs.positions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.AbstractOutput;
 import com.roddyaj.invest.util.HtmlFormatter;
@@ -18,16 +19,16 @@ public class PositionManagerOutput extends AbstractOutput
 	@Override
 	public String toString()
 	{
-		final String title = "Orders";
-		return HtmlFormatter.toDocument(title, getContent());
+		return HtmlFormatter.toDocument("Orders", getContent());
 	}
 
 	@Override
 	public List<String> getContent()
 	{
-		final String title = "Orders";
 		List<String> lines = new ArrayList<>();
-		lines.addAll(new Order.OrderFormatter().toBlock(orders, title, null));
+		Order.OrderFormatter formatter = new Order.OrderFormatter();
+		lines.addAll(formatter.toBlock(orders.stream().filter(o -> !o.optional).collect(Collectors.toList()), "Orders", null));
+		lines.addAll(formatter.toBlock(orders.stream().filter(o -> o.optional).collect(Collectors.toList()), "Optional Orders", null));
 		return lines;
 	}
 }

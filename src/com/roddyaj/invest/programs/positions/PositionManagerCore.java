@@ -96,6 +96,7 @@ public class PositionManagerCore
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position);
+		order.optional = order.position != null && (order.shareCount >= 0 ? order.position.dayChangePct > .1 : order.position.dayChangePct < -.1);
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 

@@ -1,12 +1,12 @@
 package com.roddyaj.invest.util;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVFormat;
@@ -32,22 +32,32 @@ public final class FileUtils
 		return List.of();
 	}
 
-	public static List<CSVRecord> readCsv(String file)
-	{
-		return readCsv(getPath(file));
-	}
-
-	public static List<CSVRecord> readCsv(Path path)
+	public static List<CSVRecord> readCsv(Path path, int headerLine)
 	{
 		List<CSVRecord> records = new ArrayList<>();
-		Charset charset = Charset.forName("UTF-8");
-		CSVFormat format = CSVFormat.DEFAULT;
 		try
 		{
-			try (CSVParser parser = CSVParser.parse(path, charset, format))
+			List<String> lines = Files.readAllLines(path);
+			String content = lines.subList(headerLine, lines.size()).stream().collect(Collectors.joining("\n"));
+
+			CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader().withAllowMissingColumnNames();
+			try (CSVParser parser = CSVParser.parse(content, format))
 			{
 				for (CSVRecord record : parser)
 					records.add(record);
+
+//				// Output code for header constants
+//				for (String header : parser.getHeaderNames())
+//				{
+//					String variable = header.toUpperCase().replace(' ', '_').replace('/', '_').replace('-', '_').replace("?", "").replace("&", "AND")
+//							.replace("%", "PERCENT");
+//					if (!variable.isEmpty())
+//					{
+//						if (Character.isDigit(variable.charAt(0)))
+//							variable = "_" + variable;
+//						System.out.println("private static final String " + variable + " = \"" + header + "\";");
+//					}
+//				}
 			}
 		}
 		catch (IOException e)

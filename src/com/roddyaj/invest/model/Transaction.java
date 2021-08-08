@@ -9,6 +9,15 @@ import com.roddyaj.invest.util.StringUtils;
 
 public class Transaction
 {
+	private static final String DATE = "Date";
+	private static final String ACTION = "Action";
+	private static final String SYMBOL = "Symbol";
+//	private static final String DESCRIPTION = "Description";
+	private static final String QUANTITY = "Quantity";
+	private static final String PRICE = "Price";
+//	private static final String FEES_AND_COMM = "Fees & Comm";
+	private static final String AMOUNT = "Amount";
+
 	public final LocalDate date;
 	public final String action;
 	public final String symbol;
@@ -25,12 +34,12 @@ public class Transaction
 
 	public Transaction(CSVRecord record)
 	{
-		date = StringUtils.parseDate(record.get(0));
-		action = record.get(1);
-		String symbolOrOption = record.get(2);
-		quantity = (int)Math.round(StringUtils.parseDouble(record.get(4)));
-		price = StringUtils.parsePrice(record.get(5));
-		amount = StringUtils.parsePrice(record.get(7));
+		date = StringUtils.parseDate(record.get(DATE));
+		action = record.get(ACTION);
+		String symbolOrOption = record.get(SYMBOL);
+		quantity = (int)Math.round(StringUtils.parseDouble(record.get(QUANTITY)));
+		price = StringUtils.parsePrice(record.get(PRICE));
+		amount = StringUtils.parsePrice(record.get(AMOUNT));
 
 		boolean isOption = symbolOrOption.contains(" ");
 		if (isOption)

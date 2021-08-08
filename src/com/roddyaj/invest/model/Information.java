@@ -21,8 +21,7 @@ public class Information
 		{
 			Path file = Paths.get(AppFileUtils.INPUT_DIR.toString(), "Results.csv");
 			if (Files.exists(file))
-				optionableStocks = FileUtils.readCsv(file).stream().filter(r -> r.getRecordNumber() > 1).map(OptionableStock::new)
-						.collect(Collectors.toList());
+				optionableStocks = FileUtils.readCsv(file, 0).stream().map(OptionableStock::new).collect(Collectors.toList());
 			else
 				optionableStocks = List.of();
 		}

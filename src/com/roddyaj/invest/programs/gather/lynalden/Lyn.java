@@ -45,7 +45,7 @@ public class Lyn implements Program
 		List<String> tickers = new ArrayList<>();
 
 		Path path = Paths.get(AppFileUtils.INPUT_DIR.toString(), "2 Model Portfolios - Newsletter Portfolio.csv");
-		List<CSVRecord> records = FileUtils.readCsv(path);
+		List<CSVRecord> records = FileUtils.readCsv(path, 0);
 
 		final Pattern tickerPattern = Pattern.compile("(.+) \\(([\\w\\.]+?)\\)");
 		final Pattern categoryPattern = Pattern.compile("(.+)");

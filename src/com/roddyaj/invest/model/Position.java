@@ -11,6 +11,32 @@ import com.roddyaj.invest.util.StringUtils;
 
 public class Position implements Comparable<Position>
 {
+	private static final String SYMBOL = "Symbol";
+//	private static final String DESCRIPTION = "Description";
+	private static final String QUANTITY = "Quantity";
+	private static final String PRICE = "Price";
+//	private static final String PRICE_CHANGE_$ = "Price Change $";
+//	private static final String PRICE_CHANGE_PERCENT = "Price Change %";
+	private static final String MARKET_VALUE = "Market Value";
+//	private static final String DAY_CHANGE_$ = "Day Change $";
+	private static final String DAY_CHANGE_PERCENT = "Day Change %";
+	private static final String COST_BASIS = "Cost Basis";
+//	private static final String GAIN_LOSS_$ = "Gain/Loss $";
+	private static final String GAIN_LOSS_PERCENT = "Gain/Loss %";
+//	private static final String REINVEST_DIVIDENDS = "Reinvest Dividends?";
+//	private static final String CAPITAL_GAINS = "Capital Gains?";
+//	private static final String PERCENT_OF_ACCOUNT = "% Of Account";
+//	private static final String DIVIDEND_YIELD = "Dividend Yield";
+//	private static final String LAST_DIVIDEND = "Last Dividend";
+//	private static final String EX_DIVIDEND_DATE = "Ex-Dividend Date";
+//	private static final String P_E_RATIO = "P/E Ratio";
+//	private static final String _52_WEEK_LOW = "52 Week Low";
+//	private static final String _52_WEEK_HIGH = "52 Week High";
+//	private static final String VOLUME = "Volume";
+	private static final String INTRINSIC_VALUE = "Intrinsic Value";
+	private static final String IN_THE_MONEY = "In The Money";
+	private static final String SECURITY_TYPE = "Security Type";
+
 	public final String symbol;
 	public final int quantity;
 	public final double price;
@@ -24,16 +50,16 @@ public class Position implements Comparable<Position>
 
 	public Position(CSVRecord record)
 	{
-		String symbolOrOption = record.get(0);
-		quantity = StringUtils.parseInt(record.get(2));
-		price = StringUtils.parsePrice(record.get(3));
-		marketValue = StringUtils.parsePrice(record.get(6));
-		dayChangePct = StringUtils.parsePercent(record.get(8));
-		costBasis = StringUtils.parsePrice(record.get(9));
-		gainLossPct = StringUtils.parsePercent(record.get(11));
-		double intrinsicValue = record.size() > 22 ? StringUtils.parseDouble(record.get(22)) : 0;
-		String money = record.size() > 23 ? record.get(23) : null;
-		securityType = record.size() > 24 ? record.get(24) : null;
+		String symbolOrOption = record.get(SYMBOL);
+		quantity = StringUtils.parseInt(record.get(QUANTITY));
+		price = StringUtils.parsePrice(record.get(PRICE));
+		marketValue = StringUtils.parsePrice(record.get(MARKET_VALUE));
+		dayChangePct = StringUtils.parsePercent(record.get(DAY_CHANGE_PERCENT));
+		costBasis = StringUtils.parsePrice(record.get(COST_BASIS));
+		gainLossPct = StringUtils.parsePercent(record.get(GAIN_LOSS_PERCENT));
+		double intrinsicValue = record.isSet(INTRINSIC_VALUE) ? StringUtils.parseDouble(record.get(INTRINSIC_VALUE)) : 0;
+		String money = record.isSet(IN_THE_MONEY) ? record.get(IN_THE_MONEY) : null;
+		securityType = record.isSet(SECURITY_TYPE) ? record.get(SECURITY_TYPE) : null;
 
 		if ("Option".equals(securityType))
 		{

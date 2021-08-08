@@ -78,8 +78,7 @@ public class Account
 			Path positionsFile = AppFileUtils.getAccountFile(name, FileType.POSITIONS);
 			if (positionsFile != null)
 			{
-				positions = FileUtils.readCsv(positionsFile).stream().filter(r -> r.getRecordNumber() > 2).map(Position::new)
-						.collect(Collectors.toList());
+				positions = FileUtils.readCsv(positionsFile, 2).stream().map(Position::new).collect(Collectors.toList());
 
 				final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
 				Matcher matcher = datePattern.matcher(positionsFile.getFileName().toString());
@@ -109,11 +108,11 @@ public class Account
 
 			final LocalDate yearAgo = LocalDate.now().minusYears(1);
 			Predicate<CSVRecord> filter = record -> {
-				LocalDate date = null;
-				return record.getRecordNumber() > 2 && (date = StringUtils.parseDate(record.get(0))) != null && date.isAfter(yearAgo);
+				LocalDate date = StringUtils.parseDate(record.get(0));
+				return date != null && date.isAfter(yearAgo);
 			};
 			transactions = transactionsFile != null
-					? FileUtils.readCsv(transactionsFile).stream().filter(filter).map(Transaction::new).collect(Collectors.toList())
+					? FileUtils.readCsv(transactionsFile, 1).stream().filter(filter).map(Transaction::new).collect(Collectors.toList())
 					: List.of();
 		}
 		return transactions;

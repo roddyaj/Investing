@@ -60,11 +60,24 @@ public class PositionManagerCore
 
 		List<Order> orders = accountSettings.getRealPositions().map(p -> evaluate(p.getSymbol())).filter(Objects::nonNull)
 				.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).collect(Collectors.toList());
-		output.setOrders(orders);
+		output.addOrders(orders);
 
-		report(2);
+		// Find odd lots that can be bought
+		orders = account.getPositions().stream().filter(this::isOddAndAddable).sorted((p1, p2) -> Double.compare(p1.dayChangePct, p2.dayChangePct))
+				.map(p -> new Order(p.symbol, 100 - p.quantity % 100, p.getPrice(), p)).peek(p -> p.optional = true).collect(Collectors.toList());
+		output.addOrders(orders);
+
+		report(1);
 
 		return output;
+	}
+
+	private boolean isOddAndAddable(Position position)
+	{
+		int remainder = position.quantity % 100;
+		double totalAmount = (position.quantity / 100 + 1) * 100 * position.price;
+		return !accountSettings.hasAllocation(position.symbol) && position.quantity > 0 && remainder != 0
+				&& totalAmount < accountSettings.getMaxOptionPosition();
 	}
 
 	private Order evaluate(String symbol)

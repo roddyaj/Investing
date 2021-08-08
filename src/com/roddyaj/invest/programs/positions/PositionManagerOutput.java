@@ -11,7 +11,7 @@ public class PositionManagerOutput extends AbstractOutput
 {
 	private final List<Order> orders = new ArrayList<>();
 
-	public void setOrders(List<Order> orders)
+	public void addOrders(List<Order> orders)
 	{
 		this.orders.addAll(orders);
 	}

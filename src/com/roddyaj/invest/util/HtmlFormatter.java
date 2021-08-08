@@ -77,18 +77,17 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		lines.add("<style>");
 		lines.add("body { font: 14px Arial, sans-serif; }");
 		lines.add("th, td { padding: 2px 4px; }");
-		lines.add("hr { margin: 4px 0px; }");
 		lines.add("a:link { text-decoration: none; }");
 		lines.add("a:hover { text-decoration: underline; }");
 		lines.add(".row { display: flex; flex-direction: row; }");
 		lines.add(".column { display: flex; flex-direction: column; margin-right: 8px; }");
-		lines.add(".heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid; }");
-		lines.add(".title { font-size: large; font-weight: bold; }");
 		lines.add(
 				".block { border-style: solid; border-width: 1px; border-radius: 4px; padding: 4px; margin-bottom: 8px; background-color: #F7F7F7; }");
-		lines.add(".left { text-align: left; }");
-		lines.add(".right { text-align: right; }");
-		lines.add(".center { text-align: center; }");
+		lines.add(".heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid; }");
+		lines.add(".title { font-size: large; font-weight: bold; }");
+		lines.add("." + Align.L + " { text-align: left; }");
+		lines.add("." + Align.R + " { text-align: right; }");
+		lines.add("." + Align.C + " { text-align: center; }");
 		lines.add("</style>");
 		lines.add("</head>\n<body>");
 		lines.addAll(input);
@@ -150,7 +149,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 
 	public enum Align
 	{
-		L("left"), C("center"), R("right");
+		L("l"), C("c"), R("r");
 
 		private final String text;
 

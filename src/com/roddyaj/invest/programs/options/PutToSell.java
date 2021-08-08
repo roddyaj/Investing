@@ -34,7 +34,7 @@ public class PutToSell implements Comparable<PutToSell>
 	@Override
 	public int compareTo(PutToSell o)
 	{
-		int result = Double.compare(o.position != null ? o.position.dayChangePct : 0, position != null ? position.dayChangePct : 0);
+		int result = Double.compare(position != null ? position.dayChangePct : 0, o.position != null ? o.position.dayChangePct : 0);
 		if (result == 0)
 		{
 			result = Double.compare(o.averageReturn, averageReturn);

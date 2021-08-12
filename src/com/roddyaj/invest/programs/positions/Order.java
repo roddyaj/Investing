@@ -77,7 +77,8 @@ public class Order
 		{
 			String action = o.shareCount >= 0 ? "Buy" : "Sell";
 			final String url = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx?tradeaction=" + action + "&amp;Symbol=%s";
-			String link = String.format("<a href=\"" + url + "\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.shareCount) + "');\">%s</a>",
+			String link = String.format(
+					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.shareCount) + "');\">%s</a>",
 					o.symbol, o.symbol);
 			String actionColored = color(action, action.equals("Buy") ? "green" : "red");
 			String dayChangeColored = o.position != null ? color(o.position.dayChangePct, "%.2f%%") : "";

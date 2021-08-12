@@ -1,5 +1,6 @@
 package com.roddyaj.invest.model;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -180,7 +181,9 @@ public class Position implements Comparable<Position>
 
 	public static class OptionHtmlFormatter extends HtmlFormatter<Position>
 	{
-		private static final String URL = "https://client.schwab.com/Areas/Accounts/Positions";
+		private static final String URL = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx#symbol/";
+
+		private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyMMdd");
 
 		@Override
 		protected List<Column> getColumns()
@@ -202,7 +205,7 @@ public class Position implements Comparable<Position>
 		@Override
 		protected List<Object> getObjectElements(Position p)
 		{
-			String link = toLink(URL, p.symbol);
+			String link = toLink(getUrl(p.option), p.symbol);
 			int dte = p.option.getDteCurrent();
 //			Double underlyingCostPerShare = p.option.underlying != null ? p.option.underlying.getCostPerShare() : null;
 			String moneyText = "OTM".equals(p.option.money) ? "" : dte < 5 ? "**" : "*";
@@ -210,6 +213,12 @@ public class Position implements Comparable<Position>
 
 			return Arrays.asList(link, p.quantity, p.option.type, p.option.expiryDate, dte, p.option.strike, p.option.getUnderlyingPrice(),
 					moneyText);
+		}
+
+		private static String getUrl(Option option)
+		{
+			return URL + String.format("%-6s", option.symbol).replace(" ", "%20") + option.expiryDate.format(DATE_FORMAT) + option.type
+					+ String.format("%08d", Math.round(option.strike * 1000));
 		}
 	}
 }

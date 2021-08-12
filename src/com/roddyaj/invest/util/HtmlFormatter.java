@@ -134,7 +134,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 
 	public static String toLink(String url, String text)
 	{
-		return String.format("<a href=\"%s\">%s</a>", url, text);
+		return String.format("<a href=\"%s\" target=\"_blank\">%s</a>", url, text);
 	}
 
 	public static String color(String text, String color)

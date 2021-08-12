@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import com.roddyaj.invest.util.StringUtils;
@@ -17,6 +18,8 @@ public class Option
 
 	// Note, this can be null
 	public Position underlying;
+
+	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyMMdd");
 
 	// Transaction constructor
 	public Option(String optionText)
@@ -72,5 +75,15 @@ public class Option
 	public String toString()
 	{
 		return String.format("%s %s %s %.2f %.2f %s", symbol, type, expiryDate, strike, getUnderlyingPrice(), money);
+	}
+
+	public String toOccString()
+	{
+		StringBuilder b = new StringBuilder(21);
+		b.append(String.format("%-6s", symbol));
+		b.append(expiryDate.format(DATE_FORMAT));
+		b.append(type);
+		b.append(String.format("%08d", Math.round(strike * 1000)));
+		return b.toString();
 	}
 }

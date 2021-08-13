@@ -147,6 +147,22 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		return color(String.format(format, d), d >= 0 ? "green" : "red");
 	}
 
+	public static List<String> toSimpleColumnTable(Collection<? extends String> columns)
+	{
+		List<String> lines = new ArrayList<>();
+		lines.add("<div class=\"block\">");
+		lines.add("<table>");
+		StringBuilder builder = new StringBuilder();
+		builder.append("<tr>");
+		for (String column : columns)
+			builder.append("<td>").append(column).append("</td>");
+		builder.append("</tr>");
+		lines.add(builder.toString());
+		lines.add("</table>");
+		lines.add("</div>");
+		return lines;
+	}
+
 	public enum Align
 	{
 		L("l"), C("c"), R("r");

@@ -37,6 +37,9 @@ public class Combined implements Program
 		messages.addAll(optionsOutput.getMessages());
 		lines.addAll(new Message.MessageFormatter().toBlock(messages, "Messages", null));
 
+		// Links block
+		lines.addAll(getLinks());
+
 		// Main content blocks
 		List<String> columnLines = new ArrayList<>();
 		columnLines.addAll(HtmlFormatter.toColumn(positionsOutput.getContent()));
@@ -47,5 +50,20 @@ public class Combined implements Program
 		String html = HtmlFormatter.toDocument(input.account.getName().replace('_', ' '), lines);
 
 		AppFileUtils.showHtml(html, input.account.getName() + ".html");
+	}
+
+	private List<String> getLinks()
+	{
+		List<String> links = new ArrayList<>();
+		links.add(HtmlFormatter.toLink("https://client.schwab.com/Areas/Accounts/Positions", "Positions"));
+		links.add("|");
+		links.add(HtmlFormatter.toLink("https://client.schwab.com/Apps/accounts/transactionhistory", "History"));
+		links.add("|");
+		links.add(HtmlFormatter.toLink("https://client.schwab.com/Apps/Accounts/Balances", "Balances"));
+		links.add("|");
+		links.add(HtmlFormatter.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Open", "Open Orders"));
+		links.add("|");
+		links.add(HtmlFormatter.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Today", "Today's Orders"));
+		return HtmlFormatter.toSimpleColumnTable(links);
 	}
 }

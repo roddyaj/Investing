@@ -174,11 +174,11 @@ public class PositionManagerCore
 
 		System.out.println(Report.toString(reports));
 
-		for (Position position : account.getPositions())
-		{
-			if (startsWith(position.securityType, "ETF") && accountSettings.getPosition(position.symbol) == null)
-				output.addMessage(Level.WARN, "Position " + position.symbol + " is not being tracked");
-		}
+//		for (Position position : account.getPositions())
+//		{
+//			if (startsWith(position.securityType, "ETF") && accountSettings.getPosition(position.symbol) == null)
+//				output.addMessage(Level.WARN, "Position " + position.symbol + " is not being tracked");
+//		}
 
 //		// Write CSV report
 //		Path csvPath = Paths.get(settings.getDefaultDataDir(), "report.csv");

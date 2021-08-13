@@ -44,7 +44,8 @@ public class Combined implements Program
 		List<String> columnLines = new ArrayList<>();
 		columnLines.addAll(HtmlFormatter.toColumn(positionsOutput.getContent()));
 		columnLines.addAll(HtmlFormatter.toColumn(optionsOutput.getActionsHtml()));
-		columnLines.addAll(HtmlFormatter.toColumn(optionsOutput.getInfoHtml()));
+		columnLines.addAll(HtmlFormatter.toColumn(optionsOutput.getCurrentOptionsHtml()));
+		columnLines.addAll(HtmlFormatter.toColumn(optionsOutput.getIncomeHtml()));
 		lines.addAll(HtmlFormatter.toRow(columnLines));
 
 		String html = HtmlFormatter.toDocument(input.account.getName().replace('_', ' '), lines);

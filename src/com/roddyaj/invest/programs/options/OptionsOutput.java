@@ -38,7 +38,8 @@ public class OptionsOutput extends AbstractOutput
 	{
 		List<String> lines = new ArrayList<>();
 		lines.addAll(getActionsHtml());
-		lines.addAll(getInfoHtml());
+		lines.addAll(getCurrentOptionsHtml());
+		lines.addAll(getIncomeHtml());
 		return lines;
 	}
 
@@ -58,7 +59,7 @@ public class OptionsOutput extends AbstractOutput
 		return lines;
 	}
 
-	public List<String> getInfoHtml()
+	public List<String> getCurrentOptionsHtml()
 	{
 		List<String> lines = new ArrayList<>();
 
@@ -69,6 +70,13 @@ public class OptionsOutput extends AbstractOutput
 		String info = String.format("C: %d $%.0f &nbsp;P: %d $%.0f &nbsp;T: %d $%.0f", callsCount, callsInPlay, putsCount, putsInPlay,
 				callsCount + putsCount, callsInPlay + putsInPlay);
 		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, "Current Options", info));
+
+		return lines;
+	}
+
+	public List<String> getIncomeHtml()
+	{
+		List<String> lines = new ArrayList<>();
 
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
 		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Options Income", null));

@@ -23,6 +23,8 @@ public final class AppFileUtils
 			pattern = account + "-Positions-.*\\.CSV";
 		else if (type == FileType.TRANSACTIONS)
 			pattern = account + "_Transactions_.*\\.CSV";
+		else if (type == FileType.ORDERS)
+			pattern = account + " Order Details\\.CSV";
 
 		Path file = null;
 		if (pattern != null)
@@ -74,6 +76,6 @@ public final class AppFileUtils
 
 	public enum FileType
 	{
-		POSITIONS, TRANSACTIONS
+		POSITIONS, TRANSACTIONS, ORDERS
 	};
 }

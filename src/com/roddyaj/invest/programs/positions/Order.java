@@ -10,7 +10,7 @@ public class Order
 {
 	public final String symbol;
 
-	public final int shareCount;
+	public final int quantity;
 
 	public final double price;
 
@@ -19,25 +19,25 @@ public class Order
 
 	public boolean optional;
 
-	public Order(String symbol, int shareCount, double price, Position position)
+	public Order(String symbol, int quantity, double price, Position position)
 	{
 		this.symbol = symbol;
-		this.shareCount = shareCount;
+		this.quantity = quantity;
 		this.price = price;
 		this.position = position;
 	}
 
 	public double getAmount()
 	{
-		return shareCount * price;
+		return quantity * price;
 	}
 
 	@Override
 	public String toString()
 	{
-		String action = shareCount >= 0 ? green("Buy ") : red("Sell");
+		String action = quantity >= 0 ? green("Buy ") : red("Sell");
 		double dayChangePct = position != null ? position.dayChangePct : 0;
-		return String.format("%-4s %s %2d | %6.2f = %4.0f, %s", symbol, action, Math.abs(shareCount), price, getAmount(), color(dayChangePct));
+		return String.format("%-5s %s %2d | %6.2f = %4.0f, %s", symbol, action, Math.abs(quantity), price, getAmount(), color(dayChangePct));
 	}
 
 	private static String color(double d)
@@ -75,15 +75,15 @@ public class Order
 		@Override
 		protected List<Object> getObjectElements(Order o)
 		{
-			String action = o.shareCount >= 0 ? "Buy" : "Sell";
+			String action = o.quantity >= 0 ? "Buy" : "Sell";
 			final String url = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx?tradeaction=" + action + "&amp;Symbol=%s";
 			String link = String.format(
-					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.shareCount) + "');\">%s</a>",
+					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.quantity) + "');\">%s</a>",
 					o.symbol, o.symbol);
 			String actionColored = color(action, action.equals("Buy") ? "green" : "red");
 			String dayChangeColored = o.position != null ? color(o.position.dayChangePct, "%.2f%%") : "";
 			String gainLossPctColored = o.position != null ? color(o.position.gainLossPct, "%.2f%%") : "";
-			return List.of(link, actionColored, Math.abs(o.shareCount), o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
+			return List.of(link, actionColored, Math.abs(o.quantity), o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
 		}
 	}
 }

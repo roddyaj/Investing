@@ -63,21 +63,51 @@ public class PositionManagerCore
 		output.addOrders(orders);
 
 		// Find odd lots that can be bought
-		orders = account.getPositions().stream().filter(this::isOddAndAddable).sorted((p1, p2) -> Double.compare(p1.dayChangePct, p2.dayChangePct))
-				.map(p -> new Order(p.symbol, 100 - p.quantity % 100, p.getPrice(), p)).peek(p -> p.optional = true).collect(Collectors.toList());
+		// @formatter:off
+		orders = account.getPositions().stream()
+				.filter(this::isUntracked)
+				.filter(this::isOddLot)
+				.filter(this::isEvenLotUnderMaxPosition)
+				.sorted((p1, p2) -> Double.compare(p1.dayChangePct, p2.dayChangePct))
+				.map(p -> new Order(p.symbol, 100 - p.quantity % 100, p.getPrice(), p))
+				.peek(p -> p.optional = true)
+				.collect(Collectors.toList());
+		// @formatter:on
 		output.addOrders(orders);
+
+		System.out.println("\nPositions that don't have full sell orders:");
+		// @formatter:off
+		account.getPositions().stream()
+				.filter(this::isUntracked)
+				.filter(this::isOddLot)
+				.filter(p -> (p.quantity + openSellOrders(p.symbol)) != 0)
+				.forEach(p -> System.out.println(p.symbol));
+		// @formatter:on
 
 		report(1);
 
 		return output;
 	}
 
-	private boolean isOddAndAddable(Position position)
+	private boolean isUntracked(Position position)
 	{
-		int remainder = position.quantity % 100;
+		return !accountSettings.hasAllocation(position.symbol);
+	}
+
+	private boolean isOddLot(Position position)
+	{
+		return position.quantity > 0 && (position.quantity % 100) != 0;
+	}
+
+	private boolean isEvenLotUnderMaxPosition(Position position)
+	{
 		double totalAmount = (position.quantity / 100 + 1) * 100 * position.price;
-		return !accountSettings.hasAllocation(position.symbol) && position.quantity > 0 && remainder != 0
-				&& totalAmount < accountSettings.getMaxOptionPosition();
+		return totalAmount < accountSettings.getMaxOptionPosition();
+	}
+
+	private int openSellOrders(String symbol)
+	{
+		return account.getOpenOrders().stream().filter(o -> o.symbol.equals(symbol) && o.quantity < 0).mapToInt(o -> o.quantity).sum();
 	}
 
 	private Order evaluate(String symbol)
@@ -109,7 +139,7 @@ public class PositionManagerCore
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position);
-		order.optional = order.position != null && (order.shareCount >= 0 ? order.position.dayChangePct > .1 : order.position.dayChangePct < -.1);
+		order.optional = order.position != null && (order.quantity >= 0 ? order.position.dayChangePct > .1 : order.position.dayChangePct < -.1);
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 
@@ -159,10 +189,10 @@ public class PositionManagerCore
 	private boolean allowOrder(Order order, Position position)
 	{
 		double minOrderAmount = Math.max(position.getMarketValue() * 0.005, 50);
-		if (order.shareCount < 0)
+		if (order.quantity < 0)
 			minOrderAmount *= 2;
 		boolean allowSell = accountSettings.getSell(order.symbol);
-		return Math.abs(order.getAmount()) > minOrderAmount && (order.shareCount > 0 || allowSell);
+		return Math.abs(order.getAmount()) > minOrderAmount && (order.quantity > 0 || allowSell);
 	}
 
 	private void report(int reportLevel)
@@ -170,7 +200,7 @@ public class PositionManagerCore
 		reports.add(new Report("Cash", null, null, 0, accountSettings.getAllocation("cash"), account.getPosition("Cash & Cash Investments")));
 
 		double eoyAccountValue = getFutureAccountValue(TemporalUtil.END_OF_YEAR);
-		System.out.println(String.format("Estimated EOY account value: %6.0f", eoyAccountValue));
+		System.out.println(String.format("\nEstimated EOY account value: %6.0f", eoyAccountValue));
 
 		System.out.println(Report.toString(reports));
 

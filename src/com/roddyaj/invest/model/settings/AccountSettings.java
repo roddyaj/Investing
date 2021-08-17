@@ -9,7 +9,7 @@ import com.roddyaj.invest.model.Output;
 public class AccountSettings
 {
 	private String name;
-	private String alias;
+	private String accountNumber;
 	private double annualContrib;
 	private double maxOptionPosition;
 	private Allocation[] allocations;
@@ -33,16 +33,16 @@ public class AccountSettings
 		this.name = name;
 	}
 
-	@JsonProperty("alias")
-	public String getAlias()
+	@JsonProperty("accountNumber")
+	public String getAccountNumber()
 	{
-		return alias;
+		return accountNumber;
 	}
 
-	@JsonProperty("alias")
-	public void setAlias(String alias)
+	@JsonProperty("accountNumber")
+	public void setAccountNumber(String accountNumber)
 	{
-		this.alias = alias;
+		this.accountNumber = accountNumber;
 	}
 
 	@JsonProperty("annualContrib")

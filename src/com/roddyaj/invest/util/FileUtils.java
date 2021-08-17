@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,13 +35,29 @@ public final class FileUtils
 
 	public static List<CSVRecord> readCsv(Path path, int headerLine)
 	{
-		List<CSVRecord> records = new ArrayList<>();
+		List<String> lines;
 		try
 		{
-			List<String> lines = Files.readAllLines(path);
-			String content = lines.subList(headerLine, lines.size()).stream().collect(Collectors.joining("\n"));
+			lines = Files.readAllLines(path);
+			lines = lines.subList(headerLine, lines.size());
+		}
+		catch (IOException e)
+		{
+			lines = List.of();
+			e.printStackTrace();
+		}
+		return readCsv(lines);
+	}
 
-			CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader().withAllowMissingColumnNames();
+	public static List<CSVRecord> readCsv(Collection<? extends String> lines)
+	{
+		List<CSVRecord> records = new ArrayList<>();
+
+		String content = lines.stream().collect(Collectors.joining("\n"));
+		CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader().withAllowMissingColumnNames();
+
+		try
+		{
 			try (CSVParser parser = CSVParser.parse(content, format))
 			{
 				for (CSVRecord record : parser)
@@ -64,6 +81,7 @@ public final class FileUtils
 		{
 			e.printStackTrace();
 		}
+
 		return records;
 	}
 

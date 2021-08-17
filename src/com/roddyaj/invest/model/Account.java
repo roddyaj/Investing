@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -16,6 +17,7 @@ import org.apache.commons.csv.CSVRecord;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.model.settings.Settings;
+import com.roddyaj.invest.programs.positions.Order;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.AppFileUtils.FileType;
 import com.roddyaj.invest.util.FileUtils;
@@ -29,6 +31,7 @@ public class Account
 	private AccountSettings accountSettings;
 	private List<Position> positions;
 	private List<Transaction> transactions;
+	private List<Order> openOrders;
 
 	public Account(String name)
 	{
@@ -97,14 +100,7 @@ public class Account
 	{
 		if (transactions == null)
 		{
-			Path transactionsFile = AppFileUtils.getAccountFile(name, FileType.TRANSACTIONS);
-
-			if (transactionsFile == null)
-			{
-				AccountSettings accountSettings = getAccountSettings();
-				if (accountSettings != null)
-					transactionsFile = AppFileUtils.getAccountFile(accountSettings.getAlias(), FileType.TRANSACTIONS);
-			}
+			Path transactionsFile = getAccountFile(getAccountSettings(), FileType.TRANSACTIONS);
 
 			final LocalDate yearAgo = LocalDate.now().minusYears(1);
 			Predicate<CSVRecord> filter = record -> {
@@ -116,6 +112,42 @@ public class Account
 					: List.of();
 		}
 		return transactions;
+	}
+
+	public List<Order> getOpenOrders()
+	{
+		if (openOrders == null)
+		{
+			Path ordersFile = getAccountFile(getAccountSettings(), FileType.ORDERS);
+
+			if (ordersFile != null)
+			{
+				try
+				{
+					// Correct the file contents to be valid CSV
+					List<String> lines = Files
+							.lines(ordersFile).filter(line -> !line.isEmpty()).map(line -> line.replace("\" Shares", " Shares\"")
+									.replace("\" Share", " Share\"").replace("\" Contracts", " Contracts\"").replace("\" Contract", " Contract\""))
+							.collect(Collectors.toList());
+
+					openOrders = FileUtils.readCsv(lines).stream().map(record -> {
+						String symbol = record.get("Symbol");
+						String action = record.get("Action");
+						int shareCount = Integer.parseInt(record.get("Quantity|Face Value").split(" ")[0]);
+						if ("Sell".equals(action))
+							shareCount *= -1;
+						double price = StringUtils.parsePrice(record.get("Price").split(" ")[1]);
+						return new Order(symbol, shareCount, price, null);
+					}).collect(Collectors.toList());
+				}
+				catch (IOException e)
+				{
+					openOrders = List.of();
+					e.printStackTrace();
+				}
+			}
+		}
+		return openOrders;
 	}
 
 	public double getPrice(String symbol)
@@ -141,5 +173,20 @@ public class Account
 	public Stream<Position> getPositions(String symbol)
 	{
 		return getPositions().stream().filter(p -> p.symbol.equals(symbol));
+	}
+
+	private static Path getAccountFile(AccountSettings accountSettings, FileType type)
+	{
+		Path file = AppFileUtils.getAccountFile(accountSettings.getName(), type);
+		if (file == null)
+		{
+			file = AppFileUtils.getAccountFile(accountSettings.getAccountNumber(), type);
+			if (file == null)
+			{
+				String masked = "XXXX" + accountSettings.getAccountNumber().substring(4);
+				file = AppFileUtils.getAccountFile(masked, type);
+			}
+		}
+		return file;
 	}
 }

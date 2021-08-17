@@ -118,8 +118,9 @@ public class Account
 	{
 		if (openOrders == null)
 		{
-			Path ordersFile = getAccountFile(getAccountSettings(), FileType.ORDERS);
+			openOrders = List.of();
 
+			Path ordersFile = getAccountFile(getAccountSettings(), FileType.ORDERS);
 			if (ordersFile != null)
 			{
 				try
@@ -142,7 +143,6 @@ public class Account
 				}
 				catch (IOException e)
 				{
-					openOrders = List.of();
 					e.printStackTrace();
 				}
 			}

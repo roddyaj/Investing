@@ -50,14 +50,14 @@ public class PositionManagerCore
 			return output;
 		}
 
-		if (!LocalDate.now().equals(account.getDate()))
-			output.addMessage(Level.WARN, "Account data is not from today: " + account.getDate());
-
 		// Create the allocation map
 		double untrackedTotal = account.getPositions().stream().filter(p -> p.quantity > 0 && !accountSettings.hasAllocation(p.symbol))
 				.mapToDouble(p -> p.marketValue).sum();
 		double untrackedPercent = untrackedTotal / account.getTotalValue();
 		accountSettings.createMap(untrackedPercent, output);
+
+		if (!LocalDate.now().equals(account.getDate()))
+			output.addMessage(Level.WARN, "Account data is not from today: " + account.getDate());
 
 		// Determine the managed orders
 		List<Order> orders = accountSettings.getRealPositions().map(p -> evaluate(p.getSymbol())).filter(Objects::nonNull)

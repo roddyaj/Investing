@@ -17,6 +17,8 @@ public class Order
 	// Note, this may be null if there is no position
 	public final Position position;
 
+	public int openOrderQuantity;
+
 	public boolean optional;
 
 	public Order(String symbol, int quantity, double price, Position position)
@@ -64,7 +66,7 @@ public class Order
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("Action", "%s", Align.C));
-			columns.add(new Column("#", "%d", Align.R));
+			columns.add(new Column("#", "%s", Align.L));
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Total", "%.0f", Align.R));
 			columns.add(new Column("Day", "%s", Align.R));
@@ -81,9 +83,10 @@ public class Order
 					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.quantity) + "');\">%s</a>",
 					o.symbol, o.symbol);
 			String actionColored = color(action, action.equals("Buy") ? "green" : "red");
+			String quantityText = Math.abs(o.quantity) + (o.openOrderQuantity == 0 ? "" : " (" + o.openOrderQuantity + ")");
 			String dayChangeColored = o.position != null ? color(o.position.dayChangePct, "%.2f%%") : "";
 			String gainLossPctColored = o.position != null ? color(o.position.gainLossPct, "%.2f%%") : "";
-			return List.of(link, actionColored, Math.abs(o.quantity), o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
+			return List.of(link, actionColored, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
 		}
 	}
 }

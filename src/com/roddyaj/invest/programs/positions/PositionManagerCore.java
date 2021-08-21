@@ -37,7 +37,7 @@ public class PositionManagerCore
 	public PositionManagerCore(Input input)
 	{
 		account = input.account;
-		settings = input.account.getSettings();
+		settings = input.getSettings();
 		accountSettings = input.account.getAccountSettings();
 		output = new PositionManagerOutput();
 	}

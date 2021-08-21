@@ -43,6 +43,8 @@ public final class AppFileUtils
 			if (m.find())
 				accountName = m.group(1);
 		}
+		if (accountName == null)
+			accountName = accountShorthand;
 		return accountName;
 	}
 

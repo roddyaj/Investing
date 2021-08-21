@@ -3,9 +3,9 @@ package com.roddyaj.invest.model;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,9 +14,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVRecord;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.model.settings.AccountSettings;
-import com.roddyaj.invest.model.settings.Settings;
 import com.roddyaj.invest.programs.positions.Order;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.AppFileUtils.FileType;
@@ -27,15 +25,15 @@ public class Account
 {
 	private final String name;
 	private LocalDate date;
-	private Settings settings;
-	private AccountSettings accountSettings;
+	private final AccountSettings accountSettings;
 	private List<Position> positions;
 	private List<Transaction> transactions;
 	private List<Order> openOrders;
 
-	public Account(String name)
+	public Account(String name, AccountSettings accountSettings)
 	{
 		this.name = AppFileUtils.getFullAccountName(name);
+		this.accountSettings = accountSettings;
 	}
 
 	public String getName()
@@ -48,29 +46,8 @@ public class Account
 		return date;
 	}
 
-	public Settings getSettings()
-	{
-		if (settings == null)
-		{
-			Path settingsFile = Paths.get(AppFileUtils.SETTINGS_DIR.toString(), "settings.json");
-			try
-			{
-				settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		return settings;
-	}
-
 	public AccountSettings getAccountSettings()
 	{
-		if (accountSettings == null)
-		{
-			accountSettings = getSettings().getAccount(name);
-		}
 		return accountSettings;
 	}
 
@@ -150,9 +127,16 @@ public class Account
 		return openOrders;
 	}
 
-	public double getPrice(String symbol)
+	public Double getPrice(String symbol)
 	{
-		return getPositions(symbol).mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.price).findFirst().orElse(0);
+		OptionalDouble price = getPositions(symbol).mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.price).findFirst();
+		return price.isPresent() ? price.getAsDouble() : null;
+	}
+
+	public Double getDayChange(String symbol)
+	{
+		OptionalDouble dayChangePct = getPositions(symbol).filter(p -> !p.isOption()).mapToDouble(p -> p.dayChangePct).findFirst();
+		return dayChangePct.isPresent() ? dayChangePct.getAsDouble() : null;
 	}
 
 	public double getTotalValue()

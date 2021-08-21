@@ -5,24 +5,22 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class PutToSell implements Comparable<PutToSell>
 {
 	public final String symbol;
 	public final double availableAmount;
-	public final double underlyingPrice;
+	public final Double underlyingPrice;
+	public final Double dayChangePct;
 	public double averageReturn;
-	// Note, this may be null
-	public Position position;
 
-	public PutToSell(String symbol, double availableAmount, double underlyingPrice, Position position)
+	public PutToSell(String symbol, double availableAmount, Double underlyingPrice, Double dayChangePct)
 	{
 		this.symbol = symbol;
 		this.availableAmount = availableAmount;
 		this.underlyingPrice = underlyingPrice;
-		this.position = position;
+		this.dayChangePct = dayChangePct;
 	}
 
 	@Override
@@ -34,7 +32,7 @@ public class PutToSell implements Comparable<PutToSell>
 	@Override
 	public int compareTo(PutToSell o)
 	{
-		int result = Double.compare(position != null ? position.dayChangePct : 0, o.position != null ? o.position.dayChangePct : 0);
+		int result = Double.compare(dayChangePct != null ? dayChangePct.doubleValue() : 0, o.dayChangePct != null ? o.dayChangePct.doubleValue() : 0);
 		if (result == 0)
 		{
 			result = Double.compare(o.averageReturn, averageReturn);
@@ -73,9 +71,8 @@ public class PutToSell implements Comparable<PutToSell>
 		{
 			String schwabLink = toLinkSymbol(SCHWAB, p.symbol);
 			String yahooLink = toLinkSymbol(YAHOO, p.symbol);
-			Double underlyingPrice = p.underlyingPrice != 0 ? p.underlyingPrice : null;
-			String dayChangePct = p.position != null ? color(p.position.dayChangePct, "%.2f%%") : null;
-			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, underlyingPrice, dayChangePct, p.averageReturn);
+			String dayChangePct = p.dayChangePct != null ? color(p.dayChangePct.doubleValue(), "%.2f%%") : null;
+			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, p.underlyingPrice, dayChangePct, p.averageReturn);
 		}
 	}
 }

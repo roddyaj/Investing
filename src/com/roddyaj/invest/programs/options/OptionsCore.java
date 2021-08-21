@@ -70,7 +70,7 @@ public class OptionsCore
 	{
 		for (Position position : input.account.getPositions())
 		{
-			if (!position.isOption() && position.quantity >= 100 && !input.account.getSettings().excludeOption(position.symbol))
+			if (!position.isOption() && position.quantity >= 100 && !input.getSettings().excludeOption(position.symbol))
 			{
 				int totalCallsSold = input.account.getPositions().stream().filter(p -> p.symbol.equals(position.symbol) && p.isCallOption())
 						.mapToInt(p -> p.quantity).sum();
@@ -89,7 +89,7 @@ public class OptionsCore
 
 //		// Get list of CSP candidates based on historical activity
 //		symbols.addAll(historicalOptions.stream().map(Transaction::getSymbol)
-//				.filter(s -> !input.account.getSettings().excludeOption(s) && !s.matches(".*\\d.*")).collect(Collectors.toSet()));
+//				.filter(s -> !input.getSettings().excludeOption(s) && !s.matches(".*\\d.*")).collect(Collectors.toSet()));
 
 //		// Add in other candidates
 //		Set<String> optionable = input.information.getOptionableStocks().stream().map(r -> r.symbol).collect(Collectors.toSet());
@@ -100,12 +100,14 @@ public class OptionsCore
 //		symbols.addAll(intersection);
 
 		// Add in options from the config
-		symbols.addAll(Arrays.asList(input.account.getSettings().getOptionsInclude()));
+		symbols.addAll(Arrays.asList(input.getSettings().getOptionsInclude()));
 
 		// Create the orders with amount available
 		for (String symbol : symbols)
 		{
-			double price = input.getPrice(symbol);
+			Double price = input.getPrice(symbol);
+			Double dayChangePct = input.getDayChange(symbol);
+			boolean isDownForDay = dayChangePct == null || dayChangePct.doubleValue() < .1;
 
 			List<Position> symbolPositions = input.account.getPositions(symbol).collect(Collectors.toList());
 			// Existing position: see if we can sell more put(s)
@@ -116,14 +118,19 @@ public class OptionsCore
 				int putsSold = symbolPositions.stream().filter(p -> p.isPutOption()).mapToInt(p -> p.quantity).sum();
 				double totalInvested = (shareCount + putsSold * -100) * price;
 				double available = input.account.getAccountSettings().getMaxOptionPosition() - totalInvested;
-				double canSellCount = available / (price * 100); // Hack: using price in place of strike since we don't have strike
-				boolean isUpForDay = underlying != null && underlying.dayChangePct > .1;
-				if (canSellCount > 0.9 && !isUpForDay)
-					output.putsToSell.add(new PutToSell(symbol, available, price, underlying));
+				boolean canSell = (available / (price * 100)) > 0.9; // Hack: using price in place of strike since we don't have strike
+				if (canSell && isDownForDay)
+					output.putsToSell.add(new PutToSell(symbol, available, price, dayChangePct));
 			}
 			// New position
 			else
-				output.putsToSell.add(new PutToSell(symbol, input.account.getAccountSettings().getMaxOptionPosition(), price, null));
+			{
+				double available = input.account.getAccountSettings().getMaxOptionPosition();
+				// Hack: using price in place of strike since we don't have strike
+				boolean canSell = price == null || (available / (price * 100)) > 0.9;
+				if (canSell && isDownForDay)
+					output.putsToSell.add(new PutToSell(symbol, available, price, dayChangePct));
+			}
 		}
 
 		// Calculate historical return on each one

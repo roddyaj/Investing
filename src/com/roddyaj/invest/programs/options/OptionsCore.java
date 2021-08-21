@@ -76,10 +76,9 @@ public class OptionsCore
 						.mapToInt(p -> p.quantity).sum();
 				int availableShares = position.quantity + totalCallsSold * 100;
 				int availableCalls = (int)Math.floor(availableShares / 100.0);
-				if (availableCalls > 0)
-				{
+				boolean isUpAtAll = position.dayChangePct > -.1 || position.gainLossPct > -.1;
+				if (availableCalls > 0 && isUpAtAll)
 					output.callsToSell.add(new CallToSell(position, availableCalls));
-				}
 			}
 		}
 	}
@@ -109,6 +108,7 @@ public class OptionsCore
 			double price = input.getPrice(symbol);
 
 			List<Position> symbolPositions = input.account.getPositions(symbol).collect(Collectors.toList());
+			// Existing position: see if we can sell more put(s)
 			if (!symbolPositions.isEmpty())
 			{
 				Position underlying = symbolPositions.stream().filter(p -> !p.isOption()).findFirst().orElse(null);
@@ -117,9 +117,11 @@ public class OptionsCore
 				double totalInvested = (shareCount + putsSold * -100) * price;
 				double available = input.account.getAccountSettings().getMaxOptionPosition() - totalInvested;
 				double canSellCount = available / (price * 100); // Hack: using price in place of strike since we don't have strike
-				if (canSellCount > 0.9)
+				boolean isUpForDay = underlying != null && underlying.dayChangePct > .1;
+				if (canSellCount > 0.9 && !isUpForDay)
 					output.putsToSell.add(new PutToSell(symbol, available, price, underlying));
 			}
+			// New position
 			else
 				output.putsToSell.add(new PutToSell(symbol, input.account.getAccountSettings().getMaxOptionPosition(), price, null));
 		}

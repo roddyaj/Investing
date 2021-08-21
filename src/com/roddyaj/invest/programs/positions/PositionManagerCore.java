@@ -70,6 +70,7 @@ public class PositionManagerCore
 				.filter(this::isUntracked)
 				.filter(this::isOddLot)
 				.filter(this::isEvenLotUnderMaxPosition)
+				.filter(p -> p.dayChangePct < .1 || p.gainLossPct < .1)
 				.sorted((p1, p2) -> Double.compare(p1.dayChangePct, p2.dayChangePct))
 				.map(p -> new Order(p.symbol, 100 - p.quantity % 100, p.getPrice(), p))
 				.peek(p -> p.optional = true)

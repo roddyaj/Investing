@@ -115,8 +115,11 @@ public class Account
 						if ("Sell".equals(action))
 							shareCount *= -1;
 						double price = StringUtils.parsePrice(record.get("Price").split(" ")[1]);
+						String status = record.get("Status");
+						if (!"OPEN".equals(status))
+							shareCount = 0;
 						return new Order(symbol, shareCount, price, null);
-					}).collect(Collectors.toList());
+					}).filter(o -> o.quantity != 0).collect(Collectors.toList());
 				}
 				catch (IOException e)
 				{
@@ -127,9 +130,15 @@ public class Account
 		return openOrders;
 	}
 
+	public int getOpenOrderCount(String symbol, Action action)
+	{
+		return getOpenOrders().stream().filter(o -> o.symbol.equals(symbol) && (action == Action.SELL ? o.quantity < 0 : o.quantity > 0))
+				.mapToInt(o -> o.quantity).sum();
+	}
+
 	public Double getPrice(String symbol)
 	{
-		OptionalDouble price = getPositions(symbol).mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.price).findFirst();
+		OptionalDouble price = getPositions(symbol).mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.getPrice()).findFirst();
 		return price.isPresent() ? price.getAsDouble() : null;
 	}
 
@@ -141,7 +150,7 @@ public class Account
 
 	public double getTotalValue()
 	{
-		return getPositions("Account Total").mapToDouble(p -> p.marketValue).findFirst().orElse(0);
+		return getPositions("Account Total").mapToDouble(p -> p.getMarketValue()).findFirst().orElse(0);
 	}
 
 	public Position getPosition(String symbol)

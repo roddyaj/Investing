@@ -55,9 +55,10 @@ public class CallToSell implements Comparable<CallToSell>
 			String schwab = toLinkSymbol(SCHWAB, c.position.symbol);
 			String yahoo = toLinkSymbol(YAHOO, c.position.symbol);
 			double costPerShare = c.position.getCostPerShare();
-			String dir = color(c.position.price >= costPerShare ? "&#8599;" : "&#8600;", c.position.price >= costPerShare ? "green" : "red");
+			String dir = color(c.position.getPrice() >= costPerShare ? "&#8599;" : "&#8600;",
+					c.position.getPrice() >= costPerShare ? "green" : "red");
 			String changeColored = color(c.position.dayChangePct, "%.2f%%");
-			return List.of(schwab, yahoo, c.quantity, costPerShare, dir, c.position.price, changeColored);
+			return List.of(schwab, yahoo, c.quantity, costPerShare, dir, c.position.getPrice(), changeColored);
 		}
 	}
 }

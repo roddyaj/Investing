@@ -39,8 +39,8 @@ public class Position implements Comparable<Position>
 
 	public final String symbol;
 	public final int quantity;
-	public final double price;
-	public final double marketValue;
+	private final double price;
+	private final double marketValue;
 	public final double dayChangePct;
 	public final double costBasis;
 	public final double gainLossPct;

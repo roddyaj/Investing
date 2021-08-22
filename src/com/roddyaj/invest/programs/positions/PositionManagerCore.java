@@ -52,7 +52,7 @@ public class PositionManagerCore
 
 		// Create the allocation map
 		double untrackedTotal = account.getPositions().stream().filter(p -> p.quantity > 0 && !accountSettings.hasAllocation(p.symbol))
-				.mapToDouble(p -> p.marketValue).sum();
+				.mapToDouble(p -> p.getMarketValue()).sum();
 		double untrackedPercent = untrackedTotal / account.getTotalValue();
 		accountSettings.createMap(untrackedPercent, output);
 
@@ -61,57 +61,15 @@ public class PositionManagerCore
 
 		// Determine the managed orders
 		List<Order> orders = accountSettings.getRealPositions().map(p -> evaluate(p.getSymbol())).filter(Objects::nonNull)
-				.sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).collect(Collectors.toList());
+				.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).collect(Collectors.toList());
 		output.addOrders(orders);
 
-		// Find odd lots that can be bought
-		// @formatter:off
-		orders = account.getPositions().stream()
-				.filter(this::isUntracked)
-				.filter(this::isOddLot)
-				.filter(this::isEvenLotUnderMaxPosition)
-				.filter(p -> p.dayChangePct < .1 || p.gainLossPct < .1)
-				.sorted((p1, p2) -> Double.compare(p1.dayChangePct, p2.dayChangePct))
-				.map(p -> new Order(p.symbol, 100 - p.quantity % 100, p.getPrice(), p))
-				.peek(p -> p.optional = true)
-				.collect(Collectors.toList());
-		// @formatter:on
-		output.addOrders(orders);
-
-		System.out.println("\nPositions that don't have full sell orders:");
-		// @formatter:off
-		account.getPositions().stream()
-				.filter(this::isUntracked)
-				.filter(this::isOddLot)
-				.filter(p -> (p.quantity + getOpenOrders(p.symbol, Action.SELL)) != 0)
-				.forEach(p -> System.out.println(p.symbol));
-		// @formatter:on
+		// Handle odd lots
+		output.addOrders(new OddLots(account, accountSettings).calculateOddLots());
 
 		report(1);
 
 		return output;
-	}
-
-	private boolean isUntracked(Position position)
-	{
-		return !accountSettings.hasAllocation(position.symbol);
-	}
-
-	private boolean isOddLot(Position position)
-	{
-		return position.quantity > 0 && (position.quantity % 100) != 0;
-	}
-
-	private boolean isEvenLotUnderMaxPosition(Position position)
-	{
-		double totalAmount = (position.quantity / 100 + 1) * 100 * position.price;
-		return totalAmount < accountSettings.getMaxOptionPosition();
-	}
-
-	private int getOpenOrders(String symbol, Action action)
-	{
-		return account.getOpenOrders().stream().filter(o -> o.symbol.equals(symbol) && (action == Action.SELL ? o.quantity < 0 : o.quantity > 0))
-				.mapToInt(o -> o.quantity).sum();
 	}
 
 	private Order evaluate(String symbol)
@@ -144,7 +102,7 @@ public class PositionManagerCore
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position);
 		order.optional = order.position != null && (order.quantity >= 0 ? order.position.dayChangePct > .1 : order.position.dayChangePct < -.1);
-		order.openOrderQuantity = Math.abs(getOpenOrders(symbol, order.quantity >= 0 ? Action.BUY : Action.SELL));
+		order.openOrderQuantity = Math.abs(account.getOpenOrderCount(symbol, order.quantity >= 0 ? Action.BUY : Action.SELL));
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 

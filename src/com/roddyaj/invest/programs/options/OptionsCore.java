@@ -143,7 +143,7 @@ public class OptionsCore
 	private void availableToTrade()
 	{
 		List<Position> positions = input.account.getPositions();
-		double cashBalance = positions.stream().filter(p -> p.symbol.equals("Cash & Cash Investments")).mapToDouble(p -> p.marketValue).findAny()
+		double cashBalance = positions.stream().filter(p -> p.symbol.equals("Cash & Cash Investments")).mapToDouble(p -> p.getMarketValue()).findAny()
 				.orElse(0);
 		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.option.strike * p.quantity * -100).sum();
 		output.availableToTrade = cashBalance - putOnHold;

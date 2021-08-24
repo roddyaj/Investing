@@ -8,7 +8,7 @@ import com.roddyaj.invest.util.StringUtils;
 public class Transaction
 {
 	private final LocalDate date;
-	private final String action;
+	private final Action action;
 	private final String symbol;
 	private final int quantity;
 	private final double price;
@@ -18,7 +18,7 @@ public class Transaction
 	private final int days;
 	private final double annualReturn;
 
-	public Transaction(LocalDate date, String action, String symbol, int quantity, double price, double amount, Option option)
+	public Transaction(LocalDate date, Action action, String symbol, int quantity, double price, double amount, Option option)
 	{
 		this.date = date;
 		this.action = action;
@@ -37,7 +37,7 @@ public class Transaction
 		return date;
 	}
 
-	public String getAction()
+	public Action getAction()
 	{
 		return action;
 	}
@@ -103,12 +103,12 @@ public class Transaction
 
 	private String toStringStock()
 	{
-		return String.format(STOCK_FORMAT, date, StringUtils.limit(action, 14), symbol, quantity, price, amount);
+		return String.format(STOCK_FORMAT, date, StringUtils.limit(action.toString(), 14), symbol, quantity, price, amount);
 	}
 
 	private String toStringOption()
 	{
-		return String.format(OPTION_FORMAT, date, StringUtils.limit(action, 14), symbol, quantity, price, amount, option.expiryDate, option.strike,
-				option.type, days, annualReturn);
+		return String.format(OPTION_FORMAT, date, StringUtils.limit(action.toString(), 14), symbol, quantity, price, amount, option.expiryDate,
+				option.strike, option.type, days, annualReturn);
 	}
 }

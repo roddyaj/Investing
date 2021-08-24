@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.Transaction;
@@ -47,7 +48,7 @@ public class OptionsCore
 			{
 				// Set the opening date
 				Transaction recentTransaction = historicalOptions.stream()
-						.filter(o -> o.getSymbol().equals(position.getSymbol()) && "Sell to Open".equals(o.getAction())).findFirst().orElse(null);
+						.filter(o -> o.getSymbol().equals(position.getSymbol()) && o.getAction() == Action.SELL_TO_OPEN).findFirst().orElse(null);
 				if (recentTransaction != null)
 					position.getOption().initialDate = recentTransaction.getDate();
 
@@ -160,14 +161,14 @@ public class OptionsCore
 		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
 		for (Transaction transaction : historicalOptions)
 		{
-			if (transaction.getAction().startsWith("Sell to") || transaction.getAction().startsWith("Buy to"))
+			if (transaction.getAction() == Action.SELL_TO_OPEN || transaction.getAction() == Action.BUY_TO_CLOSE)
 				output.monthToIncome.merge(transaction.getDate().format(format), transaction.getAmount(), Double::sum);
 		}
 	}
 
 	private static double calculateAverageReturn(String symbol, Collection<? extends Transaction> historicalOptions)
 	{
-		return historicalOptions.stream().filter(t -> t.getSymbol().equals(symbol) && t.getAction().equals("Sell to Open"))
+		return historicalOptions.stream().filter(t -> t.getSymbol().equals(symbol) && t.getAction() == Action.SELL_TO_OPEN)
 				.collect(Collectors.averagingDouble(t -> t.getAnnualReturn()));
 	}
 

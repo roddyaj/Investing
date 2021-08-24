@@ -47,9 +47,9 @@ public class OptionsCore
 			{
 				// Set the opening date
 				Transaction recentTransaction = historicalOptions.stream()
-						.filter(o -> o.symbol.equals(position.getSymbol()) && "Sell to Open".equals(o.action)).findFirst().orElse(null);
+						.filter(o -> o.getSymbol().equals(position.getSymbol()) && "Sell to Open".equals(o.getAction())).findFirst().orElse(null);
 				if (recentTransaction != null)
-					position.getOption().initialDate = recentTransaction.date;
+					position.getOption().initialDate = recentTransaction.getDate();
 
 				// Set the underlying position if available
 				Position underlying = input.account.getPositions(position.getSymbol()).filter(p -> !p.isOption()).findAny().orElse(null);
@@ -160,15 +160,15 @@ public class OptionsCore
 		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
 		for (Transaction transaction : historicalOptions)
 		{
-			if (transaction.action.startsWith("Sell to") || transaction.action.startsWith("Buy to"))
-				output.monthToIncome.merge(transaction.date.format(format), transaction.amount, Double::sum);
+			if (transaction.getAction().startsWith("Sell to") || transaction.getAction().startsWith("Buy to"))
+				output.monthToIncome.merge(transaction.getDate().format(format), transaction.getAmount(), Double::sum);
 		}
 	}
 
 	private static double calculateAverageReturn(String symbol, Collection<? extends Transaction> historicalOptions)
 	{
-		return historicalOptions.stream().filter(t -> t.symbol.equals(symbol) && t.action.equals("Sell to Open"))
-				.collect(Collectors.averagingDouble(t -> t.annualReturn));
+		return historicalOptions.stream().filter(t -> t.getSymbol().equals(symbol) && t.getAction().equals("Sell to Open"))
+				.collect(Collectors.averagingDouble(t -> t.getAnnualReturn()));
 	}
 
 	private static double getOptionValueRatio(Position position)

@@ -17,6 +17,7 @@ import org.apache.commons.csv.CSVRecord;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.programs.positions.Order;
 import com.roddyaj.invest.schwab.SchwabPositionSource;
+import com.roddyaj.invest.schwab.SchwabTransactionSource;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.AppFileUtils.FileType;
 import com.roddyaj.invest.util.FileUtils;
@@ -85,9 +86,8 @@ public class Account
 				LocalDate date = StringUtils.parseDate(record.get(0));
 				return date != null && date.isAfter(yearAgo);
 			};
-			transactions = transactionsFile != null
-					? FileUtils.readCsv(transactionsFile, 1).stream().filter(filter).map(Transaction::new).collect(Collectors.toList())
-					: List.of();
+			transactions = transactionsFile != null ? FileUtils.readCsv(transactionsFile, 1).stream().filter(filter)
+					.map(SchwabTransactionSource::convert).collect(Collectors.toList()) : List.of();
 		}
 		return transactions;
 	}

@@ -38,7 +38,7 @@ public class Order
 	public String toString()
 	{
 		String action = quantity >= 0 ? green("Buy ") : red("Sell");
-		double dayChangePct = position != null ? position.dayChangePct : 0;
+		double dayChangePct = position != null ? position.getDayChangePct() : 0;
 		return String.format("%-5s %s %2d | %6.2f = %4.0f, %s", symbol, action, Math.abs(quantity), price, getAmount(), color(dayChangePct));
 	}
 
@@ -84,8 +84,8 @@ public class Order
 					o.symbol, o.symbol);
 			String actionColored = color(action, action.equals("Buy") ? "green" : "red");
 			String quantityText = Math.abs(o.quantity) + (o.openOrderQuantity == 0 ? "" : " (" + o.openOrderQuantity + ")");
-			String dayChangeColored = o.position != null ? color(o.position.dayChangePct, "%.2f%%") : "";
-			String gainLossPctColored = o.position != null ? color(o.position.gainLossPct, "%.2f%%") : "";
+			String dayChangeColored = o.position != null ? color(o.position.getDayChangePct(), "%.2f%%") : "";
+			String gainLossPctColored = o.position != null ? color(o.position.getGainLossPct(), "%.2f%%") : "";
 			return List.of(link, actionColored, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
 		}
 	}

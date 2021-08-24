@@ -17,6 +17,7 @@ import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Message.Level;
 import com.roddyaj.invest.model.Position;
+import com.roddyaj.invest.model.SecurityType;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.model.settings.Allocation;
 import com.roddyaj.invest.model.settings.PositionSettings;
@@ -51,8 +52,8 @@ public class PositionManagerCore
 		}
 
 		// Create the allocation map
-		double untrackedTotal = account.getPositions().stream().filter(p -> p.quantity > 0 && !accountSettings.hasAllocation(p.symbol))
-				.mapToDouble(p -> p.getMarketValue()).sum();
+		double untrackedTotal = account.getPositions().stream().filter(p -> p.getQuantity() > 0 && !accountSettings.hasAllocation(p.getSymbol()))
+				.mapToDouble(Position::getMarketValue).sum();
 		double untrackedPercent = untrackedTotal / account.getTotalValue();
 		accountSettings.createMap(untrackedPercent, output);
 
@@ -101,7 +102,8 @@ public class PositionManagerCore
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position);
-		order.optional = order.position != null && (order.quantity >= 0 ? order.position.dayChangePct > .1 : order.position.dayChangePct < -.1);
+		order.optional = order.position != null
+				&& (order.quantity >= 0 ? order.position.getDayChangePct() > .1 : order.position.getDayChangePct() < -.1);
 		order.openOrderQuantity = Math.abs(account.getOpenOrderCount(symbol, order.quantity >= 0 ? Action.BUY : Action.SELL));
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
@@ -203,7 +205,7 @@ public class PositionManagerCore
 					if (position != null)
 					{
 						PositionSettings positionSetting = new PositionSettings();
-						positionSetting.setSymbol(position.symbol);
+						positionSetting.setSymbol(position.getSymbol());
 						positionSetting.setT0(account.getDate().toString());
 						positionSetting.setV0(position.getMarketValue());
 						positions1.add(positionSetting);
@@ -221,12 +223,12 @@ public class PositionManagerCore
 			List<PositionSettings> positions2 = new ArrayList<>();
 			for (Position position : account.getPositions())
 			{
-				if (startsWith(position.securityType, "ETF") && !symbols.contains(position.symbol))
+				if (position.getSecurityType() == SecurityType.ETF && !symbols.contains(position.getSymbol()))
 				{
-					symbols.add(position.symbol);
+					symbols.add(position.getSymbol());
 
 					PositionSettings positionSetting = new PositionSettings();
-					positionSetting.setSymbol(position.symbol);
+					positionSetting.setSymbol(position.getSymbol());
 					positionSetting.setT0(account.getDate().toString());
 					positionSetting.setV0(position.getMarketValue());
 					positions2.add(positionSetting);
@@ -236,10 +238,5 @@ public class PositionManagerCore
 			System.out.println();
 			positions2.stream().sorted((p1, p2) -> p1.getSymbol().compareTo(p2.getSymbol())).forEach(System.out::println);
 		}
-	}
-
-	private static boolean startsWith(String s1, String s2)
-	{
-		return s1 != null && s1.startsWith(s2);
 	}
 }

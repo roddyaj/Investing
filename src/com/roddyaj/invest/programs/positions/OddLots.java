@@ -29,7 +29,7 @@ public class OddLots
 			.filter(this::isUntracked)
 			.map(this::getOrder)
 			.filter(o -> o.quantity != 0)
-			.sorted((o1, o2) -> Double.compare(o2.position.gainLossPct, o1.position.gainLossPct))
+			.sorted((o1, o2) -> Double.compare(o2.position.getGainLossPct(), o1.position.getGainLossPct()))
 			.collect(Collectors.toList());
 		// @formatter:on
 
@@ -46,35 +46,35 @@ public class OddLots
 		int quantity = 0;
 		double price = position.getPrice();
 		// Sell
-		if (position.gainLossPct > 3)
+		if (position.getGainLossPct() > 3)
 		{
-			if (position.dayChangePct > -.1)
+			if (position.getDayChangePct() > -.1)
 			{
-				quantity = -position.quantity;
+				quantity = -position.getQuantity();
 				price = position.getCostPerShare() * 1.1;
 			}
 		}
 		// Buy
-		else if (position.gainLossPct < -3)
+		else if (position.getGainLossPct() < -3)
 		{
-			if (position.dayChangePct < .1)
+			if (position.getDayChangePct() < .1)
 			{
-				int fullBuyQuantity = Math.max((int)Math.floor(accountSettings.getMaxOptionPosition() / price - position.quantity), 0);
-				int roundLotQuantity = 100 - position.quantity % 100;
+				int fullBuyQuantity = Math.max((int)Math.floor(accountSettings.getMaxOptionPosition() / price - position.getQuantity()), 0);
+				int roundLotQuantity = 100 - position.getQuantity() % 100;
 				quantity = Math.min(fullBuyQuantity, roundLotQuantity);
 			}
 		}
-		return new Order(position.symbol, quantity, price, position);
+		return new Order(position.getSymbol(), quantity, price, position);
 	}
 
 	private boolean isUntracked(Position position)
 	{
-		return !accountSettings.hasAllocation(position.symbol);
+		return !accountSettings.hasAllocation(position.getSymbol());
 	}
 
 	private boolean isOddLot(Position position)
 	{
-		return position.quantity > 0 && (position.quantity % 100) != 0;
+		return position.getQuantity() > 0 && (position.getQuantity() % 100) != 0;
 	}
 
 //	// Find odd lots that can be bought

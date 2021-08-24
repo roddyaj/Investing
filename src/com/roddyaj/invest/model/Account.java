@@ -16,6 +16,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.programs.positions.Order;
+import com.roddyaj.invest.schwab.SchwabPositionSource;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.AppFileUtils.FileType;
 import com.roddyaj.invest.util.FileUtils;
@@ -58,7 +59,7 @@ public class Account
 			Path positionsFile = AppFileUtils.getAccountFile(name, FileType.POSITIONS);
 			if (positionsFile != null)
 			{
-				positions = FileUtils.readCsv(positionsFile, 2).stream().map(Position::new).collect(Collectors.toList());
+				positions = FileUtils.readCsv(positionsFile, 2).stream().map(SchwabPositionSource::convert).collect(Collectors.toList());
 
 				final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
 				Matcher matcher = datePattern.matcher(positionsFile.getFileName().toString());
@@ -138,19 +139,19 @@ public class Account
 
 	public Double getPrice(String symbol)
 	{
-		OptionalDouble price = getPositions(symbol).mapToDouble(p -> p.isOption() ? p.option.getUnderlyingPrice() : p.getPrice()).findFirst();
+		OptionalDouble price = getPositions(symbol).mapToDouble(p -> p.isOption() ? p.getOption().getUnderlyingPrice() : p.getPrice()).findFirst();
 		return price.isPresent() ? price.getAsDouble() : null;
 	}
 
 	public Double getDayChange(String symbol)
 	{
-		OptionalDouble dayChangePct = getPositions(symbol).filter(p -> !p.isOption()).mapToDouble(p -> p.dayChangePct).findFirst();
+		OptionalDouble dayChangePct = getPositions(symbol).filter(p -> !p.isOption()).mapToDouble(Position::getDayChangePct).findFirst();
 		return dayChangePct.isPresent() ? dayChangePct.getAsDouble() : null;
 	}
 
 	public double getTotalValue()
 	{
-		return getPositions("Account Total").mapToDouble(p -> p.getMarketValue()).findFirst().orElse(0);
+		return getPositions("Account Total").mapToDouble(Position::getMarketValue).findFirst().orElse(0);
 	}
 
 	public Position getPosition(String symbol)
@@ -165,7 +166,7 @@ public class Account
 
 	public Stream<Position> getPositions(String symbol)
 	{
-		return getPositions().stream().filter(p -> p.symbol.equals(symbol));
+		return getPositions().stream().filter(p -> p.getSymbol().equals(symbol));
 	}
 
 	private static Path getAccountFile(AccountSettings accountSettings, FileType type)

@@ -27,7 +27,7 @@ public class CallToSell implements Comparable<CallToSell>
 	@Override
 	public int compareTo(CallToSell o)
 	{
-		return Double.compare(o.position.dayChangePct, position.dayChangePct);
+		return Double.compare(o.position.getDayChangePct(), position.getDayChangePct());
 	}
 
 	public static class CallHtmlFormatter extends HtmlFormatter<CallToSell>
@@ -52,12 +52,12 @@ public class CallToSell implements Comparable<CallToSell>
 		@Override
 		protected List<Object> getObjectElements(CallToSell c)
 		{
-			String schwab = toLinkSymbol(SCHWAB, c.position.symbol);
-			String yahoo = toLinkSymbol(YAHOO, c.position.symbol);
+			String schwab = toLinkSymbol(SCHWAB, c.position.getSymbol());
+			String yahoo = toLinkSymbol(YAHOO, c.position.getSymbol());
 			double costPerShare = c.position.getCostPerShare();
 			String dir = color(c.position.getPrice() >= costPerShare ? "&#8599;" : "&#8600;",
 					c.position.getPrice() >= costPerShare ? "green" : "red");
-			String changeColored = color(c.position.dayChangePct, "%.2f%%");
+			String changeColored = color(c.position.getDayChangePct(), "%.2f%%");
 			return List.of(schwab, yahoo, c.quantity, costPerShare, dir, c.position.getPrice(), changeColored);
 		}
 	}

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
+import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Message.Level;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.SecurityType;
@@ -102,9 +103,9 @@ public class PositionManagerCore
 		double delta = targetValue - position.getMarketValue();
 		long sharesToBuy = Math.round(delta / position.getPrice());
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position);
-		order.optional = order.position != null
-				&& (order.quantity >= 0 ? order.position.getDayChangePct() > .1 : order.position.getDayChangePct() < -.1);
-		order.openOrderQuantity = Math.abs(account.getOpenOrderCount(symbol, order.quantity >= 0 ? Action.BUY : Action.SELL));
+		order.setOptional(order.getPosition() != null
+				&& (order.getQuantity() >= 0 ? order.getPosition().getDayChangePct() > .1 : order.getPosition().getDayChangePct() < -.1));
+		order.setOpenOrderQuantity(Math.abs(account.getOpenOrderCount(symbol, order.getQuantity() >= 0 ? Action.BUY : Action.SELL)));
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 
@@ -154,10 +155,10 @@ public class PositionManagerCore
 	private boolean allowOrder(Order order, Position position)
 	{
 		double minOrderAmount = Math.max(position.getMarketValue() * 0.005, 50);
-		if (order.quantity < 0)
+		if (order.getQuantity() < 0)
 			minOrderAmount *= 2;
-		boolean allowSell = accountSettings.getSell(order.symbol);
-		return Math.abs(order.getAmount()) > minOrderAmount && (order.quantity > 0 || allowSell);
+		boolean allowSell = accountSettings.getSell(order.getSymbol());
+		return Math.abs(order.getAmount()) > minOrderAmount && (order.getQuantity() > 0 || allowSell);
 	}
 
 	private void report(int reportLevel)

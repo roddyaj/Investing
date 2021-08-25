@@ -2,7 +2,7 @@ package com.roddyaj.invest.schwab;
 
 import org.apache.commons.csv.CSVRecord;
 
-import com.roddyaj.invest.programs.positions.Order;
+import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.util.StringUtils;
 
 public class SchwabOpenOrdersSource

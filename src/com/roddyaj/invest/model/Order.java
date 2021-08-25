@@ -1,25 +1,24 @@
-package com.roddyaj.invest.programs.positions;
+package com.roddyaj.invest.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class Order
 {
-	public final String symbol;
+	private final String symbol;
 
-	public final int quantity;
+	private final int quantity;
 
-	public final double price;
+	private final double price;
 
 	// Note, this may be null if there is no position
-	public final Position position;
+	private final Position position;
 
-	public int openOrderQuantity;
+	private int openOrderQuantity;
 
-	public boolean optional;
+	private boolean optional;
 
 	public Order(String symbol, int quantity, double price, Position position)
 	{
@@ -29,33 +28,49 @@ public class Order
 		this.position = position;
 	}
 
+	public void setOptional(boolean optional)
+	{
+		this.optional = optional;
+	}
+
+	public void setOpenOrderQuantity(int openOrderQuantity)
+	{
+		this.openOrderQuantity = openOrderQuantity;
+	}
+
+	public String getSymbol()
+	{
+		return symbol;
+	}
+
+	public int getQuantity()
+	{
+		return quantity;
+	}
+
+	public double getPrice()
+	{
+		return price;
+	}
+
+	public Position getPosition()
+	{
+		return position;
+	}
+
+	public int getOpenOrderQuantity()
+	{
+		return openOrderQuantity;
+	}
+
+	public boolean isOptional()
+	{
+		return optional;
+	}
+
 	public double getAmount()
 	{
 		return quantity * price;
-	}
-
-	@Override
-	public String toString()
-	{
-		String action = quantity >= 0 ? green("Buy ") : red("Sell");
-		double dayChangePct = position != null ? position.getDayChangePct() : 0;
-		return String.format("%-5s %s %2d | %6.2f = %4.0f, %s", symbol, action, Math.abs(quantity), price, getAmount(), color(dayChangePct));
-	}
-
-	private static String color(double d)
-	{
-		String s = String.format("%.2f", d);
-		return d >= 0 ? green(" " + s) : red(s);
-	}
-
-	private static String red(String s)
-	{
-		return "\033[31m" + s + "\033[0m";
-	}
-
-	private static String green(String s)
-	{
-		return "\033[32m" + s + "\033[0m";
 	}
 
 	public static class OrderFormatter extends HtmlFormatter<Order>

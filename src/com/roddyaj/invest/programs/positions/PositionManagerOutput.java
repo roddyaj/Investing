@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.AbstractOutput;
+import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class PositionManagerOutput extends AbstractOutput
@@ -27,8 +28,8 @@ public class PositionManagerOutput extends AbstractOutput
 	{
 		List<String> lines = new ArrayList<>();
 		Order.OrderFormatter formatter = new Order.OrderFormatter();
-		lines.addAll(formatter.toBlock(orders.stream().filter(o -> !o.optional).collect(Collectors.toList()), "Orders", null));
-		lines.addAll(formatter.toBlock(orders.stream().filter(o -> o.optional).collect(Collectors.toList()), "Optional Orders", null));
+		lines.addAll(formatter.toBlock(orders.stream().filter(o -> !o.isOptional()).collect(Collectors.toList()), "Orders", null));
+		lines.addAll(formatter.toBlock(orders.stream().filter(o -> o.isOptional()).collect(Collectors.toList()), "Optional Orders", null));
 		return lines;
 	}
 }

@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 import org.apache.commons.csv.CSVRecord;
 
 import com.roddyaj.invest.model.settings.AccountSettings;
-import com.roddyaj.invest.programs.positions.Order;
 import com.roddyaj.invest.schwab.SchwabOpenOrdersSource;
 import com.roddyaj.invest.schwab.SchwabPositionsSource;
 import com.roddyaj.invest.schwab.SchwabTransactionsSource;
@@ -110,7 +109,7 @@ public class Account
 									.replace("\" Share", " Share\"").replace("\" Contracts", " Contracts\"").replace("\" Contract", " Contract\""))
 							.collect(Collectors.toList());
 
-					openOrders = FileUtils.readCsv(lines).stream().map(SchwabOpenOrdersSource::convert).filter(o -> o.quantity != 0)
+					openOrders = FileUtils.readCsv(lines).stream().map(SchwabOpenOrdersSource::convert).filter(o -> o.getQuantity() != 0)
 							.collect(Collectors.toList());
 				}
 				catch (IOException e)
@@ -124,8 +123,9 @@ public class Account
 
 	public int getOpenOrderCount(String symbol, Action action)
 	{
-		return getOpenOrders().stream().filter(o -> o.symbol.equals(symbol) && (action == Action.SELL ? o.quantity < 0 : o.quantity > 0))
-				.mapToInt(o -> o.quantity).sum();
+		return getOpenOrders().stream()
+				.filter(o -> o.getSymbol().equals(symbol) && (action == Action.SELL ? o.getQuantity() < 0 : o.getQuantity() > 0))
+				.mapToInt(o -> o.getQuantity()).sum();
 	}
 
 	public Double getPrice(String symbol)

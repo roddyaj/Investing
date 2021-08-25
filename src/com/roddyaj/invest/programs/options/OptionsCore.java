@@ -50,11 +50,11 @@ public class OptionsCore
 				Transaction recentTransaction = historicalOptions.stream()
 						.filter(o -> o.getSymbol().equals(position.getSymbol()) && o.getAction() == Action.SELL_TO_OPEN).findFirst().orElse(null);
 				if (recentTransaction != null)
-					position.getOption().initialDate = recentTransaction.getDate();
+					position.getOption().setInitialDate(recentTransaction.getDate());
 
 				// Set the underlying position if available
 				Position underlying = input.account.getPositions(position.getSymbol()).filter(p -> !p.isOption()).findAny().orElse(null);
-				position.getOption().underlying = underlying;
+				position.getOption().setUnderlying(underlying);
 			}
 		}
 	}
@@ -63,7 +63,7 @@ public class OptionsCore
 	{
 		input.account.getPositions().stream()
 				.filter(p -> p.isOption() && getOptionValueRatio(p) <= .65
-						&& (p.isPutOption() || p.getOption().getUnderlyingPrice() > p.getOption().underlying.getCostPerShare()))
+						&& (p.isPutOption() || p.getOption().getUnderlyingPrice() > p.getOption().getUnderlying().getCostPerShare()))
 				.forEach(output.buyToClose::add);
 	}
 
@@ -146,7 +146,8 @@ public class OptionsCore
 		List<Position> positions = input.account.getPositions();
 		double cashBalance = positions.stream().filter(p -> p.getSymbol().equals("Cash & Cash Investments")).mapToDouble(Position::getMarketValue)
 				.findAny().orElse(0);
-		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.getOption().strike * p.getQuantity() * -100).sum();
+		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.getOption().getStrike() * p.getQuantity() * -100)
+				.sum();
 		output.availableToTrade = cashBalance - putOnHold;
 	}
 

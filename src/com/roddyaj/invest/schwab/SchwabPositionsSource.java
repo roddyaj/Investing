@@ -52,8 +52,10 @@ public class SchwabPositionsSource
 		String symbol;
 		if (securityType == SecurityType.OPTION)
 		{
-			option = new Option(symbolOrOption, money, intrinsicValue);
-			symbol = option.symbol;
+			option = SchwabUtils.parseOptionText(symbolOrOption);
+			option.setMoney(money);
+			option.setIntrinsicValue(intrinsicValue);
+			symbol = option.getSymbol();
 		}
 		else
 		{

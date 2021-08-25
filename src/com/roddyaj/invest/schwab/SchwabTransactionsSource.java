@@ -34,8 +34,8 @@ public class SchwabTransactionsSource
 		boolean isOption = symbolOrOption.contains(" ");
 		if (isOption)
 		{
-			option = new Option(symbolOrOption);
-			symbol = option.symbol;
+			option = SchwabUtils.parseOptionText(symbolOrOption);
+			symbol = option.getSymbol();
 		}
 		else
 		{

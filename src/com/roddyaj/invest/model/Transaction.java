@@ -28,8 +28,8 @@ public class Transaction
 		this.amount = amount;
 
 		this.option = option;
-		days = option != null ? (int)ChronoUnit.DAYS.between(date, option.expiryDate) : 0;
-		annualReturn = option != null ? ((amount / quantity) / option.strike) * (365.0 / days) : 0;
+		days = option != null ? (int)ChronoUnit.DAYS.between(date, option.getExpiryDate()) : 0;
+		annualReturn = option != null ? ((amount / quantity) / option.getStrike()) * (365.0 / days) : 0;
 	}
 
 	public LocalDate getDate()
@@ -84,12 +84,12 @@ public class Transaction
 
 	public boolean isCallOption()
 	{
-		return isOption() && option.type == 'C';
+		return isOption() && option.getType() == 'C';
 	}
 
 	public boolean isPutOption()
 	{
-		return isOption() && option.type == 'P';
+		return isOption() && option.getType() == 'P';
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class Transaction
 
 	private String toStringOption()
 	{
-		return String.format(OPTION_FORMAT, date, StringUtils.limit(action.toString(), 14), symbol, quantity, price, amount, option.expiryDate,
-				option.strike, option.type, days, annualReturn);
+		return String.format(OPTION_FORMAT, date, StringUtils.limit(action.toString(), 14), symbol, quantity, price, amount, option.getExpiryDate(),
+				option.getStrike(), option.getType(), days, annualReturn);
 	}
 }

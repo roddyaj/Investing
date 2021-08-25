@@ -91,24 +91,18 @@ public class Position implements Comparable<Position>
 
 	public boolean isCallOption()
 	{
-		return isOption() && option.type == 'C';
+		return isOption() && option.getType() == 'C';
 	}
 
 	public boolean isPutOption()
 	{
-		return isOption() && option.type == 'P';
+		return isOption() && option.getType() == 'P';
 	}
 
 	public double getMoneyInPlay()
 	{
-		return option != null ? quantity * (option.type == 'P' ? option.strike : option.getUnderlyingPrice()) * -100 : getMarketValue();
+		return option != null ? quantity * (option.getType() == 'P' ? option.getStrike() : option.getUnderlyingPrice()) * -100 : getMarketValue();
 	}
-
-//	public double getOptionValueRatio()
-//	{
-//		double linearValue = ((double)option.getDteCurrent() / option.getDteOriginal()) * (costBasis + (quantity * .65));
-//		return marketValue / linearValue;
-//	}
 
 	@Override
 	public String toString()
@@ -171,11 +165,11 @@ public class Position implements Comparable<Position>
 			String link = toLink(URL + p.option.toOccString().replace(' ', '+'), p.symbol);
 			int dte = p.option.getDteCurrent();
 //			Double underlyingCostPerShare = p.option.underlying != null ? p.option.underlying.getCostPerShare() : null;
-			String moneyText = "OTM".equals(p.option.money) ? "" : dte < 5 ? "**" : "*";
+			String moneyText = "OTM".equals(p.option.getMoney()) ? "" : dte < 5 ? "**" : "*";
 //			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / dte);
 
-			return Arrays.asList(link, p.quantity, p.option.type, p.option.expiryDate, dte, p.option.strike, p.option.getUnderlyingPrice(),
-					moneyText);
+			return Arrays.asList(link, p.quantity, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
+					p.option.getUnderlyingPrice(), moneyText);
 		}
 	}
 }

@@ -4,56 +4,88 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-import com.roddyaj.invest.util.StringUtils;
-
 public class Option
 {
-	public final String symbol;
-	public final LocalDate expiryDate;
-	public final double strike;
-	public final char type;
-	public final String money;
-	public final double intrinsicValue;
-	public LocalDate initialDate;
+	private static final DateTimeFormatter OCC_DATE_FORMAT = DateTimeFormatter.ofPattern("yyMMdd");
+
+	private final String symbol;
+	private final LocalDate expiryDate;
+	private final double strike;
+	private final char type;
+
+	private String money;
+	private double intrinsicValue;
+	private LocalDate initialDate;
 
 	// Note, this can be null
-	public Position underlying;
+	private Position underlying;
 
-	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyMMdd");
-
-	// Transaction constructor
-	public Option(String optionText)
-	{
-		this(optionText, null, 0);
-	}
-
-	// Position constructor
-	public Option(String optionText, String money, double intrinsicValue)
-	{
-		String[] tokens = optionText.split(" ");
-		symbol = tokens[0];
-		expiryDate = StringUtils.parseDate(tokens[1]);
-		strike = Double.parseDouble(tokens[2]);
-		type = tokens[3].charAt(0);
-		this.money = money;
-		this.intrinsicValue = intrinsicValue;
-	}
-
-	// Test constructor
 	public Option(String symbol, LocalDate expiryDate, double strike, char type)
-	{
-		this(symbol, expiryDate, strike, type, null, 0);
-	}
-
-	// Full constructor
-	public Option(String symbol, LocalDate expiryDate, double strike, char type, String money, double intrinsicValue)
 	{
 		this.symbol = symbol;
 		this.expiryDate = expiryDate;
 		this.strike = strike;
 		this.type = type;
+	}
+
+	public void setMoney(String money)
+	{
 		this.money = money;
+	}
+
+	public void setIntrinsicValue(double intrinsicValue)
+	{
 		this.intrinsicValue = intrinsicValue;
+	}
+
+	public void setInitialDate(LocalDate initialDate)
+	{
+		this.initialDate = initialDate;
+	}
+
+	public void setUnderlying(Position underlying)
+	{
+		this.underlying = underlying;
+	}
+
+	public String getSymbol()
+	{
+		return symbol;
+	}
+
+	public LocalDate getExpiryDate()
+	{
+		return expiryDate;
+	}
+
+	public double getStrike()
+	{
+		return strike;
+	}
+
+	public char getType()
+	{
+		return type;
+	}
+
+	public String getMoney()
+	{
+		return money;
+	}
+
+	public double getIntrinsicValue()
+	{
+		return intrinsicValue;
+	}
+
+	public LocalDate getInitialDate()
+	{
+		return initialDate;
+	}
+
+	public Position getUnderlying()
+	{
+		return underlying;
 	}
 
 	public int getDteCurrent()
@@ -81,7 +113,7 @@ public class Option
 	{
 		StringBuilder b = new StringBuilder(21);
 		b.append(String.format("%-6s", symbol));
-		b.append(expiryDate.format(DATE_FORMAT));
+		b.append(expiryDate.format(OCC_DATE_FORMAT));
 		b.append(type);
 		b.append(String.format("%08d", Math.round(strike * 1000)));
 		return b.toString();

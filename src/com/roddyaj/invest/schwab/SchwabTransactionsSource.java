@@ -9,7 +9,7 @@ import com.roddyaj.invest.model.Option;
 import com.roddyaj.invest.model.Transaction;
 import com.roddyaj.invest.util.StringUtils;
 
-public class SchwabTransactionSource
+public class SchwabTransactionsSource
 {
 	private static final String DATE = "Date";
 	private static final String ACTION = "Action";

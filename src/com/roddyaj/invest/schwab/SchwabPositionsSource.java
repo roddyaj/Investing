@@ -7,7 +7,7 @@ import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.SecurityType;
 import com.roddyaj.invest.util.StringUtils;
 
-public class SchwabPositionSource
+public class SchwabPositionsSource
 {
 	private static final String SYMBOL = "Symbol";
 //	private static final String DESCRIPTION = "Description";

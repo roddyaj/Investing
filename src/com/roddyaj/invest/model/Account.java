@@ -16,8 +16,9 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.programs.positions.Order;
-import com.roddyaj.invest.schwab.SchwabPositionSource;
-import com.roddyaj.invest.schwab.SchwabTransactionSource;
+import com.roddyaj.invest.schwab.SchwabOpenOrdersSource;
+import com.roddyaj.invest.schwab.SchwabPositionsSource;
+import com.roddyaj.invest.schwab.SchwabTransactionsSource;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.AppFileUtils.FileType;
 import com.roddyaj.invest.util.FileUtils;
@@ -60,7 +61,7 @@ public class Account
 			Path positionsFile = AppFileUtils.getAccountFile(name, FileType.POSITIONS);
 			if (positionsFile != null)
 			{
-				positions = FileUtils.readCsv(positionsFile, 2).stream().map(SchwabPositionSource::convert).collect(Collectors.toList());
+				positions = FileUtils.readCsv(positionsFile, 2).stream().map(SchwabPositionsSource::convert).collect(Collectors.toList());
 
 				final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
 				Matcher matcher = datePattern.matcher(positionsFile.getFileName().toString());
@@ -87,7 +88,7 @@ public class Account
 				return date != null && date.isAfter(yearAgo);
 			};
 			transactions = transactionsFile != null ? FileUtils.readCsv(transactionsFile, 1).stream().filter(filter)
-					.map(SchwabTransactionSource::convert).collect(Collectors.toList()) : List.of();
+					.map(SchwabTransactionsSource::convert).collect(Collectors.toList()) : List.of();
 		}
 		return transactions;
 	}
@@ -109,18 +110,8 @@ public class Account
 									.replace("\" Share", " Share\"").replace("\" Contracts", " Contracts\"").replace("\" Contract", " Contract\""))
 							.collect(Collectors.toList());
 
-					openOrders = FileUtils.readCsv(lines).stream().map(record -> {
-						String symbol = record.get("Symbol");
-						String action = record.get("Action");
-						int shareCount = Integer.parseInt(record.get("Quantity|Face Value").split(" ")[0]);
-						if ("Sell".equals(action))
-							shareCount *= -1;
-						double price = StringUtils.parsePrice(record.get("Price").split(" ")[1]);
-						String status = record.get("Status");
-						if (!"OPEN".equals(status))
-							shareCount = 0;
-						return new Order(symbol, shareCount, price, null);
-					}).filter(o -> o.quantity != 0).collect(Collectors.toList());
+					openOrders = FileUtils.readCsv(lines).stream().map(SchwabOpenOrdersSource::convert).filter(o -> o.quantity != 0)
+							.collect(Collectors.toList());
 				}
 				catch (IOException e)
 				{

@@ -1,10 +1,19 @@
 package com.roddyaj.invest.schwab;
 
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.apache.commons.csv.CSVRecord;
 
 import com.roddyaj.invest.model.Option;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.SecurityType;
+import com.roddyaj.invest.util.AppFileUtils;
+import com.roddyaj.invest.util.FileUtils;
 import com.roddyaj.invest.util.StringUtils;
 
 public class SchwabPositionsSource
@@ -35,7 +44,45 @@ public class SchwabPositionsSource
 	private static final String IN_THE_MONEY = "In The Money";
 	private static final String SECURITY_TYPE = "Security Type";
 
-	public static Position convert(CSVRecord record)
+	private final String name;
+
+	private List<Position> positions;
+
+	private LocalDate date;
+
+	public SchwabPositionsSource(String name)
+	{
+		this.name = name;
+	}
+
+	public List<Position> getPositions()
+	{
+		if (positions == null)
+		{
+			Path positionsFile = AppFileUtils.getAccountFile(name + "-Positions-.*\\.CSV");
+			if (positionsFile != null)
+			{
+				positions = FileUtils.readCsv(positionsFile, 2).stream().map(SchwabPositionsSource::convert).collect(Collectors.toList());
+
+				final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
+				Matcher matcher = datePattern.matcher(positionsFile.getFileName().toString());
+				if (matcher.find())
+					date = LocalDate.parse(matcher.group(1));
+			}
+			else
+			{
+				positions = List.of();
+			}
+		}
+		return positions;
+	}
+
+	public LocalDate getDate()
+	{
+		return date;
+	}
+
+	private static Position convert(CSVRecord record)
 	{
 		String symbolOrOption = record.get(SYMBOL);
 		int quantity = StringUtils.parseInt(record.get(QUANTITY));

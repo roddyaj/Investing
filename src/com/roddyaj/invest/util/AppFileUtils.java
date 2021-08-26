@@ -14,24 +14,18 @@ public final class AppFileUtils
 	public static final Path INPUT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
 	public static final Path OUTPUT_DIR = Paths.get(System.getProperty("user.home"), "Documents");
 
+	// TODO try to move to *Source files
 	private static final Pattern FILE_PATTERN = Pattern.compile("(.+?)(-Positions-|_Transactions_)([-\\d]+).CSV");
 
-	public static Path getAccountFile(String account, FileType type)
+	public static Path getAccountFile(String pattern)
 	{
-		String pattern = null;
-		if (type == FileType.POSITIONS)
-			pattern = account + "-Positions-.*\\.CSV";
-		else if (type == FileType.TRANSACTIONS)
-			pattern = account + "_Transactions_.*\\.CSV";
-		else if (type == FileType.ORDERS)
-			pattern = account + " Order Details\\.CSV";
-
 		Path file = null;
 		if (pattern != null)
 			file = FileUtils.list(INPUT_DIR, pattern).sorted(AppFileUtils::compare).findFirst().orElse(null);
 		return file;
 	}
 
+	// TODO maybe get account name from account settings instead of like this
 	public static String getFullAccountName(String accountShorthand)
 	{
 		String accountName = null;
@@ -75,9 +69,4 @@ public final class AppFileUtils
 			timeString = m.group(3).replace("-", "");
 		return timeString;
 	}
-
-	public enum FileType
-	{
-		POSITIONS, TRANSACTIONS, ORDERS
-	};
 }

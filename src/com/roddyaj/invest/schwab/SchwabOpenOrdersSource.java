@@ -1,8 +1,17 @@
 package com.roddyaj.invest.schwab;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.commons.csv.CSVRecord;
 
 import com.roddyaj.invest.model.Order;
+import com.roddyaj.invest.model.settings.AccountSettings;
+import com.roddyaj.invest.util.AppFileUtils;
+import com.roddyaj.invest.util.FileUtils;
 import com.roddyaj.invest.util.StringUtils;
 
 public class SchwabOpenOrdersSource
@@ -19,7 +28,45 @@ public class SchwabOpenOrdersSource
 //	private static final String ORDER_NUMBER = "Order Number";
 //	private static final String CHANGE_CANCEL_RESUBMIT = "Change|Cancel|Resubmit";
 
-	public static Order convert(CSVRecord record)
+	private final AccountSettings accountSettings;
+
+	private List<Order> openOrders;
+
+	public SchwabOpenOrdersSource(AccountSettings accountSettings)
+	{
+		this.accountSettings = accountSettings;
+	}
+
+	public List<Order> getOpenOrders()
+	{
+		if (openOrders == null)
+		{
+			openOrders = List.of();
+
+			Path ordersFile = AppFileUtils.getAccountFile(accountSettings.getAccountNumber() + " Order Details\\.CSV");
+			if (ordersFile != null)
+			{
+				try
+				{
+					// Correct the file contents to be valid CSV
+					List<String> lines = Files
+							.lines(ordersFile).filter(line -> !line.isEmpty()).map(line -> line.replace("\" Shares", " Shares\"")
+									.replace("\" Share", " Share\"").replace("\" Contracts", " Contracts\"").replace("\" Contract", " Contract\""))
+							.collect(Collectors.toList());
+
+					openOrders = FileUtils.readCsv(lines).stream().map(SchwabOpenOrdersSource::convert).filter(o -> o.getQuantity() != 0)
+							.collect(Collectors.toList());
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+		return openOrders;
+	}
+
+	private static Order convert(CSVRecord record)
 	{
 		String symbol = record.get(SYMBOL);
 		String action = record.get(ACTION);

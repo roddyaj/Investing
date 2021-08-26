@@ -1,12 +1,19 @@
 package com.roddyaj.invest.schwab;
 
+import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
 
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Option;
 import com.roddyaj.invest.model.Transaction;
+import com.roddyaj.invest.model.settings.AccountSettings;
+import com.roddyaj.invest.util.AppFileUtils;
+import com.roddyaj.invest.util.FileUtils;
 import com.roddyaj.invest.util.StringUtils;
 
 public class SchwabTransactionsSource
@@ -20,7 +27,51 @@ public class SchwabTransactionsSource
 //	private static final String FEES_AND_COMM = "Fees & Comm";
 	private static final String AMOUNT = "Amount";
 
-	public static Transaction convert(CSVRecord record)
+	private final AccountSettings accountSettings;
+
+	private List<Transaction> transactions;
+
+	public SchwabTransactionsSource(AccountSettings accountSettings)
+	{
+		this.accountSettings = accountSettings;
+	}
+
+	public List<Transaction> getTransactions()
+	{
+		if (transactions == null)
+		{
+			Path transactionsFile = getAccountFile();
+			if (transactionsFile != null)
+			{
+				final LocalDate yearAgo = LocalDate.now().minusYears(1);
+				Predicate<CSVRecord> filter = record -> {
+					LocalDate date = StringUtils.parseDate(record.get(0));
+					return date != null && date.isAfter(yearAgo);
+				};
+				transactions = FileUtils.readCsv(transactionsFile, 1).stream().filter(filter).map(SchwabTransactionsSource::convert)
+						.collect(Collectors.toList());
+			}
+			else
+			{
+				transactions = List.of();
+			}
+		}
+		return transactions;
+	}
+
+	private Path getAccountFile()
+	{
+		final String pattern = "_Transactions_.*\\.CSV";
+		Path file = AppFileUtils.getAccountFile(accountSettings.getName() + pattern);
+		if (file == null)
+		{
+			String masked = "XXXX" + accountSettings.getAccountNumber().substring(4);
+			file = AppFileUtils.getAccountFile(masked + pattern);
+		}
+		return file;
+	}
+
+	private static Transaction convert(CSVRecord record)
 	{
 		LocalDate date = StringUtils.parseDate(record.get(DATE));
 		Action action = parseAction(record.get(ACTION));

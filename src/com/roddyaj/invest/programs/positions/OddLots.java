@@ -36,7 +36,7 @@ public class OddLots
 
 		orders.forEach(order -> {
 			order.setOptional(true);
-			order.setOpenOrderQuantity(Math.abs(account.getOpenOrderCount(order.getSymbol(), order.getQuantity() >= 0 ? Action.BUY : Action.SELL)));
+			order.setOpenOrderQuantity(account.getOpenOrderCount(order.getSymbol(), order.getQuantity() >= 0 ? Action.BUY : Action.SELL));
 		});
 
 		return orders;

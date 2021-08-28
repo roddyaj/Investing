@@ -79,7 +79,11 @@ public class OptionsCore
 				int availableCalls = (int)Math.floor(availableShares / 100.0);
 				boolean isUpAtAll = position.getDayChangePct() > -.1 || position.getGainLossPct() > -.1;
 				if (availableCalls > 0 && isUpAtAll)
-					output.callsToSell.add(new CallToSell(position, availableCalls));
+				{
+					CallToSell call = new CallToSell(position, availableCalls);
+					call.setOpenOrderQuantity(input.account.getOpenOrderCount(position.getSymbol(), Action.SELL, 'C'));
+					output.callsToSell.add(call);
+				}
 			}
 		}
 	}
@@ -121,7 +125,11 @@ public class OptionsCore
 				double available = input.account.getAccountSettings().getMaxOptionPosition() - totalInvested;
 				boolean canSell = (available / (price * 100)) > 0.9; // Hack: using price in place of strike since we don't have strike
 				if (canSell && isDownForDay)
-					output.putsToSell.add(new PutToSell(symbol, available, price, dayChangePct));
+				{
+					PutToSell put = new PutToSell(symbol, available, price, dayChangePct);
+					put.setOpenOrderQuantity(input.account.getOpenOrderCount(symbol, Action.SELL, 'P'));
+					output.putsToSell.add(put);
+				}
 			}
 			// New position
 			else
@@ -137,7 +145,7 @@ public class OptionsCore
 		// Calculate historical return on each one
 		for (PutToSell put : output.putsToSell)
 		{
-			put.averageReturn = calculateAverageReturn(put.symbol, historicalOptions);
+			put.setAverageReturn(calculateAverageReturn(put.getSymbol(), historicalOptions));
 		}
 	}
 

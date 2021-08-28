@@ -9,11 +9,12 @@ import com.roddyaj.invest.util.HtmlFormatter;
 
 public class PutToSell implements Comparable<PutToSell>
 {
-	public final String symbol;
-	public final double availableAmount;
-	public final Double underlyingPrice;
-	public final Double dayChangePct;
-	public double averageReturn;
+	private final String symbol;
+	private final double availableAmount;
+	private final Double underlyingPrice;
+	private final Double dayChangePct;
+	private double averageReturn;
+	private int openOrderQuantity;
 
 	public PutToSell(String symbol, double availableAmount, Double underlyingPrice, Double dayChangePct)
 	{
@@ -23,10 +24,44 @@ public class PutToSell implements Comparable<PutToSell>
 		this.dayChangePct = dayChangePct;
 	}
 
-	@Override
-	public String toString()
+	public void setAverageReturn(double averageReturn)
 	{
-		return String.format("%-4s $%4.0f available (%3.0f%% return)", symbol, availableAmount, averageReturn);
+		this.averageReturn = averageReturn;
+	}
+
+	public void setOpenOrderQuantity(int openOrderQuantity)
+	{
+		this.openOrderQuantity = openOrderQuantity;
+	}
+
+	public String getSymbol()
+	{
+		return symbol;
+	}
+
+	public double getAvailableAmount()
+	{
+		return availableAmount;
+	}
+
+	public Double getUnderlyingPrice()
+	{
+		return underlyingPrice;
+	}
+
+	public Double getDayChangePct()
+	{
+		return dayChangePct;
+	}
+
+	public double getAverageReturn()
+	{
+		return averageReturn;
+	}
+
+	public int getOpenOrderQuantity()
+	{
+		return openOrderQuantity;
 	}
 
 	@Override
@@ -60,6 +95,7 @@ public class PutToSell implements Comparable<PutToSell>
 			columns.add(new Column("Schwab", "%s", Align.L));
 			columns.add(new Column("Yahoo", "%s", Align.L));
 			columns.add(new Column("Avail", "%.0f", Align.R));
+			columns.add(new Column("O", "%d", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Day", "%s", Align.R));
 			columns.add(new Column("Return", "%.0f%%", Align.R));
@@ -72,7 +108,8 @@ public class PutToSell implements Comparable<PutToSell>
 			String schwabLink = toLinkSymbol(SCHWAB, p.symbol);
 			String yahooLink = toLinkSymbol(YAHOO, p.symbol);
 			String dayChangePct = p.dayChangePct != null ? color(p.dayChangePct.doubleValue(), "%.2f%%") : null;
-			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, p.underlyingPrice, dayChangePct, p.averageReturn);
+			Number open = p.openOrderQuantity != 0 ? p.openOrderQuantity : null;
+			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, open, p.underlyingPrice, dayChangePct, p.averageReturn);
 		}
 	}
 }

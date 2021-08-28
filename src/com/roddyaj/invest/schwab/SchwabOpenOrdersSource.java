@@ -8,7 +8,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
 
-import com.roddyaj.invest.model.Order;
+import com.roddyaj.invest.model.OpenOrder;
+import com.roddyaj.invest.model.Option;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.FileUtils;
@@ -30,14 +31,14 @@ public class SchwabOpenOrdersSource
 
 	private final AccountSettings accountSettings;
 
-	private List<Order> openOrders;
+	private List<OpenOrder> openOrders;
 
 	public SchwabOpenOrdersSource(AccountSettings accountSettings)
 	{
 		this.accountSettings = accountSettings;
 	}
 
-	public List<Order> getOpenOrders()
+	public List<OpenOrder> getOpenOrders()
 	{
 		if (openOrders == null)
 		{
@@ -66,7 +67,7 @@ public class SchwabOpenOrdersSource
 		return openOrders;
 	}
 
-	private static Order convert(CSVRecord record)
+	private static OpenOrder convert(CSVRecord record)
 	{
 		String symbol = record.get(SYMBOL);
 		String action = record.get(ACTION);
@@ -74,11 +75,13 @@ public class SchwabOpenOrdersSource
 		double price = StringUtils.parsePrice(record.get(PRICE).split(" ")[1]);
 		String status = record.get(STATUS);
 
-		if ("Sell".equals(action))
+		if (action.startsWith("Sell"))
 			shareCount *= -1;
 		if (!"OPEN".equals(status))
 			shareCount = 0;
 
-		return new Order(symbol, shareCount, price, null);
+		Option option = SchwabUtils.parseOptionText(symbol);
+
+		return new OpenOrder(symbol, shareCount, price, option);
 	}
 }

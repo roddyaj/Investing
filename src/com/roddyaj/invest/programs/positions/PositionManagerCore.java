@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
-import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Message.Level;
+import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.SecurityType;
 import com.roddyaj.invest.model.settings.AccountSettings;
@@ -105,7 +105,7 @@ public class PositionManagerCore
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position);
 		order.setOptional(order.getPosition() != null
 				&& (order.getQuantity() >= 0 ? order.getPosition().getDayChangePct() > .1 : order.getPosition().getDayChangePct() < -.1));
-		order.setOpenOrderQuantity(Math.abs(account.getOpenOrderCount(symbol, order.getQuantity() >= 0 ? Action.BUY : Action.SELL)));
+		order.setOpenOrderQuantity(account.getOpenOrderCount(symbol, order.getQuantity() >= 0 ? Action.BUY : Action.SELL));
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 

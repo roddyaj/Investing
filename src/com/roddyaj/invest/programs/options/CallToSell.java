@@ -8,8 +8,9 @@ import com.roddyaj.invest.util.HtmlFormatter;
 
 public class CallToSell implements Comparable<CallToSell>
 {
-	public final Position position;
-	public final int quantity;
+	private final Position position;
+	private final int quantity;
+	private int openOrderQuantity;
 
 	public CallToSell(Position position, int quantity)
 	{
@@ -17,12 +18,25 @@ public class CallToSell implements Comparable<CallToSell>
 		this.quantity = quantity;
 	}
 
-//	@Override
-//	public String toString()
-//	{
-//		return String.format("%-4s %d %s (bought at $%5.2f)", position.symbol, quantity, position.dayChangePct >= 0 ? "Y" : " ",
-//				position.getCostPerShare());
-//	}
+	public void setOpenOrderQuantity(int openOrderQuantity)
+	{
+		this.openOrderQuantity = openOrderQuantity;
+	}
+
+	public Position getPosition()
+	{
+		return position;
+	}
+
+	public int getQuantity()
+	{
+		return quantity;
+	}
+
+	public int getOpenOrderQuantity()
+	{
+		return openOrderQuantity;
+	}
 
 	@Override
 	public int compareTo(CallToSell o)
@@ -41,7 +55,7 @@ public class CallToSell implements Comparable<CallToSell>
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Schwab", "%s", Align.L));
 			columns.add(new Column("Yahoo", "%s", Align.L));
-			columns.add(new Column("#", "%d", Align.R));
+			columns.add(new Column("#", "%s", Align.L));
 			columns.add(new Column("Cost", "%.2f", Align.R));
 			columns.add(new Column("", "%s", Align.C));
 			columns.add(new Column("Price", "%.2f", Align.R));
@@ -54,11 +68,12 @@ public class CallToSell implements Comparable<CallToSell>
 		{
 			String schwab = toLinkSymbol(SCHWAB, c.position.getSymbol());
 			String yahoo = toLinkSymbol(YAHOO, c.position.getSymbol());
+			String quantityText = c.quantity + (c.openOrderQuantity == 0 ? "" : " (" + c.openOrderQuantity + ")");
 			double costPerShare = c.position.getCostPerShare();
 			String dir = color(c.position.getPrice() >= costPerShare ? "&#8599;" : "&#8600;",
 					c.position.getPrice() >= costPerShare ? "green" : "red");
 			String changeColored = color(c.position.getDayChangePct(), "%.2f%%");
-			return List.of(schwab, yahoo, c.quantity, costPerShare, dir, c.position.getPrice(), changeColored);
+			return List.of(schwab, yahoo, quantityText, costPerShare, dir, c.position.getPrice(), changeColored);
 		}
 	}
 }

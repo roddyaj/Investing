@@ -53,17 +53,28 @@ public class Account
 		return transactionsSource.getTransactions();
 	}
 
-	public List<Order> getOpenOrders()
+	public List<OpenOrder> getOpenOrders()
 	{
 		return openOrdersSource.getOpenOrders();
 	}
 
-	// TODO move to SchwabOpenOrdersSource
 	public int getOpenOrderCount(String symbol, Action action)
 	{
-		return getOpenOrders().stream()
-				.filter(o -> o.getSymbol().equals(symbol) && (action == Action.SELL ? o.getQuantity() < 0 : o.getQuantity() > 0))
-				.mapToInt(Order::getQuantity).sum();
+		return getOpenOrderCount(symbol, action, null);
+	}
+
+	public int getOpenOrderCount(String symbol, Action action, Character optionType)
+	{
+		return Math.abs(getOpenOrders().stream().filter(order -> {
+			boolean match = true;
+			if (order.getOption() != null)
+				match &= order.getOption().getSymbol().equals(symbol)
+						&& (optionType == null || order.getOption().getType() == optionType.charValue());
+			else
+				match &= order.getSymbol().equals(symbol) && optionType == null;
+			match &= action == Action.SELL ? order.getQuantity() < 0 : order.getQuantity() > 0;
+			return match;
+		}).mapToInt(OpenOrder::getQuantity).sum());
 	}
 
 	public Double getPrice(String symbol)

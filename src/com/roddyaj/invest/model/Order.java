@@ -73,6 +73,12 @@ public class Order
 		return quantity * price;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "symbol=" + symbol + ", quantity=" + quantity + ", price=" + price;
+	}
+
 	public static class OrderFormatter extends HtmlFormatter<Order>
 	{
 		@Override

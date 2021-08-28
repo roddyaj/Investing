@@ -179,6 +179,9 @@ public class Position implements Comparable<Position>
 
 		private static String getSvgChart(Option option)
 		{
+			if (option.getInitialDate() == null)
+				return "";
+
 			long totalDays = ChronoUnit.DAYS.between(option.getInitialDate(), option.getExpiryDate());
 			long now = ChronoUnit.DAYS.between(option.getInitialDate(), LocalDate.now());
 //			double[] prices = new double[] { option.getStrike(), option.getUnderlyingPrice() };

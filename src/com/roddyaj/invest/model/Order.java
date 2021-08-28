@@ -103,11 +103,10 @@ public class Order
 			String link = String.format(
 					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.quantity) + "');\">%s</a>",
 					o.symbol, o.symbol);
-			String actionColored = color(action, action.equals("Buy") ? "green" : "red");
 			String quantityText = Math.abs(o.quantity) + (o.openOrderQuantity == 0 ? "" : " (" + o.openOrderQuantity + ")");
 			String dayChangeColored = o.position != null ? color(o.position.getDayChangePct(), "%.2f%%") : "";
 			String gainLossPctColored = o.position != null ? color(o.position.getGainLossPct(), "%.2f%%") : "";
-			return List.of(link, actionColored, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
+			return List.of(link, action, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
 		}
 	}
 }

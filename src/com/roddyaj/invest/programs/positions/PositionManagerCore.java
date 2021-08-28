@@ -67,7 +67,7 @@ public class PositionManagerCore
 		output.addOrders(orders);
 
 		// Handle odd lots
-		output.addOrders(new OddLots(account, accountSettings).calculateOddLots());
+		output.addUnmanagedOrders(new OddLots(account, accountSettings).calculateOddLots());
 
 		report(1);
 

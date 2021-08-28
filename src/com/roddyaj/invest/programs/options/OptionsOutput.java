@@ -79,7 +79,7 @@ public class OptionsOutput extends AbstractOutput
 		List<String> lines = new ArrayList<>();
 
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
-		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Monthly Options Income", null));
+		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Options Income", null));
 
 		return lines;
 	}

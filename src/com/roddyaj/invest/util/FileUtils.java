@@ -19,19 +19,19 @@ public final class FileUtils
 	// TODO abstract this out to AppFileUtils
 	private static final Path DEFAULT_DIR = Paths.get(System.getProperty("user.home"), "Downloads");
 
-	public static List<String> readLines(String file)
-	{
-		try
-		{
-			Path path = getPath(file);
-			return path != null ? Files.readAllLines(path) : List.of();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		return List.of();
-	}
+//	public static List<String> readLines(String file)
+//	{
+//		try
+//		{
+//			Path path = getPath(file);
+//			return path != null ? Files.readAllLines(path) : List.of();
+//		}
+//		catch (IOException e)
+//		{
+//			e.printStackTrace();
+//		}
+//		return List.of();
+//	}
 
 	public static List<CSVRecord> readCsv(Path path, int headerLine)
 	{
@@ -85,19 +85,19 @@ public final class FileUtils
 		return records;
 	}
 
-	public static void writeLines(String file, Iterable<? extends CharSequence> lines)
-	{
-		try
-		{
-			Path path = Paths.get(DEFAULT_DIR.toString(), file);
-			Files.write(path, lines);
-			System.out.println("Wrote to " + path);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
+//	public static void writeLines(String file, Iterable<? extends CharSequence> lines)
+//	{
+//		try
+//		{
+//			Path path = Paths.get(DEFAULT_DIR.toString(), file);
+//			Files.write(path, lines);
+//			System.out.println("Wrote to " + path);
+//		}
+//		catch (IOException e)
+//		{
+//			e.printStackTrace();
+//		}
+//	}
 
 	// TODO abstract this out to AppFileUtils
 	public static Path getPath(String file)

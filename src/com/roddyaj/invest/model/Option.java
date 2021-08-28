@@ -3,6 +3,7 @@ package com.roddyaj.invest.model;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 public class Option
 {
@@ -101,6 +102,24 @@ public class Option
 	public double getUnderlyingPrice()
 	{
 		return type == 'P' ? strike - intrinsicValue : strike + intrinsicValue;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(symbol, expiryDate, type, strike);
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		Option other = (Option)obj;
+		return Objects.equals(symbol, other.symbol) && Objects.equals(expiryDate, other.expiryDate) && type == other.type
+				&& Double.doubleToLongBits(strike) == Double.doubleToLongBits(other.strike);
 	}
 
 	@Override

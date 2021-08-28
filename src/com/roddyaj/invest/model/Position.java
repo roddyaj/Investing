@@ -1,9 +1,15 @@
 package com.roddyaj.invest.model;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.roddyaj.invest.util.Chart;
+import com.roddyaj.invest.util.Chart.HLine;
+import com.roddyaj.invest.util.Chart.Point;
+import com.roddyaj.invest.util.Chart.Rect;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class Position implements Comparable<Position>
@@ -154,8 +160,8 @@ public class Position implements Comparable<Position>
 			columns.add(new Column("Strike", "%.2f", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
 //			columns.add(new Column("Cost", "%.2f", Align.R));
-			columns.add(new Column("", "%s", Align.C));
-//			columns.add(new Column("Return", "%.0f%%", Align.R));
+			columns.add(new Column("Chart", "%s", Align.C));
+//			columns.add(new Column("", "%s", Align.C));
 			return columns;
 		}
 
@@ -165,11 +171,35 @@ public class Position implements Comparable<Position>
 			String link = toLink(URL + p.option.toOccString().replace(' ', '+'), p.symbol);
 			int dte = p.option.getDteCurrent();
 //			Double underlyingCostPerShare = p.option.underlying != null ? p.option.underlying.getCostPerShare() : null;
-			String moneyText = "OTM".equals(p.option.getMoney()) ? "" : dte < 5 ? "**" : "*";
-//			double annualReturn = ((p.costBasis / p.quantity) / p.option.strike) * (365.0 / dte);
+//			String moneyText = "OTM".equals(p.option.getMoney()) ? "" : dte < 5 ? "**" : "*";
 
 			return Arrays.asList(link, p.quantity, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
-					p.option.getUnderlyingPrice(), moneyText);
+					p.option.getUnderlyingPrice(), getSvgChart(p.option));
+		}
+
+		private static String getSvgChart(Option option)
+		{
+			long totalDays = ChronoUnit.DAYS.between(option.getInitialDate(), option.getExpiryDate());
+			long now = ChronoUnit.DAYS.between(option.getInitialDate(), LocalDate.now());
+//			double[] prices = new double[] { option.getStrike(), option.getUnderlyingPrice() };
+			double minPrice = option.getStrike() * .8; // Arrays.stream(prices).min().orElse(0);
+			double maxPrice = option.getStrike() * 1.2; // Arrays.stream(prices).max().orElse(0);
+			boolean otm = "OTM".equals(option.getMoney());
+
+			Chart chart = new Chart(0, totalDays, minPrice, maxPrice);
+			if (option.getType() == 'C')
+			{
+				chart.getRectangles().add(new Rect(0, maxPrice, totalDays, maxPrice - option.getStrike(), "#E0E0FF"));
+				if (option.getUnderlying() != null)
+					chart.getHLines().add(new HLine(option.getUnderlying().getCostPerShare(), "green"));
+			}
+			else if (option.getType() == 'P')
+			{
+				chart.getRectangles().add(new Rect(0, option.getStrike(), totalDays, option.getStrike() - minPrice, "#E0E0FF"));
+			}
+//			chart.getHLines().add(new HLine(option.getStrike(), "blue"));
+			chart.getPoints().add(new Point(now, option.getUnderlyingPrice(), otm ? "black" : "red"));
+			return chart.toSvg(16, 28);
 		}
 	}
 }

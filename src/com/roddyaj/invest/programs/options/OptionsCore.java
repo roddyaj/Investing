@@ -48,7 +48,7 @@ public class OptionsCore
 			{
 				// Set the opening date
 				Transaction recentTransaction = historicalOptions.stream()
-						.filter(o -> o.getSymbol().equals(position.getSymbol()) && o.getAction() == Action.SELL_TO_OPEN).findFirst().orElse(null);
+						.filter(o -> o.getAction() == Action.SELL_TO_OPEN && o.getOption().equals(position.getOption())).findFirst().orElse(null);
 				if (recentTransaction != null)
 					position.getOption().setInitialDate(recentTransaction.getDate());
 

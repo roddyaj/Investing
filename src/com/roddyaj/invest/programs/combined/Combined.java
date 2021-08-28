@@ -32,7 +32,7 @@ public class Combined implements Program
 		List<String> lines = new ArrayList<>();
 
 		// Messages block
-		List<Message> messages = new ArrayList<Message>();
+		List<Message> messages = new ArrayList<>();
 		messages.addAll(positionsOutput.getMessages());
 		messages.addAll(optionsOutput.getMessages());
 		lines.addAll(new Message.MessageFormatter().toBlock(messages, "Messages", null));

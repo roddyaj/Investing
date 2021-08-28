@@ -179,7 +179,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		{
 			return text;
 		}
-	};
+	}
 
 	public class Column
 	{

@@ -192,13 +192,13 @@ public class Position implements Comparable<Position>
 			Chart chart = new Chart(0, totalDays, minPrice, maxPrice);
 			if (option.getType() == 'C')
 			{
-				chart.getRectangles().add(new Rect(0, maxPrice, totalDays, maxPrice - option.getStrike(), "#E0E0FF"));
+				chart.getRectangles().add(new Rect(0, maxPrice, totalDays, maxPrice - option.getStrike(), "#E0F0FF"));
 				if (option.getUnderlying() != null)
 					chart.getHLines().add(new HLine(option.getUnderlying().getCostPerShare(), "green"));
 			}
 			else if (option.getType() == 'P')
 			{
-				chart.getRectangles().add(new Rect(0, option.getStrike(), totalDays, option.getStrike() - minPrice, "#E0E0FF"));
+				chart.getRectangles().add(new Rect(0, option.getStrike(), totalDays, option.getStrike() - minPrice, "#E0F0FF"));
 			}
 //			chart.getHLines().add(new HLine(option.getStrike(), "blue"));
 			chart.getPoints().add(new Point(now, option.getUnderlyingPrice(), otm ? "black" : "red"));

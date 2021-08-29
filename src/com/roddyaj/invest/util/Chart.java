@@ -55,8 +55,10 @@ public class Chart
 
 	public String toSvg(int svgHeight, int svgWidth)
 	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("<svg height=\"").append(svgHeight).append("\" width=\"").append(svgWidth).append("\">");
+		StringBuilder sb = new StringBuilder("<svg");
+		appendKeyValue(sb, "height", svgHeight);
+		appendKeyValue(sb, "width", svgWidth);
+		sb.append(">");
 		sb.append("<rect width=\"100%\" height=\"100%\" fill=\"white\" />");
 		for (Rect rect : rectangles)
 			sb.append(rect.toSvg(this, svgHeight, svgWidth));
@@ -66,6 +68,26 @@ public class Chart
 			sb.append(point.toSvg(this, svgHeight, svgWidth));
 		sb.append("</svg>");
 		return sb.toString();
+	}
+
+	private static void appendKeyValue(StringBuilder sb, String key, double value)
+	{
+		sb.append(' ').append(key).append("=\"");
+		if (value == (long)value)
+			sb.append((long)value);
+		else
+			sb.append(String.format("%.2f", value));
+		sb.append("\"");
+	}
+
+	private static void appendKeyValue(StringBuilder sb, String key, int value)
+	{
+		sb.append(' ').append(key).append("=\"").append(value).append("\"");
+	}
+
+	private static void appendKeyValue(StringBuilder sb, String key, String value)
+	{
+		sb.append(' ').append(key).append("=\"").append(value).append("\"");
 	}
 
 	public static class Point
@@ -83,12 +105,12 @@ public class Chart
 
 		public String toSvg(Chart chart, int svgHeight, int svgWidth)
 		{
-			StringBuilder sb = new StringBuilder();
-			double cx = chart.getX(x, svgWidth);
-			double cy = chart.getY(y, svgHeight);
-			double r = 2.;
-			sb.append("<circle cx=\"").append(cx).append("\" cy=\"").append(cy).append("\" r=\"").append(r).append("\" fill=\"").append(color)
-					.append("\" />");
+			StringBuilder sb = new StringBuilder("<circle");
+			appendKeyValue(sb, "cx", chart.getX(x, svgWidth));
+			appendKeyValue(sb, "cy", chart.getY(y, svgHeight));
+			appendKeyValue(sb, "r", 2);
+			appendKeyValue(sb, "fill", color);
+			sb.append(" />");
 			return sb.toString();
 		}
 	}
@@ -106,14 +128,14 @@ public class Chart
 
 		public String toSvg(Chart chart, int svgHeight, int svgWidth)
 		{
-			StringBuilder sb = new StringBuilder();
 			double yChart = chart.getY(y, svgHeight);
-			double x1 = 0;
-			double y1 = yChart;
-			double x2 = svgWidth;
-			double y2 = yChart;
-			sb.append("<line x1=\"").append(x1).append("\" y1=\"").append(y1).append("\" x2=\"").append(x2).append("\" y2=\"").append(y2)
-					.append("\" stroke=\"").append(color).append("\" />");
+			StringBuilder sb = new StringBuilder("<line");
+			appendKeyValue(sb, "x1", 0);
+			appendKeyValue(sb, "y1", yChart);
+			appendKeyValue(sb, "x2", svgWidth);
+			appendKeyValue(sb, "y2", yChart);
+			appendKeyValue(sb, "stroke", color);
+			sb.append(" />");
 			return sb.toString();
 		}
 	}
@@ -137,13 +159,13 @@ public class Chart
 
 		public String toSvg(Chart chart, int svgHeight, int svgWidth)
 		{
-			StringBuilder sb = new StringBuilder();
-			double rectX = chart.getX(x, svgWidth);
-			double rectY = chart.getY(y, svgHeight);
-			double rectWidth = chart.getX(width, svgWidth) - chart.getX(0, svgWidth);
-			double rectHeight = chart.getY(0, svgHeight) - chart.getY(height, svgHeight);
-			sb.append("<rect x=\"").append(rectX).append("\" y=\"").append(rectY).append("\" width=\"").append(rectWidth).append("\" height=\"")
-					.append(rectHeight).append("\" fill=\"").append(color).append("\" />");
+			StringBuilder sb = new StringBuilder("<rect");
+			appendKeyValue(sb, "x", chart.getX(x, svgWidth));
+			appendKeyValue(sb, "y", chart.getY(y, svgHeight));
+			appendKeyValue(sb, "width", chart.getX(width, svgWidth) - chart.getX(0, svgWidth));
+			appendKeyValue(sb, "height", chart.getY(0, svgHeight) - chart.getY(height, svgHeight));
+			appendKeyValue(sb, "fill", color);
+			sb.append(" />");
 			return sb.toString();
 		}
 	}

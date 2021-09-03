@@ -75,20 +75,43 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\" />");
 		lines.add("<title>" + title + "</title>");
 		lines.add("<style>");
-		lines.add("body { font: 14px Arial, sans-serif; }");
-		lines.add("th, td { padding: 2px 4px; }");
-		lines.add("a:link { text-decoration: none; }");
-		lines.add("a:hover { text-decoration: underline; }");
-		lines.add(".row { display: flex; flex-direction: row; }");
-		lines.add(".column { display: flex; flex-direction: column; margin-right: 8px; }");
-		lines.add(
-				".block { border-style: solid; border-width: 1px; border-radius: 4px; padding: 4px; margin-bottom: 8px; background-color: #F7F7F7; }");
-		lines.add(".heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid; }");
-		lines.add(".title { font-size: large; font-weight: bold; }");
+		lines.add("""
+				body { font: 14px Arial, sans-serif; }
+				th, td { padding: 2px 4px; }
+				a:link { text-decoration: none; }
+				a:hover { text-decoration: underline; }
+				.row { display: flex; flex-direction: row; }
+				.column { display: flex; flex-direction: column; margin-right: 8px; }
+				.block { border-style: solid; border-width: 1px; border-radius: 4px; padding: 4px; margin-bottom: 8px; background-color: #F7F7F7; }
+				.heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid; }
+				.title { font-size: large; font-weight: bold; }
+				.popup { position: relative; display: inline-block; cursor: pointer; }
+				.popup .popuptext {
+					visibility: hidden;
+					position: absolute;
+					background-color: #555;
+					color: #fff;
+					padding: 4px 4px;
+					border-radius: 4px;
+					left: 12px;
+					bottom: 18px;
+				}
+				.popup .show { visibility: visible; }""");
 		lines.add("." + Align.L + " { text-align: left; }");
 		lines.add("." + Align.R + " { text-align: right; }");
 		lines.add("." + Align.C + " { text-align: center; }");
 		lines.add("</style>");
+		lines.add("""
+				<script>
+				function showPopup(id) {
+					const popup = document.getElementById(id);
+					popup.classList.add("show");
+				}
+				function hidePopup(id) {
+					const popup = document.getElementById(id);
+					popup.classList.remove("show");
+				}
+				</script>""");
 		lines.add("</head>\n<body>");
 		lines.addAll(input);
 		lines.add("</body>\n</html>");
@@ -161,6 +184,16 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		lines.add("</table>");
 		lines.add("</div>");
 		return lines;
+	}
+
+	public String createPopup(String content, String popupContent, String id)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("<div class=\"popup\" onmouseover=\"showPopup('").append(id).append("')\" onmouseout=\"hidePopup('").append(id).append("')\">");
+		sb.append(content);
+		sb.append("<div class=\"popuptext\" id=\"").append(id).append("\">").append(popupContent).append("</div>");
+		sb.append("</div>");
+		return sb.toString();
 	}
 
 	public enum Align

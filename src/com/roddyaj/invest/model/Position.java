@@ -148,6 +148,8 @@ public class Position implements Comparable<Position>
 	{
 		private static final String URL = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx#symbol/";
 
+		private static int positionId;
+
 		@Override
 		protected List<Column> getColumns()
 		{
@@ -173,14 +175,16 @@ public class Position implements Comparable<Position>
 //			Double underlyingCostPerShare = p.option.underlying != null ? p.option.underlying.getCostPerShare() : null;
 //			String moneyText = "OTM".equals(p.option.getMoney()) ? "" : dte < 5 ? "**" : "*";
 
+			Chart chart = getSvgChart(p.option);
+			String chartWithPopup = chart != null ? createPopup(chart.toSvg(16, 28), chart.toSvg(48, 84), "option-" + positionId++) : "";
 			return Arrays.asList(link, p.quantity, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
-					p.option.getUnderlyingPrice(), getSvgChart(p.option));
+					p.option.getUnderlyingPrice(), chartWithPopup);
 		}
 
-		private static String getSvgChart(Option option)
+		private static Chart getSvgChart(Option option)
 		{
 			if (option.getInitialDate() == null)
-				return "";
+				return null;
 
 			long totalDays = ChronoUnit.DAYS.between(option.getInitialDate(), option.getExpiryDate());
 			long now = ChronoUnit.DAYS.between(option.getInitialDate(), LocalDate.now());
@@ -202,7 +206,7 @@ public class Position implements Comparable<Position>
 			}
 //			chart.getHLines().add(new HLine(option.getStrike(), "blue"));
 			chart.getPoints().add(new Point(now, option.getUnderlyingPrice(), otm ? "black" : "red"));
-			return chart.toSvg(16, 28);
+			return chart;
 		}
 	}
 }

@@ -81,6 +81,8 @@ public class Order
 
 	public static class OrderFormatter extends HtmlFormatter<Order>
 	{
+		private static int orderId;
+
 		@Override
 		protected List<Column> getColumns()
 		{
@@ -103,7 +105,13 @@ public class Order
 			String link = String.format(
 					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.quantity) + "');\">%s</a>",
 					o.symbol, o.symbol);
-			String quantityText = Math.abs(o.quantity) + (o.openOrderQuantity == 0 ? "" : " (" + o.openOrderQuantity + ")");
+			String quantityText = String.valueOf(Math.abs(o.quantity));
+			if (o.openOrderQuantity != 0)
+			{
+				String popupText = createPopup(String.valueOf(o.openOrderQuantity), String.valueOf(o.openOrderQuantity), "order-" + orderId);
+				quantityText += " (" + popupText + ")";
+			}
+			orderId++;
 			String dayChangeColored = o.position != null ? color(o.position.getDayChangePct(), "%.2f%%") : "";
 			String gainLossPctColored = o.position != null ? color(o.position.getGainLossPct(), "%.2f%%") : "";
 			return List.of(link, action, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);

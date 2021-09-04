@@ -77,8 +77,6 @@ public class Order
 
 	public static class OrderFormatter extends HtmlFormatter<Order>
 	{
-		private static int orderId;
-
 		@Override
 		protected List<Column> getColumns()
 		{
@@ -107,10 +105,9 @@ public class Order
 				String openOrderPopupText = o.openOrders.stream()
 						.map(open -> Math.abs(open.getQuantity()) + " @ " + String.format("%.2f", open.getPrice())).collect(Collectors.joining(", "));
 				int openOrderCount = Math.abs(o.openOrders.stream().mapToInt(OpenOrder::getQuantity).sum());
-				String popupText = createPopup(String.valueOf(openOrderCount), openOrderPopupText, "order-" + orderId);
-				quantityText += " (" + popupText + ")";
+				String popup = createPopup(String.valueOf(openOrderCount), openOrderPopupText, null);
+				quantityText += " (" + popup + ")";
 			}
-			orderId++;
 			String dayChangeColored = o.position != null ? color(o.position.getDayChangePct(), "%.2f%%") : "";
 			String gainLossPctColored = o.position != null ? color(o.position.getGainLossPct(), "%.2f%%") : "";
 			return List.of(link, action, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);

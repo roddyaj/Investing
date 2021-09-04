@@ -148,8 +148,6 @@ public class Position implements Comparable<Position>
 	{
 		private static final String URL = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx#symbol/";
 
-		private static int positionId;
-
 		@Override
 		protected List<Column> getColumns()
 		{
@@ -176,7 +174,7 @@ public class Position implements Comparable<Position>
 //			String moneyText = "OTM".equals(p.option.getMoney()) ? "" : dte < 5 ? "**" : "*";
 
 			Chart chart = getSvgChart(p.option);
-			String chartWithPopup = chart != null ? createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), "option-" + positionId++) : "";
+			String chartWithPopup = chart != null ? createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), "line-height: 0px;") : "";
 			return Arrays.asList(link, p.quantity, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
 					p.option.getUnderlyingPrice(), chartWithPopup);
 		}

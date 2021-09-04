@@ -6,13 +6,21 @@ import java.util.List;
 
 public abstract class HtmlFormatter<T> implements Formatter<T>
 {
+	private static int popupId;
+
 	@Override
 	public String getHeader()
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append("<tr>");
 		for (Column column : getColumns())
-			builder.append("<th class=\"").append(column.align).append("\">").append(column.name).append("</th>");
+		{
+			builder.append("<th");
+			if (column.align != Align.C)
+				builder.append(" class=\"").append(column.align).append("\"");
+			builder.append(">");
+			builder.append(column.name).append("</th>");
+		}
 		builder.append("</tr>");
 		return builder.toString();
 	}
@@ -27,7 +35,10 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		for (Object element : getObjectElements(object))
 		{
 			Column column = columns.get(i++);
-			builder.append("<td class=\"").append(column.align).append("\">");
+			builder.append("<td");
+			if (column.align != Align.L)
+				builder.append(" class=\"").append(column.align).append("\"");
+			builder.append(">");
 			if (element != null)
 				builder.append(String.format(column.format, element));
 			builder.append("</td>");
@@ -86,12 +97,12 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 				.heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid; }
 				.title { font-size: large; font-weight: bold; }
 				.popup { position: relative; display: inline-block; cursor: pointer; }
-				.popup .popuptext {
+				.popup .popup-content {
 					visibility: hidden;
 					white-space: nowrap;
 					position: absolute;
-					background-color: #555;
-					color: #fff;
+					background-color: white;
+					border: 1px solid;
 					padding: 4px 4px;
 					border-radius: 4px;
 					left: 12px;
@@ -187,13 +198,27 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		return lines;
 	}
 
-	public String createPopup(String content, String popupContent, String id)
+	public String createPopup(String content, String popupContent, String style)
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("<div class=\"popup\" onmouseover=\"showPopup('").append(id).append("')\" onmouseout=\"hidePopup('").append(id).append("')\">");
+
+		final String id = "popup-" + popupId++;
+
+		sb.append("<div class=\"popup\"");
+		sb.append(" onmouseover=\"showPopup('").append(id).append("')\"");
+		sb.append(" onmouseout=\"hidePopup('").append(id).append("')\"");
+		sb.append(">");
+
 		sb.append(content);
-		sb.append("<div class=\"popuptext\" id=\"").append(id).append("\">").append(popupContent).append("</div>");
+
+		sb.append("<div class=\"popup-content\"");
+		sb.append(" id=\"").append(id).append("\"");
+		if (style != null)
+			sb.append(" style=\"").append(style).append("\"");
+		sb.append(">").append(popupContent).append("</div>");
+
 		sb.append("</div>");
+
 		return sb.toString();
 	}
 

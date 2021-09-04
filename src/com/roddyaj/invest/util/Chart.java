@@ -24,19 +24,24 @@ public class Chart
 		this.yMax = yMax;
 	}
 
-	public List<Point> getPoints()
+	public void addPoint(Point point)
 	{
-		return points;
+		points.add(point);
 	}
 
-	public List<HLine> getHLines()
+	public void addHLine(HLine hLine)
 	{
-		return hLines;
+		hLines.add(hLine);
 	}
 
-	public List<Rect> getRectangles()
+	public void addRectangle(Rect rect)
 	{
-		return rectangles;
+		rectangles.add(rect);
+	}
+
+	public void addRectangle(double yMin, double yMax, String color)
+	{
+		rectangles.add(new Rect(xMin, xMax, yMin, yMax, color));
 	}
 
 	public double getX(double x, int width)
@@ -148,12 +153,12 @@ public class Chart
 		private final double height;
 		private final String color;
 
-		public Rect(double x, double y, double width, double height, String color)
+		public Rect(double xMin, double xMax, double yMin, double yMax, String color)
 		{
-			this.x = x;
-			this.y = y;
-			this.width = width;
-			this.height = height;
+			this.x = xMin;
+			this.y = yMax;
+			this.width = xMax - xMin;
+			this.height = yMax - yMin;
 			this.color = color;
 		}
 

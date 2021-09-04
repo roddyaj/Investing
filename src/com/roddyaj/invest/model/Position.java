@@ -9,7 +9,6 @@ import java.util.List;
 import com.roddyaj.invest.util.Chart;
 import com.roddyaj.invest.util.Chart.HLine;
 import com.roddyaj.invest.util.Chart.Point;
-import com.roddyaj.invest.util.Chart.Rect;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class Position implements Comparable<Position>
@@ -189,22 +188,44 @@ public class Position implements Comparable<Position>
 //			double[] prices = new double[] { option.getStrike(), option.getUnderlyingPrice() };
 			double minPrice = option.getStrike() * .8; // Arrays.stream(prices).min().orElse(0);
 			double maxPrice = option.getStrike() * 1.2; // Arrays.stream(prices).max().orElse(0);
-			boolean otm = "OTM".equals(option.getMoney());
+			boolean itm = "ITM".equals(option.getMoney());
 
 			Chart chart = new Chart(0, totalDays, minPrice, maxPrice);
+			double strike = option.getStrike();
+			double price = option.getUnderlyingPrice();
+
 			if (option.getType() == 'C')
 			{
-				chart.getRectangles().add(new Rect(0, maxPrice, totalDays, maxPrice - option.getStrike(), "#E0F0FF"));
 				if (option.getUnderlying() != null)
-					chart.getHLines().add(new HLine(option.getUnderlying().getCostPerShare(), "green"));
+				{
+					double cost = option.getUnderlying().getCostPerShare();
+					if (strike >= cost)
+					{
+						chart.addRectangle(strike, maxPrice, color("#04F2", price >= strike));
+						chart.addRectangle(cost, strike, color("#0F03", price >= cost));
+					}
+					else
+					{
+						chart.addRectangle(strike, maxPrice, color("#F002", price >= strike));
+					}
+				}
+				else
+				{
+					chart.addRectangle(strike, maxPrice, color("#04F2", price >= strike));
+				}
 			}
 			else if (option.getType() == 'P')
 			{
-				chart.getRectangles().add(new Rect(0, option.getStrike(), totalDays, option.getStrike() - minPrice, "#E0F0FF"));
+				chart.addRectangle(minPrice, strike, color("#04F2", price <= strike));
 			}
-//			chart.getHLines().add(new HLine(option.getStrike(), "blue"));
-			chart.getPoints().add(new Point(now, option.getUnderlyingPrice(), otm ? "black" : "red"));
+			chart.addHLine(new HLine(strike, "black"));
+			chart.addPoint(new Point(now, price, itm ? "yellow" : "black"));
 			return chart;
+		}
+
+		private static String color(String color, boolean opaque)
+		{
+			return opaque ? color.substring(0, 4) : color;
 		}
 	}
 }

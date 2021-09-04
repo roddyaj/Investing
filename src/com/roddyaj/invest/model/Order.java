@@ -2,6 +2,7 @@ package com.roddyaj.invest.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.util.HtmlFormatter;
 
@@ -16,7 +17,7 @@ public class Order
 	// Note, this may be null if there is no position
 	private final Position position;
 
-	private int openOrderQuantity;
+	private List<OpenOrder> openOrders;
 
 	private boolean optional;
 
@@ -33,9 +34,9 @@ public class Order
 		this.optional = optional;
 	}
 
-	public void setOpenOrderQuantity(int openOrderQuantity)
+	public void setOpenOrders(List<OpenOrder> openOrders)
 	{
-		this.openOrderQuantity = openOrderQuantity;
+		this.openOrders = openOrders;
 	}
 
 	public String getSymbol()
@@ -56,11 +57,6 @@ public class Order
 	public Position getPosition()
 	{
 		return position;
-	}
-
-	public int getOpenOrderQuantity()
-	{
-		return openOrderQuantity;
 	}
 
 	public boolean isOptional()
@@ -106,9 +102,12 @@ public class Order
 					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.quantity) + "');\">%s</a>",
 					o.symbol, o.symbol);
 			String quantityText = String.valueOf(Math.abs(o.quantity));
-			if (o.openOrderQuantity != 0)
+			if (o.openOrders != null && !o.openOrders.isEmpty())
 			{
-				String popupText = createPopup(String.valueOf(o.openOrderQuantity), String.valueOf(o.openOrderQuantity), "order-" + orderId);
+				String openOrderPopupText = o.openOrders.stream()
+						.map(open -> Math.abs(open.getQuantity()) + " @ " + String.format("%.2f", open.getPrice())).collect(Collectors.joining(", "));
+				int openOrderCount = Math.abs(o.openOrders.stream().mapToInt(OpenOrder::getQuantity).sum());
+				String popupText = createPopup(String.valueOf(openOrderCount), openOrderPopupText, "order-" + orderId);
 				quantityText += " (" + popupText + ")";
 			}
 			orderId++;

@@ -105,7 +105,7 @@ public class PositionManagerCore
 		Order order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position);
 		order.setOptional(order.getPosition() != null
 				&& (order.getQuantity() >= 0 ? order.getPosition().getDayChangePct() > .1 : order.getPosition().getDayChangePct() < -.1));
-		order.setOpenOrderQuantity(account.getOpenOrderCount(symbol, order.getQuantity() >= 0 ? Action.BUY : Action.SELL));
+		order.setOpenOrders(account.getOpenOrders(symbol, order.getQuantity() >= 0 ? Action.BUY : Action.SELL, null));
 
 		reports.add(new Report(symbol, p0, p1, targetValue, accountSettings.getAllocation(symbol), position));
 

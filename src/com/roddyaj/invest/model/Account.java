@@ -3,6 +3,7 @@ package com.roddyaj.invest.model;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.roddyaj.invest.model.settings.AccountSettings;
@@ -65,7 +66,12 @@ public class Account
 
 	public int getOpenOrderCount(String symbol, Action action, Character optionType)
 	{
-		return Math.abs(getOpenOrders().stream().filter(order -> {
+		return Math.abs(getOpenOrders(symbol, action, optionType).stream().mapToInt(OpenOrder::getQuantity).sum());
+	}
+
+	public List<OpenOrder> getOpenOrders(String symbol, Action action, Character optionType)
+	{
+		return getOpenOrders().stream().filter(order -> {
 			boolean match = true;
 			if (order.getOption() != null)
 				match &= order.getOption().getSymbol().equals(symbol)
@@ -74,7 +80,7 @@ public class Account
 				match &= order.getSymbol().equals(symbol) && optionType == null;
 			match &= action == Action.SELL ? order.getQuantity() < 0 : order.getQuantity() > 0;
 			return match;
-		}).mapToInt(OpenOrder::getQuantity).sum());
+		}).collect(Collectors.toList());
 	}
 
 	public Double getPrice(String symbol)

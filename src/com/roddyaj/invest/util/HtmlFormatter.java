@@ -88,6 +88,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 				.popup { position: relative; display: inline-block; cursor: pointer; }
 				.popup .popuptext {
 					visibility: hidden;
+					white-space: nowrap;
 					position: absolute;
 					background-color: #555;
 					color: #fff;

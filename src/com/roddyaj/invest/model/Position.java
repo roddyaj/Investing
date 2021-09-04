@@ -176,7 +176,7 @@ public class Position implements Comparable<Position>
 //			String moneyText = "OTM".equals(p.option.getMoney()) ? "" : dte < 5 ? "**" : "*";
 
 			Chart chart = getSvgChart(p.option);
-			String chartWithPopup = chart != null ? createPopup(chart.toSvg(16, 28), chart.toSvg(48, 84), "option-" + positionId++) : "";
+			String chartWithPopup = chart != null ? createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), "option-" + positionId++) : "";
 			return Arrays.asList(link, p.quantity, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
 					p.option.getUnderlyingPrice(), chartWithPopup);
 		}

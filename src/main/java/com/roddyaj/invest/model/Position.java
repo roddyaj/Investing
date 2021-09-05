@@ -202,7 +202,7 @@ public class Position implements Comparable<Position>
 					if (strike >= cost)
 					{
 						chart.addRectangle(strike, maxPrice, color("#04F2", price >= strike));
-						chart.addRectangle(cost, strike, color("#0F03", price >= cost));
+						chart.addRectangle(cost, strike, "#0F03");
 					}
 					else
 					{

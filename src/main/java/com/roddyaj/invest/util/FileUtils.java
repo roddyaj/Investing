@@ -54,7 +54,7 @@ public final class FileUtils
 		List<CSVRecord> records = new ArrayList<>();
 
 		String content = lines.stream().collect(Collectors.joining("\n"));
-		CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader().withAllowMissingColumnNames();
+		CSVFormat format = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).setAllowMissingColumnNames(true).build();
 
 		try
 		{

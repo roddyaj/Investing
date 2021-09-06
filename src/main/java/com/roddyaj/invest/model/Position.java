@@ -21,6 +21,7 @@ public class Position implements Comparable<Position>
 	private final double costBasis;
 	private final double dayChangePct;
 	private final double gainLossPct;
+	private Lots lots;
 
 	private final Option option;
 
@@ -36,6 +37,11 @@ public class Position implements Comparable<Position>
 		this.dayChangePct = dayChangePct;
 		this.gainLossPct = gainLossPct;
 		this.option = option;
+	}
+
+	public void setLots(Lots lots)
+	{
+		this.lots = lots;
 	}
 
 	public String getSymbol()
@@ -77,6 +83,16 @@ public class Position implements Comparable<Position>
 	public double getGainLossPct()
 	{
 		return gainLossPct;
+	}
+
+	public Lots getLots()
+	{
+		return lots;
+	}
+
+	public double getUnadjustedCostBasis()
+	{
+		return lots != null ? lots.getCostBasis() : 0;
 	}
 
 	public Option getOption()

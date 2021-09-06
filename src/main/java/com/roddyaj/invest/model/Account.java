@@ -1,7 +1,10 @@
 package com.roddyaj.invest.model;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,6 +22,7 @@ public class Account
 	private final SchwabPositionsSource positionsSource;
 	private final SchwabTransactionsSource transactionsSource;
 	private final SchwabOpenOrdersSource openOrdersSource;
+	private boolean costBasisCalculated;
 
 	public Account(String name, AccountSettings accountSettings)
 	{
@@ -46,7 +50,13 @@ public class Account
 
 	public List<Position> getPositions()
 	{
-		return positionsSource.getPositions();
+		List<Position> positions = positionsSource.getPositions();
+		if (!costBasisCalculated)
+		{
+			updateCostBasis(positions);
+			costBasisCalculated = true;
+		}
+		return positions;
 	}
 
 	public List<Transaction> getTransactions()
@@ -113,5 +123,34 @@ public class Account
 	public Stream<Position> getPositions(String symbol)
 	{
 		return getPositions().stream().filter(p -> p.getSymbol().equals(symbol));
+	}
+
+	private void updateCostBasis(Collection<Position> positions)
+	{
+		Map<String, Lots> costBasisMap = new HashMap<>();
+		List<Transaction> transactions = getTransactions();
+		for (int i = transactions.size() - 1; i >= 0; i--)
+		{
+			Transaction transaction = transactions.get(i);
+			if (transaction.getAction() == Action.BUY)
+			{
+				costBasisMap.computeIfAbsent(transaction.getSymbol(), k -> new Lots()).add(transaction.getQuantity(), transaction.getPrice());
+			}
+			else if (transaction.getAction() == Action.SELL)
+			{
+				Lots lots = costBasisMap.get(transaction.getSymbol());
+				if (lots != null)
+					lots.removeFifo(transaction.getQuantity());
+			}
+		}
+
+		for (Position position : positions)
+		{
+			if (!position.isOption())
+			{
+				Lots lots = costBasisMap.get(position.getSymbol());
+				position.setLots(lots);
+			}
+		}
 	}
 }

@@ -103,12 +103,14 @@ public class Transaction
 
 	private String toStringStock()
 	{
-		return String.format(STOCK_FORMAT, date, StringUtils.limit(action.toString(), 14), symbol, quantity, price, amount);
+		String actionText = action != null ? StringUtils.limit(action.toString(), 14) : "";
+		return String.format(STOCK_FORMAT, date, actionText, symbol, quantity, price, amount);
 	}
 
 	private String toStringOption()
 	{
-		return String.format(OPTION_FORMAT, date, StringUtils.limit(action.toString(), 14), symbol, quantity, price, amount, option.getExpiryDate(),
-				option.getStrike(), option.getType(), days, annualReturn);
+		String actionText = action != null ? StringUtils.limit(action.toString(), 14) : "";
+		return String.format(OPTION_FORMAT, date, actionText, symbol, quantity, price, amount, option.getExpiryDate(), option.getStrike(),
+				option.getType(), days, annualReturn);
 	}
 }

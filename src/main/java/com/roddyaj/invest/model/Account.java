@@ -107,6 +107,7 @@ public class Account
 
 	public double getTotalValue()
 	{
+		// TODO Make this Schwab-agnostic
 		return getPositions("Account Total").mapToDouble(Position::getMarketValue).findFirst().orElse(0);
 	}
 

@@ -5,36 +5,29 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-
-import org.w3c.dom.Document;
 
 import okhttp3.Cache;
 import okhttp3.CacheControl;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 
 /**
- * HTTP client. Create one and reuse it. Features: - Caching (memory and disk) -
- * Request throttling - Uses Square's OkHttp library for requests
+ * HTTP client. Create one and reuse it.<br>
+ * Features:<br>
+ * - Caching (memory and disk)<br>
+ * - Request throttling - Uses Square's OkHttp library for requests<br>
  */
 public class HttpClientNew
 {
 	public static final HttpClientNew SHARED_INSTANCE = new HttpClientNew();
 
-//	private static final Logger logger = LogManager.getLogger(HttpClient.class);
-
 	// OkHttp
 	private final OkHttpClient client;
-	private static final CacheControl defaultCacheControl = new CacheControl.Builder().maxStale(1, TimeUnit.DAYS).build();
 	private static final CacheControl noCacheControl = new CacheControl.Builder().noCache().noStore().build();
-	private static final MediaType JSON_TYPE = MediaType.parse("application/json");
-	private static final MediaType XML_TYPE = MediaType.parse("application/xml");
 
 	// Memory caching
 	private final com.google.common.cache.Cache<String, Response> memoryCache = com.google.common.cache.CacheBuilder.newBuilder().maximumSize(1000)
@@ -53,47 +46,35 @@ public class HttpClientNew
 
 	public Response get(String url) throws IOException
 	{
-		return get(url, null, true);
+		return get(url, null, Duration.ofMinutes(60));
 	}
 
-	public Response get(String url, Number requestLimitPerMinute, boolean useCache) throws IOException
+	public Response get(String url, Number requestLimitPerMinute, Duration maxStale) throws IOException
 	{
-		CacheControl cacheControl = useCache ? defaultCacheControl : noCacheControl;
+		boolean useCache = maxStale != null;
+		CacheControl cacheControl = useCache ? new CacheControl.Builder().maxStale((int)maxStale.getSeconds(), TimeUnit.SECONDS).build()
+				: noCacheControl;
 		Request request = new Request.Builder().cacheControl(cacheControl).url(url).build();
 		return request(request, requestLimitPerMinute, useCache, url);
-	}
-
-	public Response post(String url, String body) throws IOException
-	{
-		return post(url, body, null, true);
-	}
-
-	public Response post(String url, Object body, Number requestLimitPerMinute, boolean useCache) throws IOException
-	{
-		String bodyAsString = body.toString();
-		RequestBody requestBody = RequestBody.create(bodyAsString, body instanceof Document ? XML_TYPE : JSON_TYPE);
-		CacheControl cacheControl = useCache ? defaultCacheControl : noCacheControl;
-		Request request = new Request.Builder().cacheControl(cacheControl).url(url).post(requestBody).build();
-		return request(request, requestLimitPerMinute, useCache, url + bodyAsString);
 	}
 
 	public void clearCache()
 	{
 		clearMemoryCache();
-//		logger.info("Clearing HTTP disk cache");
+		System.out.println("Clearing HTTP disk cache");
 		try
 		{
 			client.cache().evictAll();
 		}
 		catch (IOException e)
 		{
-//			logger.error(e);
+			System.err.println(e);
 		}
 	}
 
 	public void clearMemoryCache()
 	{
-//		logger.info("Clearing HTTP memory cache");
+		System.out.println("Clearing HTTP memory cache");
 		memoryCache.invalidateAll();
 		memoryCache.cleanUp();
 	}
@@ -107,7 +88,7 @@ public class HttpClientNew
 		}
 		catch (IOException e)
 		{
-//			logger.error(e);
+			System.err.println(e);
 		}
 		return size;
 	}
@@ -117,26 +98,23 @@ public class HttpClientNew
 		long start = System.nanoTime();
 
 		Response response;
-		if (useCache)
-		{
-			try
-			{
-				response = memoryCache.get(cacheKey, () -> requestOkHttp(request, requestLimitPerMinute, useCache));
-			}
-			catch (ExecutionException e)
-			{
-				throw new IOException(e);
-			}
-		}
-		else
-		{
-			response = requestOkHttp(request, requestLimitPerMinute, useCache);
-		}
-
-//		if (logger.isDebugEnabled())
+//		if (useCache)
 //		{
-//			logger.debug(getLogMessage(request.url().toString(), request.method(), start));
+//			try
+//			{
+//				response = memoryCache.get(cacheKey, () -> requestOkHttp(request, requestLimitPerMinute, useCache));
+//			}
+//			catch (ExecutionException e)
+//			{
+//				throw new IOException(e);
+//			}
 //		}
+//		else
+//		{
+		response = requestOkHttp(request, requestLimitPerMinute, useCache);
+//		}
+
+		System.out.println(getLogMessage(request.url().toString(), request.method(), start));
 
 		return response;
 	}
@@ -171,14 +149,14 @@ public class HttpClientNew
 			long timeToSleep = sleepTimeMillis - (System.currentTimeMillis() - lastRequest.longValue());
 			if (timeToSleep > 0)
 			{
-//				logger.info("Wait " + timeToSleep + " ms for:     " + url);
+				System.out.println("Wait " + timeToSleep + " ms for:     " + url);
 				try
 				{
 					Thread.sleep(timeToSleep);
 				}
 				catch (InterruptedException e)
 				{
-//					logger.error(e);
+					System.err.println(e);
 				}
 			}
 		}
@@ -193,7 +171,7 @@ public class HttpClientNew
 		}
 		catch (MalformedURLException e)
 		{
-//			logger.error(e);
+			System.err.println(e);
 			return url;
 		}
 	}
@@ -201,6 +179,6 @@ public class HttpClientNew
 	private static String getLogMessage(String url, String method, long startNanos)
 	{
 		long deltaMicros = (System.nanoTime() - startNanos) / 1000;
-		return String.format("Took%9d μs: %-4s %s", deltaMicros, method, url);
+		return String.format("Took%9d us: %-4s %s", deltaMicros, method, url);
 	}
 }

@@ -1,6 +1,7 @@
 package com.roddyaj.invest.programs.dataroma;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,7 +11,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.roddyaj.invest.framework.Program;
-import com.roddyaj.invest.network.HttpClient;
+import com.roddyaj.invest.network.HttpClientNew;
+import com.roddyaj.invest.network.Response;
 
 public class Dataroma implements Program
 {
@@ -42,8 +44,8 @@ public class Dataroma implements Program
 	{
 		try
 		{
-			String content = HttpClient.get(url);
-			return parseRecords(content);
+			Response response = HttpClientNew.SHARED_INSTANCE.get(url);
+			return response.getCode() == HttpURLConnection.HTTP_OK ? parseRecords(response.getBody()) : List.of();
 		}
 		catch (IOException e)
 		{

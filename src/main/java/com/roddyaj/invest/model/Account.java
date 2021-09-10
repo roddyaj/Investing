@@ -85,7 +85,7 @@ public class Account
 			boolean match = true;
 			if (order.getOption() != null)
 				match &= order.getOption().getSymbol().equals(symbol)
-						&& (optionType == null || order.getOption().getType() == optionType.charValue());
+						&& (optionType != null && order.getOption().getType() == optionType.charValue());
 			else
 				match &= order.getSymbol().equals(symbol) && optionType == null;
 			match &= action == Action.SELL ? order.getQuantity() < 0 : order.getQuantity() > 0;

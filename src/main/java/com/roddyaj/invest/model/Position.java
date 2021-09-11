@@ -90,9 +90,14 @@ public class Position implements Comparable<Position>
 		return lots;
 	}
 
-	public double getUnadjustedCostBasis()
+	public Double getUnadjustedCostBasis()
 	{
-		return lots != null ? lots.getCostBasis() : 0;
+		return lots != null ? lots.getCostBasis() : null;
+	}
+
+	public Double getUnadjustedCostPerShare()
+	{
+		return lots != null ? lots.getCostBasis() / quantity : null;
 	}
 
 	public Option getOption()
@@ -174,9 +179,9 @@ public class Position implements Comparable<Position>
 			columns.add(new Column("DTE", "%d", Align.R));
 			columns.add(new Column("Strike", "%.2f", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
-//			columns.add(new Column("Cost", "%.2f", Align.R));
+			columns.add(new Column("Cost", "%.2f", Align.R));
+//			columns.add(new Column("U Cost", "%.2f", Align.R));
 			columns.add(new Column("Chart", "%s", Align.C));
-//			columns.add(new Column("", "%s", Align.C));
 			return columns;
 		}
 
@@ -185,13 +190,13 @@ public class Position implements Comparable<Position>
 		{
 			String link = toLink(URL + p.option.toOccString().replace(' ', '+'), p.symbol);
 			int dte = p.option.getDteCurrent();
-//			Double underlyingCostPerShare = p.option.underlying != null ? p.option.underlying.getCostPerShare() : null;
-//			String moneyText = "OTM".equals(p.option.getMoney()) ? "" : dte < 5 ? "**" : "*";
+			Double underlyingCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getCostPerShare() : null;
+//			Double underlyingUCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getUnadjustedCostPerShare() : null;
 
 			Chart chart = getSvgChart(p.option);
 			String chartWithPopup = chart != null ? createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), "line-height: 0px;") : "";
 			return Arrays.asList(link, p.quantity, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
-					p.option.getUnderlyingPrice(), chartWithPopup);
+					p.option.getUnderlyingPrice(), underlyingCostPerShare, chartWithPopup);
 		}
 
 		private static Chart getSvgChart(Option option)
@@ -201,9 +206,8 @@ public class Position implements Comparable<Position>
 
 			long totalDays = ChronoUnit.DAYS.between(option.getInitialDate(), option.getExpiryDate());
 			long now = ChronoUnit.DAYS.between(option.getInitialDate(), LocalDate.now());
-//			double[] prices = new double[] { option.getStrike(), option.getUnderlyingPrice() };
-			double minPrice = option.getStrike() * .8; // Arrays.stream(prices).min().orElse(0);
-			double maxPrice = option.getStrike() * 1.2; // Arrays.stream(prices).max().orElse(0);
+			double minPrice = option.getStrike() * .8;
+			double maxPrice = option.getStrike() * 1.2;
 			boolean itm = "ITM".equals(option.getMoney());
 
 			Chart chart = new Chart(0, totalDays, minPrice, maxPrice);

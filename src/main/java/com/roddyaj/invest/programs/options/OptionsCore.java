@@ -122,7 +122,7 @@ public class OptionsCore
 				int shareCount = underlying != null ? underlying.getQuantity() : 0;
 				int putsSold = symbolPositions.stream().filter(Position::isPutOption).mapToInt(Position::getQuantity).sum();
 				double totalInvested = (shareCount + putsSold * -100) * price;
-				double available = input.account.getAccountSettings().getMaxOptionPosition() - totalInvested;
+				double available = input.account.getAccountSettings().getMaxPosition() - totalInvested;
 				boolean canSell = (available / (price * 100)) > 0.9; // Hack: using price in place of strike since we don't have strike
 				if (canSell && isDownForDay)
 				{
@@ -134,7 +134,7 @@ public class OptionsCore
 			// New position
 			else
 			{
-				double available = input.account.getAccountSettings().getMaxOptionPosition();
+				double available = input.account.getAccountSettings().getMaxPosition();
 				// Hack: using price in place of strike since we don't have strike
 				boolean canSell = price == null || (available / (price * 100)) > 0.9;
 				if (canSell && isDownForDay)

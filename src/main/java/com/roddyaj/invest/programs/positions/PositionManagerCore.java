@@ -12,7 +12,6 @@ import com.roddyaj.invest.model.Message.Level;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.settings.AccountSettings;
-import com.roddyaj.invest.model.settings.PositionSettings;
 
 public class PositionManagerCore
 {
@@ -47,7 +46,7 @@ public class PositionManagerCore
 			output.addMessage(Level.WARN, "Account data is not from today: " + account.getDate());
 
 		// Determine the managed orders
-		List<Order> orders = accountSettings.getRealPositions().map(this::createOrder).filter(Objects::nonNull).filter(this::allowOrder)
+		List<Order> orders = accountSettings.allocationStream().map(this::createOrder).filter(Objects::nonNull).filter(this::allowOrder)
 				.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).collect(Collectors.toList());
 		output.addOrders(orders);
 
@@ -57,11 +56,10 @@ public class PositionManagerCore
 		return output;
 	}
 
-	private Order createOrder(PositionSettings positionSettings)
+	private Order createOrder(String symbol)
 	{
 		Order order = null;
 
-		String symbol = positionSettings.getSymbol();
 		double targetValue = account.getTotalValue() * account.getAccountSettings().getAllocation(symbol);
 
 		Position position = account.getPosition(symbol);
@@ -91,7 +89,7 @@ public class PositionManagerCore
 			double minOrderAmount = Math.max(position.getMarketValue() * 0.005, 50);
 			if (order.getQuantity() < 0)
 				minOrderAmount *= 2;
-			allowOrder = Math.abs(order.getAmount()) > minOrderAmount && (order.getQuantity() > 0 || accountSettings.getSell(order.getSymbol()));
+			allowOrder = Math.abs(order.getAmount()) > minOrderAmount;
 		}
 		return allowOrder;
 	}

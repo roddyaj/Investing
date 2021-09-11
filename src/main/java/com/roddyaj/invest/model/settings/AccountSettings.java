@@ -10,10 +10,8 @@ public class AccountSettings
 {
 	private String name;
 	private String accountNumber;
-	private double annualContrib;
-	private double maxOptionPosition;
+	private double maxPosition;
 	private Allocation[] allocations;
-	private PositionSettings[] positions;
 	private AllocationMap allocation;
 
 	public void createMap(double untrackedPercent, Output output)
@@ -45,28 +43,16 @@ public class AccountSettings
 		this.accountNumber = accountNumber;
 	}
 
-	@JsonProperty("annualContrib")
-	public double getAnnualContrib()
+	@JsonProperty("maxPosition")
+	public double getMaxPosition()
 	{
-		return annualContrib;
+		return maxPosition;
 	}
 
-	@JsonProperty("annualContrib")
-	public void setAnnualContrib(double annualContrib)
+	@JsonProperty("maxPosition")
+	public void setMaxPosition(double maxPosition)
 	{
-		this.annualContrib = annualContrib;
-	}
-
-	@JsonProperty("maxOptionPosition")
-	public double getMaxOptionPosition()
-	{
-		return maxOptionPosition;
-	}
-
-	@JsonProperty("maxOptionPosition")
-	public void setMaxOptionPosition(double maxOptionPosition)
-	{
-		this.maxOptionPosition = maxOptionPosition;
+		this.maxPosition = maxPosition;
 	}
 
 	@JsonProperty("allocations")
@@ -81,16 +67,9 @@ public class AccountSettings
 		this.allocations = allocations;
 	}
 
-	@JsonProperty("positions")
-	public PositionSettings[] getPositions()
+	public Stream<String> allocationStream()
 	{
-		return positions;
-	}
-
-	@JsonProperty("positions")
-	public void setPositions(PositionSettings[] positions)
-	{
-		this.positions = positions;
+		return Arrays.stream(allocations).map(Allocation::getCatLastToken).filter(s -> s.toUpperCase().equals(s)).distinct();
 	}
 
 	public boolean hasAllocation(String symbol)
@@ -101,48 +80,5 @@ public class AccountSettings
 	public double getAllocation(String symbol)
 	{
 		return allocation.getAllocation(symbol);
-	}
-
-	public Stream<PositionSettings> getRealPositions()
-	{
-		return Arrays.stream(positions).filter(p -> !p.getSymbol().startsWith("_"));
-	}
-
-	public PositionSettings getPosition(String symbol)
-	{
-		return Arrays.stream(positions).filter(p -> p.getSymbol().equals(symbol)).findAny().orElse(null);
-	}
-
-	public boolean getSell(String symbol)
-	{
-		boolean sell = false;
-		PositionSettings position = getPosition(symbol);
-		if (position.getSell() != null)
-		{
-			sell = position.getSell().booleanValue();
-		}
-		else
-		{
-			position = getPosition("_default");
-			if (position.getSell() != null)
-				sell = position.getSell().booleanValue();
-		}
-		return sell;
-	}
-
-	public String getPeriod(String symbol)
-	{
-		String period = null;
-		PositionSettings position = getPosition(symbol);
-		if (position.getPeriod() != null)
-		{
-			period = position.getPeriod();
-		}
-		else
-		{
-			position = getPosition("_default");
-			period = position.getPeriod();
-		}
-		return period;
 	}
 }

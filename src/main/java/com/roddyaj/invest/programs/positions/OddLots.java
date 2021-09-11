@@ -60,7 +60,7 @@ public class OddLots
 		{
 			if (position.getDayChangePct() < .1)
 			{
-				int fullBuyQuantity = Math.max((int)Math.floor(accountSettings.getMaxOptionPosition() / price - position.getQuantity()), 0);
+				int fullBuyQuantity = Math.max((int)Math.floor(accountSettings.getMaxPosition() / price - position.getQuantity()), 0);
 				int roundLotQuantity = 100 - position.getQuantity() % 100;
 				quantity = Math.min(fullBuyQuantity, roundLotQuantity);
 			}
@@ -94,6 +94,6 @@ public class OddLots
 //	private boolean isEvenLotUnderMaxPosition(Position position)
 //	{
 //		double totalAmount = (position.quantity / 100 + 1) * 100 * position.price;
-//		return totalAmount < accountSettings.getMaxOptionPosition();
+//		return totalAmount < accountSettings.getMaxPosition();
 //	}
 }

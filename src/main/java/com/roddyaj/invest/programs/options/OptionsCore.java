@@ -81,7 +81,7 @@ public class OptionsCore
 				if (availableCalls > 0 && isUpAtAll)
 				{
 					CallToSell call = new CallToSell(position, availableCalls);
-					call.setOpenOrderQuantity(input.account.getOpenOrderCount(position.getSymbol(), Action.SELL, 'C'));
+					call.setOpenOrders(input.account.getOpenOrders(position.getSymbol(), Action.SELL, 'C'));
 					output.callsToSell.add(call);
 				}
 			}
@@ -127,7 +127,7 @@ public class OptionsCore
 				if (canSell && isDownForDay)
 				{
 					PutToSell put = new PutToSell(symbol, available, price, dayChangePct);
-					put.setOpenOrderQuantity(input.account.getOpenOrderCount(symbol, Action.SELL, 'P'));
+					put.setOpenOrders(input.account.getOpenOrders(symbol, Action.SELL, 'P'));
 					output.putsToSell.add(put);
 				}
 			}

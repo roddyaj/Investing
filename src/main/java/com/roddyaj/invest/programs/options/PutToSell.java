@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class PutToSell implements Comparable<PutToSell>
@@ -14,7 +15,7 @@ public class PutToSell implements Comparable<PutToSell>
 	private final Double underlyingPrice;
 	private final Double dayChangePct;
 	private double averageReturn;
-	private int openOrderQuantity;
+	private List<OpenOrder> openOrders;
 
 	public PutToSell(String symbol, double availableAmount, Double underlyingPrice, Double dayChangePct)
 	{
@@ -29,39 +30,14 @@ public class PutToSell implements Comparable<PutToSell>
 		this.averageReturn = averageReturn;
 	}
 
-	public void setOpenOrderQuantity(int openOrderQuantity)
+	public void setOpenOrders(List<OpenOrder> openOrders)
 	{
-		this.openOrderQuantity = openOrderQuantity;
+		this.openOrders = openOrders;
 	}
 
 	public String getSymbol()
 	{
 		return symbol;
-	}
-
-	public double getAvailableAmount()
-	{
-		return availableAmount;
-	}
-
-	public Double getUnderlyingPrice()
-	{
-		return underlyingPrice;
-	}
-
-	public Double getDayChangePct()
-	{
-		return dayChangePct;
-	}
-
-	public double getAverageReturn()
-	{
-		return averageReturn;
-	}
-
-	public int getOpenOrderQuantity()
-	{
-		return openOrderQuantity;
 	}
 
 	@Override
@@ -95,7 +71,7 @@ public class PutToSell implements Comparable<PutToSell>
 			columns.add(new Column("Schwab", "%s", Align.L));
 			columns.add(new Column("Yahoo", "%s", Align.L));
 			columns.add(new Column("Avail", "%.0f", Align.R));
-			columns.add(new Column("O", "%d", Align.R));
+			columns.add(new Column("O", "%s", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Day", "%s", Align.R));
 			columns.add(new Column("Return", "%.0f%%", Align.R));
@@ -108,8 +84,8 @@ public class PutToSell implements Comparable<PutToSell>
 			String schwabLink = toLinkSymbol(SCHWAB, p.symbol);
 			String yahooLink = toLinkSymbol(YAHOO, p.symbol);
 			String dayChangePct = p.dayChangePct != null ? color(p.dayChangePct.doubleValue(), "%.2f%%") : null;
-			Number open = p.openOrderQuantity != 0 ? p.openOrderQuantity : null;
-			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, open, p.underlyingPrice, dayChangePct, p.averageReturn);
+			String quantityText = OpenOrder.getPopupText(p.openOrders);
+			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, quantityText, p.underlyingPrice, dayChangePct, p.averageReturn);
 		}
 	}
 }

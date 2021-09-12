@@ -93,17 +93,24 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 				a:hover { text-decoration: underline; }
 				.row { display: flex; flex-direction: row; }
 				.column { display: flex; flex-direction: column; margin-right: 8px; }
-				.block { border-style: solid; border-width: 1px; border-radius: 4px; padding: 4px; margin-bottom: 8px; background-color: #F7F7F7; }
+				.block { border: 1px solid; border-radius: 4px; padding: 4px; margin-bottom: 8px; background-color: #F7F7F7; }
 				.heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid; }
 				.title { font-size: large; font-weight: bold; }
-				.popup { position: relative; display: inline-block; cursor: pointer; }
+				.popup {
+					position: relative;
+					display: inline-block;
+					cursor: pointer;
+				}
+				.popup-text {
+					font: 12px Arial, sans-serif;
+				}
 				.popup .popup-content {
 					visibility: hidden;
 					white-space: nowrap;
 					position: absolute;
 					background-color: white;
-					border: 1px solid;
 					padding: 4px 4px;
+					border: 1px solid;
 					border-radius: 4px;
 					left: 12px;
 					bottom: 18px;
@@ -198,28 +205,36 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		return lines;
 	}
 
-	public String createPopup(String content, String popupContent, String style)
+	public static String createPopup(String content, String popupContent, boolean isText)
 	{
 		StringBuilder sb = new StringBuilder();
 
 		final String id = "popup-" + popupId++;
 
-		sb.append("<div class=\"popup\"");
+		sb.append("<div");
+		appendKeyValue(sb, "class", isText ? "popup popup-text" : "popup");
 		sb.append(" onmouseover=\"showPopup('").append(id).append("')\"");
 		sb.append(" onmouseout=\"hidePopup('").append(id).append("')\"");
-		sb.append(">");
+		sb.append('>');
 
 		sb.append(content);
 
-		sb.append("<div class=\"popup-content\"");
-		sb.append(" id=\"").append(id).append("\"");
-		if (style != null)
-			sb.append(" style=\"").append(style).append("\"");
-		sb.append(">").append(popupContent).append("</div>");
+		sb.append("<div");
+		appendKeyValue(sb, "class", "popup-content");
+		appendKeyValue(sb, "id", id);
+		if (!isText)
+			appendKeyValue(sb, "style", "line-height: 0px;");
+		sb.append('>');
+		sb.append(popupContent).append("</div>");
 
 		sb.append("</div>");
 
 		return sb.toString();
+	}
+
+	private static void appendKeyValue(StringBuilder sb, String key, String value)
+	{
+		sb.append(' ').append(key).append("=\"").append(value).append('"');
 	}
 
 	public enum Align

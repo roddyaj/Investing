@@ -194,7 +194,7 @@ public class Position implements Comparable<Position>
 //			Double underlyingUCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getUnadjustedCostPerShare() : null;
 
 			Chart chart = getSvgChart(p.option);
-			String chartWithPopup = chart != null ? createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), "line-height: 0px;") : "";
+			String chartWithPopup = chart != null ? createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), false) : "";
 			return Arrays.asList(link, p.quantity, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
 					p.option.getUnderlyingPrice(), underlyingCostPerShare, chartWithPopup);
 		}

@@ -2,7 +2,6 @@ package com.roddyaj.invest.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.util.HtmlFormatter;
 
@@ -99,15 +98,7 @@ public class Order
 			String link = String.format(
 					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.quantity) + "');\">%s</a>",
 					o.symbol, o.symbol);
-			String quantityText = String.valueOf(Math.abs(o.quantity));
-			if (o.openOrders != null && !o.openOrders.isEmpty())
-			{
-				String openOrderPopupText = o.openOrders.stream()
-						.map(open -> Math.abs(open.getQuantity()) + " @ " + String.format("%.2f", open.getPrice())).collect(Collectors.joining(", "));
-				int openOrderCount = Math.abs(o.openOrders.stream().mapToInt(OpenOrder::getQuantity).sum());
-				String popup = createPopup(String.valueOf(openOrderCount), openOrderPopupText, null);
-				quantityText += " (" + popup + ")";
-			}
+			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(o.openOrders);
 			String dayChangeColored = o.position != null ? color(o.position.getDayChangePct(), "%.2f%%") : "";
 			String gainLossPctColored = o.position != null ? color(o.position.getGainLossPct(), "%.2f%%") : "";
 			return List.of(link, action, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);

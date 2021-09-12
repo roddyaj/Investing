@@ -1,5 +1,10 @@
 package com.roddyaj.invest.model;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+import com.roddyaj.invest.util.HtmlFormatter;
+
 public class OpenOrder
 {
 	private final String symbol;
@@ -48,5 +53,21 @@ public class OpenOrder
 	public String toString()
 	{
 		return "symbol=" + symbol + ", quantity=" + quantity + ", price=" + price;
+	}
+
+	public static String getPopupText(Collection<? extends OpenOrder> orders)
+	{
+		String popupText = "";
+		if (orders != null && !orders.isEmpty())
+		{
+			String openOrderPopupText = "Open Orders<br>" + orders.stream().map(o -> {
+				String action = o.getQuantity() < 0 ? "Sell" : "Buy";
+				String price = String.format("%.2f", o.getOption() != null ? o.getOption().getStrike() : o.getPrice());
+				return action + " " + Math.abs(o.getQuantity()) + " @ " + price;
+			}).collect(Collectors.joining("<br>"));
+			int openOrderCount = Math.abs(orders.stream().mapToInt(OpenOrder::getQuantity).sum());
+			popupText = " " + HtmlFormatter.createPopup("(" + openOrderCount + ")", openOrderPopupText, true);
+		}
+		return popupText;
 	}
 }

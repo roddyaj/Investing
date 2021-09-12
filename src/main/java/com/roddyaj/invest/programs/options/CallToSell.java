@@ -3,6 +3,7 @@ package com.roddyaj.invest.programs.options;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.util.HtmlFormatter;
 
@@ -10,7 +11,7 @@ public class CallToSell implements Comparable<CallToSell>
 {
 	private final Position position;
 	private final int quantity;
-	private int openOrderQuantity;
+	private List<OpenOrder> openOrders;
 
 	public CallToSell(Position position, int quantity)
 	{
@@ -18,24 +19,9 @@ public class CallToSell implements Comparable<CallToSell>
 		this.quantity = quantity;
 	}
 
-	public void setOpenOrderQuantity(int openOrderQuantity)
+	public void setOpenOrders(List<OpenOrder> openOrders)
 	{
-		this.openOrderQuantity = openOrderQuantity;
-	}
-
-	public Position getPosition()
-	{
-		return position;
-	}
-
-	public int getQuantity()
-	{
-		return quantity;
-	}
-
-	public int getOpenOrderQuantity()
-	{
-		return openOrderQuantity;
+		this.openOrders = openOrders;
 	}
 
 	@Override
@@ -68,7 +54,7 @@ public class CallToSell implements Comparable<CallToSell>
 		{
 			String schwab = toLinkSymbol(SCHWAB, c.position.getSymbol());
 			String yahoo = toLinkSymbol(YAHOO, c.position.getSymbol());
-			String quantityText = c.quantity + (c.openOrderQuantity == 0 ? "" : " (" + c.openOrderQuantity + ")");
+			String quantityText = c.quantity + OpenOrder.getPopupText(c.openOrders);
 			double costPerShare = c.position.getCostPerShare();
 			String dir = color(c.position.getPrice() >= costPerShare ? "&#8599;" : "&#8600;",
 					c.position.getPrice() >= costPerShare ? "green" : "red");

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Position;
@@ -17,6 +18,10 @@ public class OptionsCore
 {
 	private final Input input;
 
+	private final Account account;
+
+	private final List<Position> positions;
+
 	private final List<Transaction> historicalOptions;
 
 	private final OptionsOutput output;
@@ -24,8 +29,10 @@ public class OptionsCore
 	public OptionsCore(Input input)
 	{
 		this.input = input;
-		historicalOptions = input.account.getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
-		output = new OptionsOutput(input.account.getName());
+		account = input.getAccount();
+		positions = input.getAccount().getPositions();
+		historicalOptions = input.getAccount().getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
+		output = new OptionsOutput(input.getAccount().getName());
 	}
 
 	public OptionsOutput run()
@@ -42,7 +49,7 @@ public class OptionsCore
 
 	private void setUp()
 	{
-		for (Position position : input.account.getPositions())
+		for (Position position : positions)
 		{
 			if (position.isOption())
 			{
@@ -53,7 +60,7 @@ public class OptionsCore
 					position.getOption().setInitialDate(recentTransaction.getDate());
 
 				// Set the underlying position if available
-				Position underlying = input.account.getPositions(position.getSymbol()).filter(p -> !p.isOption()).findAny().orElse(null);
+				Position underlying = account.getPositions(position.getSymbol()).filter(p -> !p.isOption()).findAny().orElse(null);
 				position.getOption().setUnderlying(underlying);
 			}
 		}
@@ -61,7 +68,7 @@ public class OptionsCore
 
 	private void analyzeBuyToClose()
 	{
-		input.account.getPositions().stream()
+		positions.stream()
 				.filter(p -> p.isOption() && getOptionValueRatio(p) <= .65
 						&& (p.isPutOption() || p.getOption().getUnderlyingPrice() > p.getOption().getUnderlying().getCostPerShare()))
 				.forEach(output.buyToClose::add);
@@ -69,11 +76,11 @@ public class OptionsCore
 
 	private void analyzeCallsToSell()
 	{
-		for (Position position : input.account.getPositions())
+		for (Position position : positions)
 		{
 			if (!position.isOption() && position.getQuantity() >= 100 && !input.getSettings().excludeOption(position.getSymbol()))
 			{
-				int totalCallsSold = input.account.getPositions().stream().filter(p -> p.getSymbol().equals(position.getSymbol()) && p.isCallOption())
+				int totalCallsSold = positions.stream().filter(p -> p.getSymbol().equals(position.getSymbol()) && p.isCallOption())
 						.mapToInt(Position::getQuantity).sum();
 				int availableShares = position.getQuantity() + totalCallsSold * 100;
 				int availableCalls = (int)Math.floor(availableShares / 100.0);
@@ -81,7 +88,7 @@ public class OptionsCore
 				if (availableCalls > 0 && isUpAtAll)
 				{
 					CallToSell call = new CallToSell(position, availableCalls);
-					call.setOpenOrders(input.account.getOpenOrders(position.getSymbol(), Action.SELL, 'C'));
+					call.setOpenOrders(account.getOpenOrders(position.getSymbol(), Action.SELL, 'C'));
 					output.callsToSell.add(call);
 				}
 			}
@@ -114,7 +121,7 @@ public class OptionsCore
 			Double dayChangePct = input.getDayChange(symbol);
 			boolean isDownForDay = dayChangePct == null || dayChangePct.doubleValue() < .1;
 
-			List<Position> symbolPositions = input.account.getPositions(symbol).collect(Collectors.toList());
+			List<Position> symbolPositions = account.getPositions(symbol).collect(Collectors.toList());
 			// Existing position: see if we can sell more put(s)
 			if (!symbolPositions.isEmpty())
 			{
@@ -122,19 +129,19 @@ public class OptionsCore
 				int shareCount = underlying != null ? underlying.getQuantity() : 0;
 				int putsSold = symbolPositions.stream().filter(Position::isPutOption).mapToInt(Position::getQuantity).sum();
 				double totalInvested = (shareCount + putsSold * -100) * price;
-				double available = input.account.getAccountSettings().getMaxPosition() - totalInvested;
+				double available = account.getAccountSettings().getMaxPosition() - totalInvested;
 				boolean canSell = (available / (price * 100)) > 0.9; // Hack: using price in place of strike since we don't have strike
 				if (canSell && isDownForDay)
 				{
 					PutToSell put = new PutToSell(symbol, available, price, dayChangePct);
-					put.setOpenOrders(input.account.getOpenOrders(symbol, Action.SELL, 'P'));
+					put.setOpenOrders(account.getOpenOrders(symbol, Action.SELL, 'P'));
 					output.putsToSell.add(put);
 				}
 			}
 			// New position
 			else
 			{
-				double available = input.account.getAccountSettings().getMaxPosition();
+				double available = account.getAccountSettings().getMaxPosition();
 				// Hack: using price in place of strike since we don't have strike
 				boolean canSell = price == null || (available / (price * 100)) > 0.9;
 				if (canSell && isDownForDay)
@@ -151,7 +158,6 @@ public class OptionsCore
 
 	private void availableToTrade()
 	{
-		List<Position> positions = input.account.getPositions();
 		double cashBalance = positions.stream().filter(p -> p.getSymbol().equals("Cash & Cash Investments")).mapToDouble(Position::getMarketValue)
 				.findAny().orElse(0);
 		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.getOption().getStrike() * p.getQuantity() * -100)
@@ -161,8 +167,8 @@ public class OptionsCore
 
 	private void currentPositions()
 	{
-		input.account.getPositions().stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
-		input.account.getPositions().stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
+		positions.stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
+		positions.stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
 	}
 
 	private void monthlyIncome()

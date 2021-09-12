@@ -91,6 +91,7 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 				th, td { padding: 2px 4px; }
 				a:link { text-decoration: none; }
 				a:hover { text-decoration: underline; }
+				a:visited { color: blue; }
 				.row { display: flex; flex-direction: row; }
 				.column { display: flex; flex-direction: column; margin-right: 8px; }
 				.block { border: 1px solid; border-radius: 4px; padding: 4px; margin-bottom: 8px; background-color: #F7F7F7; }

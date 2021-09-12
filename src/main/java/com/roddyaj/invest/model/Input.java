@@ -14,8 +14,8 @@ import com.roddyaj.invest.util.AppFileUtils;
 public class Input
 {
 	private final Settings settings;
-	public final Account account;
-	public final Information information;
+	private final Account account;
+	private final Information information;
 	private final List<Account> otherAccounts;
 
 	public Input(String accountName)
@@ -27,29 +27,24 @@ public class Input
 				.collect(Collectors.toList());
 	}
 
-	private Settings readSettings()
-	{
-		Settings settings = null;
-		Path settingsFile = Paths.get(AppFileUtils.SETTINGS_DIR.toString(), "settings.json");
-		try
-		{
-			settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		return settings;
-	}
-
-	private Account newAccount(String accountName)
-	{
-		return new Account(accountName, settings.getAccount(accountName));
-	}
-
 	public Settings getSettings()
 	{
 		return settings;
+	}
+
+	public Account getAccount()
+	{
+		return account;
+	}
+
+	public Information getInformation()
+	{
+		return information;
+	}
+
+	public List<Account> getOtherAccounts()
+	{
+		return otherAccounts;
 	}
 
 	public Double getPrice(String symbol)
@@ -80,5 +75,25 @@ public class Input
 			}
 		}
 		return dayChange;
+	}
+
+	private Settings readSettings()
+	{
+		Settings settings = null;
+		Path settingsFile = Paths.get(AppFileUtils.SETTINGS_DIR.toString(), "settings.json");
+		try
+		{
+			settings = new ObjectMapper().readValue(settingsFile.toFile(), Settings.class);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		return settings;
+	}
+
+	private Account newAccount(String accountName)
+	{
+		return new Account(accountName, settings.getAccount(accountName));
 	}
 }

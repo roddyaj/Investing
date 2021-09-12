@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.roddyaj.invest.framework.Program;
+import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Message;
 import com.roddyaj.invest.programs.options.OptionsCore;
@@ -24,10 +25,10 @@ public class Combined implements Program
 		PositionManagerOutput positionsOutput = new PositionManagerCore(input).run();
 		OptionsOutput optionsOutput = new OptionsCore(input).run();
 
-		showHtml(input, positionsOutput, optionsOutput);
+		showHtml(input.getAccount(), positionsOutput, optionsOutput);
 	}
 
-	private void showHtml(Input input, PositionManagerOutput positionsOutput, OptionsOutput optionsOutput)
+	private void showHtml(Account account, PositionManagerOutput positionsOutput, OptionsOutput optionsOutput)
 	{
 		List<String> lines = new ArrayList<>();
 
@@ -48,9 +49,9 @@ public class Combined implements Program
 		columnLines.addAll(HtmlFormatter.toColumn(optionsOutput.getIncomeHtml()));
 		lines.addAll(HtmlFormatter.toRow(columnLines));
 
-		String html = HtmlFormatter.toDocument(input.account.getName().replace('_', ' '), lines);
+		String html = HtmlFormatter.toDocument(account.getName().replace('_', ' '), lines);
 
-		AppFileUtils.showHtml(html, input.account.getName() + ".html");
+		AppFileUtils.showHtml(html, account.getName() + ".html");
 	}
 
 	private List<String> getLinks()

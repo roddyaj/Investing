@@ -23,8 +23,8 @@ public class PositionManagerCore
 
 	public PositionManagerCore(Input input)
 	{
-		account = input.account;
-		accountSettings = input.account.getAccountSettings();
+		account = input.getAccount();
+		accountSettings = input.getAccount().getAccountSettings();
 		output = new PositionManagerOutput();
 	}
 
@@ -60,7 +60,7 @@ public class PositionManagerCore
 	{
 		Order order = null;
 
-		double targetValue = account.getTotalValue() * account.getAccountSettings().getAllocation(symbol);
+		double targetValue = account.getTotalValue() * accountSettings.getAllocation(symbol);
 
 		Position position = account.getPosition(symbol);
 		if (position != null)

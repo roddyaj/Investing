@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.roddyaj.invest.api.alphavantage.AlphaVantageAPI;
 import com.roddyaj.invest.model.Account;
@@ -33,7 +32,7 @@ public class PositionManagerCore
 		accountSettings = input.getAccount().getAccountSettings();
 		output = new PositionManagerOutput();
 
-		Api apiSettings = Stream.of(input.getSettings().getApis()).filter(api -> "AlphaVantage".equals(api.getName())).findAny().orElse(null);
+		Api apiSettings = input.getSettings().getApi("AlphaVantage");
 		if (apiSettings != null)
 			alphaVantageAPI = new AlphaVantageAPI(apiSettings.getApiKey(), apiSettings.getRequestsPerMinute());
 	}
@@ -87,7 +86,7 @@ public class PositionManagerCore
 			{
 				try
 				{
-					double price = alphaVantageAPI.getPrice(symbol);
+					double price = alphaVantageAPI.getQuote(symbol).getPrice();
 					int sharesToBuy = (int)Math.round(targetValue / price);
 					order = new Order(symbol, sharesToBuy, price, null);
 				}

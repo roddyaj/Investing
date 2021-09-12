@@ -5,6 +5,7 @@ import java.time.Duration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.roddyaj.invest.api.model.Quote;
 import com.roddyaj.invest.network.HttpClientNew;
 import com.roddyaj.invest.network.Response;
 
@@ -22,11 +23,13 @@ public class AlphaVantageAPI
 		this.requestLimitPerMinute = requestLimitPerMinute;
 	}
 
-	public double getPrice(String symbol) throws IOException
+	public Quote getQuote(String symbol) throws IOException
 	{
 		JsonNode json = request(symbol, "GLOBAL_QUOTE");
 		JsonNode quote = json.get("Global Quote");
-		return getDouble(quote, "05. price");
+		double price = getDouble(quote, "05. price");
+		double changePercent = getPercent(quote, "10. change percent");
+		return new Quote(price, changePercent);
 	}
 
 	private JsonNode request(String symbol, String function) throws IOException
@@ -38,17 +41,23 @@ public class AlphaVantageAPI
 		return node;
 	}
 
-//	private static String getString(JSONObject obj, String key)
-//	{
-//		return (String)obj.get(key);
-//	}
-
 	private static double getDouble(JsonNode obj, String key)
 	{
 		String value = obj.get(key).textValue();
 		return "None".equals(value) ? 0 : Double.parseDouble(value);
 	}
 
+	private static double getPercent(JsonNode obj, String key)
+	{
+		String value = obj.get(key).textValue();
+		return "None".equals(value) ? 0 : Double.parseDouble(value.replace("%", ""));
+	}
+
+//	private static String getString(JSONObject obj, String key)
+//	{
+//		return (String)obj.get(key);
+//	}
+//
 //	private static LocalDate getDate(JSONObject obj, String key)
 //	{
 //		return LocalDate.parse((String)obj.get(key));

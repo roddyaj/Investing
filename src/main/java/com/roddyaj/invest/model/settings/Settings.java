@@ -69,6 +69,11 @@ public class Settings
 		return Arrays.stream(accounts).filter(a -> a.getName().equals(name)).findAny().orElse(null);
 	}
 
+	public Api getApi(String name)
+	{
+		return Arrays.stream(apis).filter(api -> api.getName().equals(name)).findAny().orElse(null);
+	}
+
 	public boolean excludeOption(String symbol)
 	{
 		return Arrays.asList(optionsExclude).contains(symbol);

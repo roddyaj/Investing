@@ -1,10 +1,13 @@
 package com.roddyaj.invest.programs.positions;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.roddyaj.invest.alphavantage.AlphaVantageAPI;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
@@ -12,6 +15,7 @@ import com.roddyaj.invest.model.Message.Level;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.settings.AccountSettings;
+import com.roddyaj.invest.model.settings.Api;
 
 public class PositionManagerCore
 {
@@ -21,11 +25,17 @@ public class PositionManagerCore
 
 	private final PositionManagerOutput output;
 
+	private AlphaVantageAPI alphaVantageAPI;
+
 	public PositionManagerCore(Input input)
 	{
 		account = input.getAccount();
 		accountSettings = input.getAccount().getAccountSettings();
 		output = new PositionManagerOutput();
+
+		Api apiSettings = Stream.of(input.getSettings().getApis()).filter(api -> "AlphaVantage".equals(api.getName())).findAny().orElse(null);
+		if (apiSettings != null)
+			alphaVantageAPI = new AlphaVantageAPI(apiSettings.getApiKey(), apiSettings.getRequestsPerMinute());
 	}
 
 	public PositionManagerOutput run()
@@ -66,16 +76,33 @@ public class PositionManagerCore
 		if (position != null)
 		{
 			double delta = targetValue - position.getMarketValue();
-			long sharesToBuy = Math.round(delta / position.getPrice());
-			order = new Order(symbol, (int)sharesToBuy, position.getPrice(), position);
+			int sharesToBuy = (int)Math.round(delta / position.getPrice());
+			order = new Order(symbol, sharesToBuy, position.getPrice(), position);
 			order.setOptional(order.getPosition() != null
 					&& (order.getQuantity() >= 0 ? order.getPosition().getDayChangePct() > .1 : order.getPosition().getDayChangePct() < -.1));
-			order.setOpenOrders(account.getOpenOrders(symbol, order.getQuantity() >= 0 ? Action.BUY : Action.SELL, null));
 		}
 		else if (targetValue > 0)
 		{
-			order = new Order(symbol, 0, targetValue, null);
+			if (alphaVantageAPI != null)
+			{
+				try
+				{
+					double price = alphaVantageAPI.getPrice(symbol);
+					int sharesToBuy = (int)Math.round(targetValue / price);
+					order = new Order(symbol, sharesToBuy, price, null);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+
+			if (order == null)
+				order = new Order(symbol, 0, targetValue, null);
 		}
+
+		if (order != null)
+			order.setOpenOrders(account.getOpenOrders(symbol, order.getQuantity() >= 0 ? Action.BUY : Action.SELL, null));
 
 		return order;
 	}

@@ -14,6 +14,8 @@ public class Settings
 
 	private AccountSettings[] accounts;
 
+	private Api[] apis;
+
 	@JsonProperty("optionsExclude")
 	public String[] getOptionsExclude()
 	{
@@ -36,6 +38,18 @@ public class Settings
 	public void setOptionsInclude(String[] optionsInclude)
 	{
 		this.optionsInclude = optionsInclude;
+	}
+
+	@JsonProperty("apis")
+	public Api[] getApis()
+	{
+		return apis;
+	}
+
+	@JsonProperty("apis")
+	public void setApis(Api[] apis)
+	{
+		this.apis = apis;
 	}
 
 	@JsonProperty("accounts")

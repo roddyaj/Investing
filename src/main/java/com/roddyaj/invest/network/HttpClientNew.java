@@ -19,7 +19,8 @@ import okhttp3.Request;
  * HTTP client. Create one and reuse it.<br>
  * Features:<br>
  * - Caching (memory and disk)<br>
- * - Request throttling - Uses Square's OkHttp library for requests<br>
+ * - Request throttling<br>
+ * - Uses Square's OkHttp library for requests<br>
  */
 public class HttpClientNew
 {

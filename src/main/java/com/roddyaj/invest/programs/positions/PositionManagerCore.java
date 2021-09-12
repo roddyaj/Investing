@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.roddyaj.invest.alphavantage.AlphaVantageAPI;
+import com.roddyaj.invest.api.alphavantage.AlphaVantageAPI;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;

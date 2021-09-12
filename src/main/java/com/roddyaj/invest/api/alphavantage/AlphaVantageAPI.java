@@ -1,4 +1,4 @@
-package com.roddyaj.invest.alphavantage;
+package com.roddyaj.invest.api.alphavantage;
 
 import java.io.IOException;
 import java.time.Duration;

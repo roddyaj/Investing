@@ -9,10 +9,10 @@ import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.roddyaj.invest.api.schwab.SchwabOpenOrdersSource;
+import com.roddyaj.invest.api.schwab.SchwabPositionsSource;
+import com.roddyaj.invest.api.schwab.SchwabTransactionsSource;
 import com.roddyaj.invest.model.settings.AccountSettings;
-import com.roddyaj.invest.schwab.SchwabOpenOrdersSource;
-import com.roddyaj.invest.schwab.SchwabPositionsSource;
-import com.roddyaj.invest.schwab.SchwabTransactionsSource;
 import com.roddyaj.invest.util.AppFileUtils;
 
 public class Account

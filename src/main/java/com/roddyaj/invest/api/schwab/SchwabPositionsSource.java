@@ -1,4 +1,4 @@
-package com.roddyaj.invest.schwab;
+package com.roddyaj.invest.api.schwab;
 
 import java.nio.file.Path;
 import java.time.LocalDate;

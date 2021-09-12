@@ -1,4 +1,4 @@
-package com.roddyaj.invest.schwab;
+package com.roddyaj.invest.api.schwab;
 
 import java.io.IOException;
 import java.nio.file.Files;

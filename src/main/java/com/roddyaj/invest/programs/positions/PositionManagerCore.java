@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.roddyaj.invest.api.alphavantage.AlphaVantageAPI;
+import com.roddyaj.invest.api.finnhub.FinnhubAPI;
+import com.roddyaj.invest.api.model.QuoteProvider;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
@@ -24,7 +25,7 @@ public class PositionManagerCore
 
 	private final PositionManagerOutput output;
 
-	private AlphaVantageAPI alphaVantageAPI;
+	private QuoteProvider quoteProvider;
 
 	public PositionManagerCore(Input input)
 	{
@@ -32,9 +33,9 @@ public class PositionManagerCore
 		accountSettings = input.getAccount().getAccountSettings();
 		output = new PositionManagerOutput();
 
-		Api apiSettings = input.getSettings().getApi("AlphaVantage");
+		Api apiSettings = input.getSettings().getApi("Finnhub");
 		if (apiSettings != null)
-			alphaVantageAPI = new AlphaVantageAPI(apiSettings.getApiKey(), apiSettings.getRequestsPerMinute());
+			quoteProvider = new FinnhubAPI(apiSettings.getApiKey(), apiSettings.getRequestsPerMinute());
 	}
 
 	public PositionManagerOutput run()
@@ -82,11 +83,11 @@ public class PositionManagerCore
 		}
 		else if (targetValue > 0)
 		{
-			if (alphaVantageAPI != null)
+			if (quoteProvider != null)
 			{
 				try
 				{
-					double price = alphaVantageAPI.getQuote(symbol).getPrice();
+					double price = quoteProvider.getQuote(symbol).getPrice();
 					int sharesToBuy = (int)Math.round(targetValue / price);
 					order = new Order(symbol, sharesToBuy, price, null);
 				}

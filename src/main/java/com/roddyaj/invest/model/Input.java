@@ -8,6 +8,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.roddyaj.invest.api.alphavantage.AlphaVantageAPI;
+import com.roddyaj.invest.api.finnhub.FinnhubAPI;
+import com.roddyaj.invest.api.model.QuoteRegistry;
+import com.roddyaj.invest.model.settings.Api;
 import com.roddyaj.invest.model.settings.Settings;
 import com.roddyaj.invest.util.AppFileUtils;
 
@@ -15,16 +19,37 @@ public class Input
 {
 	private final Settings settings;
 	private final Account account;
-	private final Information information;
+	private final Information information = new Information();
 	private final List<Account> otherAccounts;
+	private final QuoteRegistry quoteRegistry = new QuoteRegistry();
 
 	public Input(String accountName)
 	{
 		settings = readSettings();
 		account = newAccount(accountName);
-		information = new Information();
 		otherAccounts = Stream.of(settings.getAccounts()).filter(a -> !a.getName().equals(accountName)).map(a -> newAccount(a.getName()))
 				.collect(Collectors.toList());
+
+		quoteRegistry.addProvider(account);
+		for (Account otherAccount : otherAccounts)
+			quoteRegistry.addProvider(otherAccount);
+		Api apiSettings;
+		FinnhubAPI finnhub = new FinnhubAPI();
+		apiSettings = settings.getApi(finnhub.getName());
+		if (apiSettings != null)
+		{
+			finnhub.setApiKey(apiSettings.getApiKey());
+			finnhub.setRequestLimitPerMinute(apiSettings.getRequestsPerMinute());
+			quoteRegistry.addProvider(finnhub);
+		}
+		AlphaVantageAPI alphaVantage = new AlphaVantageAPI();
+		apiSettings = settings.getApi(alphaVantage.getName());
+		if (apiSettings != null)
+		{
+			alphaVantage.setApiKey(apiSettings.getApiKey());
+			alphaVantage.setRequestLimitPerMinute(apiSettings.getRequestsPerMinute());
+			quoteRegistry.addProvider(alphaVantage);
+		}
 	}
 
 	public Settings getSettings()
@@ -47,34 +72,9 @@ public class Input
 		return otherAccounts;
 	}
 
-	public Double getPrice(String symbol)
+	public QuoteRegistry getQuoteRegistry()
 	{
-		Double price = account.getPrice(symbol);
-		if (price == null)
-		{
-			for (Account otherAccount : otherAccounts)
-			{
-				price = otherAccount.getPrice(symbol);
-				if (price != null)
-					break;
-			}
-		}
-		return price;
-	}
-
-	public Double getDayChange(String symbol)
-	{
-		Double dayChange = account.getDayChange(symbol);
-		if (dayChange == null)
-		{
-			for (Account otherAccount : otherAccounts)
-			{
-				dayChange = otherAccount.getDayChange(symbol);
-				if (dayChange != null)
-					break;
-			}
-		}
-		return dayChange;
+		return quoteRegistry;
 	}
 
 	private Settings readSettings()

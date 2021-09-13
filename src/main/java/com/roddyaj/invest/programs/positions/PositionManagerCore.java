@@ -1,13 +1,11 @@
 package com.roddyaj.invest.programs.positions;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.roddyaj.invest.api.finnhub.FinnhubAPI;
-import com.roddyaj.invest.api.model.QuoteProvider;
+import com.roddyaj.invest.api.model.QuoteRegistry;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
@@ -15,7 +13,6 @@ import com.roddyaj.invest.model.Message.Level;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.settings.AccountSettings;
-import com.roddyaj.invest.model.settings.Api;
 
 public class PositionManagerCore
 {
@@ -25,17 +22,14 @@ public class PositionManagerCore
 
 	private final PositionManagerOutput output;
 
-	private QuoteProvider quoteProvider;
+	private final QuoteRegistry quoteRegistry;
 
 	public PositionManagerCore(Input input)
 	{
 		account = input.getAccount();
 		accountSettings = input.getAccount().getAccountSettings();
 		output = new PositionManagerOutput();
-
-		Api apiSettings = input.getSettings().getApi("Finnhub");
-		if (apiSettings != null)
-			quoteProvider = new FinnhubAPI(apiSettings.getApiKey(), apiSettings.getRequestsPerMinute());
+		quoteRegistry = input.getQuoteRegistry();
 	}
 
 	public PositionManagerOutput run()
@@ -83,22 +77,16 @@ public class PositionManagerCore
 		}
 		else if (targetValue > 0)
 		{
-			if (quoteProvider != null)
+			Double price = quoteRegistry.getPrice(symbol);
+			if (price != null)
 			{
-				try
-				{
-					double price = quoteProvider.getQuote(symbol).getPrice();
-					int sharesToBuy = (int)Math.round(targetValue / price);
-					order = new Order(symbol, sharesToBuy, price, null);
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
+				int sharesToBuy = (int)Math.round(targetValue / price);
+				order = new Order(symbol, sharesToBuy, price, null);
 			}
-
-			if (order == null)
+			else
+			{
 				order = new Order(symbol, 0, targetValue, null);
+			}
 		}
 
 		if (order != null)

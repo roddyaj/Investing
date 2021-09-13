@@ -14,14 +14,14 @@ public class FinnhubAPI implements QuoteProvider
 {
 	private static final String urlRoot = "https://finnhub.io/api/v1/";
 
-	private final String apiKey;
+	private String apiKey;
 
-	private final int requestLimitPerMinute;
+	private int requestLimitPerMinute;
 
-	public FinnhubAPI(String apiKey, int requestLimitPerMinute)
+	@Override
+	public String getName()
 	{
-		this.apiKey = apiKey;
-		this.requestLimitPerMinute = requestLimitPerMinute;
+		return "Finnhub";
 	}
 
 	@Override
@@ -31,6 +31,16 @@ public class FinnhubAPI implements QuoteProvider
 		double price = getDouble(json, "c");
 		double changePercent = getDouble(json, "dp");
 		return new Quote(price, changePercent);
+	}
+
+	public void setApiKey(String apiKey)
+	{
+		this.apiKey = apiKey;
+	}
+
+	public void setRequestLimitPerMinute(int requestLimitPerMinute)
+	{
+		this.requestLimitPerMinute = requestLimitPerMinute;
 	}
 
 	private JsonNode request(String symbol, String function) throws IOException

@@ -14,14 +14,14 @@ public class AlphaVantageAPI implements QuoteProvider
 {
 	private static final String urlRoot = "https://www.alphavantage.co/query?";
 
-	private final String urlBase;
+	private String urlBase;
 
-	private final int requestLimitPerMinute;
+	private int requestLimitPerMinute;
 
-	public AlphaVantageAPI(String apiKey, int requestLimitPerMinute)
+	@Override
+	public String getName()
 	{
-		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).toString();
-		this.requestLimitPerMinute = requestLimitPerMinute;
+		return "AlphaVantage";
 	}
 
 	@Override
@@ -32,6 +32,16 @@ public class AlphaVantageAPI implements QuoteProvider
 		double price = getDouble(quote, "05. price");
 		double changePercent = getPercent(quote, "10. change percent");
 		return new Quote(price, changePercent);
+	}
+
+	public void setApiKey(String apiKey)
+	{
+		urlBase = new StringBuilder(urlRoot).append("apikey=").append(apiKey).toString();
+	}
+
+	public void setRequestLimitPerMinute(int requestLimitPerMinute)
+	{
+		this.requestLimitPerMinute = requestLimitPerMinute;
 	}
 
 	private JsonNode request(String symbol, String function) throws IOException

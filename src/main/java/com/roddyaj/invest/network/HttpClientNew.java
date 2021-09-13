@@ -179,7 +179,7 @@ public class HttpClientNew
 
 	private static String getLogMessage(String url, String method, long startNanos)
 	{
-		long deltaMicros = (System.nanoTime() - startNanos) / 1000;
-		return String.format("Took%9d us: %-4s %s", deltaMicros, method, url);
+		long deltaMillis = (System.nanoTime() - startNanos) / 1000000;
+		return String.format("Took%6d ms: %-4s %s", deltaMillis, method, url);
 	}
 }

@@ -5,17 +5,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.roddyaj.invest.api.model.Quote;
+import com.roddyaj.invest.api.model.QuoteProvider;
 import com.roddyaj.invest.api.schwab.SchwabOpenOrdersSource;
 import com.roddyaj.invest.api.schwab.SchwabPositionsSource;
 import com.roddyaj.invest.api.schwab.SchwabTransactionsSource;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.util.AppFileUtils;
 
-public class Account
+public class Account implements QuoteProvider
 {
 	private final String name;
 	private final AccountSettings accountSettings;
@@ -33,9 +34,18 @@ public class Account
 		openOrdersSource = new SchwabOpenOrdersSource(accountSettings);
 	}
 
+	@Override
 	public String getName()
 	{
 		return name;
+	}
+
+	@Override
+	public Quote getQuote(String symbol)
+	{
+		return getPositions(symbol).map(p -> {
+			return new Quote(p.isOption() ? p.getOption().getUnderlyingPrice() : p.getPrice(), p.isOption() ? 0 : p.getDayChangePct());
+		}).findFirst().orElse(null);
 	}
 
 	public LocalDate getDate()
@@ -91,18 +101,6 @@ public class Account
 			match &= action == Action.SELL ? order.getQuantity() < 0 : order.getQuantity() > 0;
 			return match;
 		}).collect(Collectors.toList());
-	}
-
-	public Double getPrice(String symbol)
-	{
-		OptionalDouble price = getPositions(symbol).mapToDouble(p -> p.isOption() ? p.getOption().getUnderlyingPrice() : p.getPrice()).findFirst();
-		return price.isPresent() ? price.getAsDouble() : null;
-	}
-
-	public Double getDayChange(String symbol)
-	{
-		OptionalDouble dayChangePct = getPositions(symbol).filter(p -> !p.isOption()).mapToDouble(Position::getDayChangePct).findFirst();
-		return dayChangePct.isPresent() ? dayChangePct.getAsDouble() : null;
 	}
 
 	public double getTotalValue()

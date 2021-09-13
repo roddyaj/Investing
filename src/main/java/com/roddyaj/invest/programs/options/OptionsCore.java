@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.roddyaj.invest.api.model.Quote;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
@@ -117,8 +118,9 @@ public class OptionsCore
 		// Create the orders with amount available
 		for (String symbol : symbols)
 		{
-			Double price = input.getPrice(symbol);
-			Double dayChangePct = input.getDayChange(symbol);
+			Quote quote = input.getQuoteRegistry().getQuote(symbol);
+			Double price = quote != null ? quote.getPrice() : null;
+			Double dayChangePct = quote != null ? quote.getChangePercent() : null;
 			boolean isDownForDay = dayChangePct == null || dayChangePct.doubleValue() < .1;
 
 			List<Position> symbolPositions = account.getPositions(symbol).collect(Collectors.toList());

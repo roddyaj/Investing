@@ -1,7 +1,6 @@
 package com.roddyaj.invest.api.finnhub;
 
 import java.io.IOException;
-import java.time.Duration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,8 +44,8 @@ public class FinnhubAPI implements QuoteProvider
 
 	private JsonNode request(String symbol, String function) throws IOException
 	{
-		String url = new StringBuilder(urlRoot).append(function).append("?symbol=").append(symbol).append("&token=").append(apiKey).toString();
-		Response response = HttpClientNew.SHARED_INSTANCE.get(url, requestLimitPerMinute, Duration.ofMinutes(10));
+		String url = new StringBuilder(urlRoot).append(function).append("?token=").append(apiKey).append("&symbol=").append(symbol).toString();
+		Response response = HttpClientNew.SHARED_INSTANCE.get(url, requestLimitPerMinute, null); // Duration.ofMinutes(10)
 		return new ObjectMapper().readTree(response.getBody());
 	}
 

@@ -150,7 +150,7 @@ public class HttpClientNew
 			long timeToSleep = sleepTimeMillis - (System.currentTimeMillis() - lastRequest.longValue());
 			if (timeToSleep > 0)
 			{
-				System.out.println("Wait " + timeToSleep + " ms for:     " + url);
+				System.out.println(String.format("Wait%6d ms", timeToSleep));
 				try
 				{
 					Thread.sleep(timeToSleep);

@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.Cache;
 import okhttp3.CacheControl;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
@@ -30,9 +31,9 @@ public class HttpClientNew
 	private final OkHttpClient client;
 	private static final CacheControl noCacheControl = new CacheControl.Builder().noCache().noStore().build();
 
-	// Memory caching
-	private final com.google.common.cache.Cache<String, Response> memoryCache = com.google.common.cache.CacheBuilder.newBuilder().maximumSize(1000)
-			.build();
+//	// Memory caching
+//	private final com.google.common.cache.Cache<String, Response> memoryCache = com.google.common.cache.CacheBuilder.newBuilder().maximumSize(1000)
+//			.build();
 
 	// Throttling
 	private final Map<String, Long> lastRequestMap = new ConcurrentHashMap<>();
@@ -42,7 +43,7 @@ public class HttpClientNew
 	{
 		Path cachePath = Paths.get(System.getProperty("user.home"), ".invest", "http-cache");
 		Cache cache = new Cache(cachePath.toFile(), 10 * 1024 * 1024);
-		client = new OkHttpClient.Builder().cache(cache).build();
+		client = new OkHttpClient.Builder().cache(cache).addNetworkInterceptor(new ThrottleInterceptor()).build();
 	}
 
 	public Response get(String url) throws IOException
@@ -52,16 +53,19 @@ public class HttpClientNew
 
 	public Response get(String url, Number requestLimitPerMinute, Duration maxStale) throws IOException
 	{
-		boolean useCache = maxStale != null;
-		CacheControl cacheControl = useCache ? new CacheControl.Builder().maxStale((int)maxStale.getSeconds(), TimeUnit.SECONDS).build()
+		CacheControl cacheControl = maxStale != null ? new CacheControl.Builder().maxStale((int)maxStale.getSeconds(), TimeUnit.SECONDS).build()
 				: noCacheControl;
-		Request request = new Request.Builder().cacheControl(cacheControl).url(url).build();
-		return request(request, requestLimitPerMinute, useCache, url);
+		Request.Builder builder = new Request.Builder().cacheControl(cacheControl).url(url);
+		if (requestLimitPerMinute != null)
+			builder.addHeader("X-RequestLimitPerMinute", String.valueOf(requestLimitPerMinute.intValue()));
+		Request request = builder.build();
+
+		return request(request);
 	}
 
 	public void clearCache()
 	{
-		clearMemoryCache();
+//		clearMemoryCache();
 		System.out.println("Clearing HTTP disk cache");
 		try
 		{
@@ -73,12 +77,12 @@ public class HttpClientNew
 		}
 	}
 
-	public void clearMemoryCache()
-	{
-		System.out.println("Clearing HTTP memory cache");
-		memoryCache.invalidateAll();
-		memoryCache.cleanUp();
-	}
+//	public void clearMemoryCache()
+//	{
+//		System.out.println("Clearing HTTP memory cache");
+//		memoryCache.invalidateAll();
+//		memoryCache.cleanUp();
+//	}
 
 	public long getCacheSize()
 	{
@@ -94,7 +98,7 @@ public class HttpClientNew
 		return size;
 	}
 
-	private Response request(Request request, Number requestLimitPerMinute, boolean useCache, String cacheKey) throws IOException
+	private Response request(Request request) throws IOException
 	{
 		long start = System.nanoTime();
 
@@ -112,7 +116,7 @@ public class HttpClientNew
 //		}
 //		else
 //		{
-		response = requestOkHttp(request, requestLimitPerMinute, useCache);
+		response = requestOkHttp(request);
 //		}
 
 		System.out.println(getLogMessage(request.url().toString(), request.method(), start));
@@ -120,21 +124,13 @@ public class HttpClientNew
 		return response;
 	}
 
-	private Response requestOkHttp(Request request, Number requestLimitPerMinute, boolean useCache) throws IOException
+	private Response requestOkHttp(Request request) throws IOException
 	{
 		Response response;
-
-		// Throttle if it's going to be a network request
-		if (!useCache || client.cache().get$okhttp(request) == null)
-		{
-			throttle(request.url().toString(), requestLimitPerMinute);
-		}
-
 		try (okhttp3.Response okHttpResponse = client.newCall(request).execute())
 		{
 			response = new Response(okHttpResponse);
 		}
-
 		return response;
 	}
 
@@ -182,4 +178,25 @@ public class HttpClientNew
 		long deltaMillis = (System.nanoTime() - startNanos) / 1000000;
 		return String.format("Took%6d ms: %-4s %s", deltaMillis, method, url);
 	}
+
+	private class ThrottleInterceptor implements Interceptor
+	{
+		@Override
+		public okhttp3.Response intercept(Interceptor.Chain chain) throws IOException
+		{
+			Request request = chain.request();
+
+			String limitString = request.header("X-RequestLimitPerMinute");
+			if (limitString != null)
+			{
+				int requestLimitPerMinute = Integer.parseInt(limitString);
+				throttle(request.url().toString(), requestLimitPerMinute);
+			}
+
+			okhttp3.Response response = chain.proceed(request);
+
+			return response;
+		}
+	}
+
 }

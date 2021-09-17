@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.positions;
+package com.roddyaj.invest.programs.portfoliomanager.positions;
 
 import java.time.LocalDate;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.combined;
+package com.roddyaj.invest.programs.portfoliomanager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,14 +7,14 @@ import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Message;
-import com.roddyaj.invest.programs.options.OptionsCore;
-import com.roddyaj.invest.programs.options.OptionsOutput;
-import com.roddyaj.invest.programs.positions.PositionManagerCore;
-import com.roddyaj.invest.programs.positions.PositionManagerOutput;
+import com.roddyaj.invest.programs.portfoliomanager.options.OptionsCore;
+import com.roddyaj.invest.programs.portfoliomanager.options.OptionsOutput;
+import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerCore;
+import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerOutput;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.HtmlFormatter;
 
-public class Combined implements Program
+public class PortfolioManager implements Program
 {
 	@Override
 	public void run(String... args)

@@ -11,12 +11,10 @@ import java.util.stream.Collectors;
 import com.roddyaj.invest.framework.ListCommand;
 import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.framework.RunCommand;
-import com.roddyaj.invest.programs.combined.Combined;
 import com.roddyaj.invest.programs.dataroma.Dataroma;
-import com.roddyaj.invest.programs.gather.lynalden.Lyn;
 import com.roddyaj.invest.programs.ladder.Ladder;
-import com.roddyaj.invest.programs.options.Options;
-import com.roddyaj.invest.programs.positions.PositionManager;
+import com.roddyaj.invest.programs.lynalden.Lyn;
+import com.roddyaj.invest.programs.portfoliomanager.PortfolioManager;
 
 public final class Main
 {
@@ -33,9 +31,7 @@ public final class Main
 	{
 		List<Program> programList = new ArrayList<>();
 
-		programList.add(new PositionManager());
-		programList.add(new Options());
-		programList.add(new Combined());
+		programList.add(new PortfolioManager());
 		programList.add(new Dataroma());
 		programList.add(new Lyn());
 		programList.add(new Ladder());

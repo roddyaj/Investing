@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.roddyaj.invest.model.Input;
+import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerCore;
+import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerOutput;
 
 class PositionManagerCoreTest
 {

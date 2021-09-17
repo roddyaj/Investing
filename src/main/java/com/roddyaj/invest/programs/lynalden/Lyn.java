@@ -1,4 +1,4 @@
-package com.roddyaj.invest.programs.gather.lynalden;
+package com.roddyaj.invest.programs.lynalden;
 
 import java.io.IOException;
 import java.nio.file.Path;

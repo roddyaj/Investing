@@ -1,8 +1,14 @@
 package com.roddyaj.invest.programs.portfoliomanager.options;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.roddyaj.invest.html.Block;
+import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.Table.Align;
+import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.util.HtmlFormatter;
@@ -30,13 +36,18 @@ public class CallToSell implements Comparable<CallToSell>
 		return Double.compare(o.position.getDayChangePct(), position.getDayChangePct());
 	}
 
-	public static class CallHtmlFormatter extends HtmlFormatter<CallToSell>
+	public static class CallHtmlFormatter
 	{
 		private static final String SCHWAB = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
 		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
 
-		@Override
-		protected List<Column> getColumns()
+		public static Block toBlock(Collection<? extends CallToSell> callsToSell)
+		{
+			Table table = new Table(getColumns(), getRows(callsToSell));
+			return new Block("Calls To Sell", null, table);
+		}
+
+		private static List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Schwab", "%s", Align.L));
@@ -49,16 +60,20 @@ public class CallToSell implements Comparable<CallToSell>
 			return columns;
 		}
 
-		@Override
-		protected List<Object> getObjectElements(CallToSell c)
+		private static List<List<Object>> getRows(Collection<? extends CallToSell> callsToSell)
 		{
-			String schwab = toLinkSymbol(SCHWAB, c.position.getSymbol());
-			String yahoo = toLinkSymbol(YAHOO, c.position.getSymbol());
+			return callsToSell.stream().map(CallHtmlFormatter::toRow).collect(Collectors.toList());
+		}
+
+		private static List<Object> toRow(CallToSell c)
+		{
+			String schwab = HtmlFormatter.toLinkSymbol(SCHWAB, c.position.getSymbol());
+			String yahoo = HtmlFormatter.toLinkSymbol(YAHOO, c.position.getSymbol());
 			String quantityText = c.quantity + OpenOrder.getPopupText(c.openOrders);
 			double costPerShare = c.position.getCostPerShare();
-			String dir = color(c.position.getPrice() >= costPerShare ? "&#8599;" : "&#8600;",
+			String dir = HtmlFormatter.color(c.position.getPrice() >= costPerShare ? "&#8599;" : "&#8600;",
 					c.position.getPrice() >= costPerShare ? "green" : "red");
-			String changeColored = color(c.position.getDayChangePct(), "%.2f%%");
+			String changeColored = HtmlFormatter.color(c.position.getDayChangePct(), "%.2f%%");
 			return List.of(schwab, yahoo, quantityText, costPerShare, dir, c.position.getPrice(), changeColored);
 		}
 	}

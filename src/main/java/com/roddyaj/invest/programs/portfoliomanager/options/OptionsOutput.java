@@ -1,12 +1,17 @@
 package com.roddyaj.invest.programs.portfoliomanager.options;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.roddyaj.invest.html.Block;
+import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.Table.Align;
+import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.AbstractOutput;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.util.HtmlFormatter;
@@ -48,13 +53,13 @@ public class OptionsOutput extends AbstractOutput
 		List<String> lines = new ArrayList<>();
 
 		String info = String.format("Frees up $%.0f", buyToClose.stream().filter(Position::isPutOption).mapToDouble(Position::getMoneyInPlay).sum());
-		lines.addAll(new Position.OptionHtmlFormatter().toBlock(buyToClose, "Buy To Close", info));
+		lines.addAll(Position.OptionHtmlFormatter.toBlock(buyToClose, "Buy To Close", info).toHtml());
 
 		Collections.sort(callsToSell);
-		lines.addAll(new CallToSell.CallHtmlFormatter().toBlock(callsToSell, "Calls To Sell", null));
+		lines.addAll(CallToSell.CallHtmlFormatter.toBlock(callsToSell).toHtml());
 
 		Collections.sort(putsToSell);
-		lines.addAll(PutToSell.toBlock(putsToSell, availableToTrade));
+		lines.addAll(PutToSell.PutHtmlFormatter.toBlock(putsToSell, availableToTrade).toHtml());
 
 		return lines;
 	}
@@ -69,7 +74,7 @@ public class OptionsOutput extends AbstractOutput
 		double putsInPlay = currentPositions.stream().filter(Position::isPutOption).mapToDouble(Position::getMoneyInPlay).sum();
 		String info = String.format("C: %d $%.0f &nbsp;P: %d $%.0f &nbsp;T: %d $%.0f", callsCount, callsInPlay, putsCount, putsInPlay,
 				callsCount + putsCount, callsInPlay + putsInPlay);
-		lines.addAll(new Position.OptionHtmlFormatter().toBlock(currentPositions, "Current Options", info));
+		lines.addAll(Position.OptionHtmlFormatter.toBlock(currentPositions, "Current Options", info).toHtml());
 
 		return lines;
 	}
@@ -79,15 +84,20 @@ public class OptionsOutput extends AbstractOutput
 		List<String> lines = new ArrayList<>();
 
 		var monthlyIncome = monthToIncome.entrySet().stream().sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())).collect(Collectors.toList());
-		lines.addAll(new MonthlyIncomeFormatter().toBlock(monthlyIncome, "Options Income", null));
+		lines.addAll(MonthlyIncomeFormatter.toBlock(monthlyIncome).toHtml());
 
 		return lines;
 	}
 
-	private static class MonthlyIncomeFormatter extends HtmlFormatter<Map.Entry<String, Double>>
+	private static class MonthlyIncomeFormatter
 	{
-		@Override
-		protected List<Column> getColumns()
+		public static Block toBlock(Collection<? extends Map.Entry<String, Double>> income)
+		{
+			Table table = new Table(getColumns(), getRows(income));
+			return new Block("Options Income", null, table);
+		}
+
+		private static List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Month", "%s", Align.L));
@@ -95,8 +105,12 @@ public class OptionsOutput extends AbstractOutput
 			return columns;
 		}
 
-		@Override
-		protected List<Object> getObjectElements(Map.Entry<String, Double> e)
+		private static List<List<Object>> getRows(Collection<? extends Map.Entry<String, Double>> income)
+		{
+			return income.stream().map(MonthlyIncomeFormatter::toRow).collect(Collectors.toList());
+		}
+
+		private static List<Object> toRow(Map.Entry<String, Double> e)
 		{
 			return List.of(e.getKey(), e.getValue());
 		}

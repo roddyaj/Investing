@@ -4,7 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.roddyaj.invest.html.Block;
+import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.Table.Align;
+import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.util.HtmlFormatter;
 
@@ -53,19 +58,19 @@ public class PutToSell implements Comparable<PutToSell>
 		return result;
 	}
 
-	public static List<String> toBlock(Collection<? extends PutToSell> puts, double availableToTrade)
-	{
-		String info = String.format("$%.0f available", availableToTrade);
-		return new PutHtmlFormatter().toBlock(puts, "Candidate Puts To Sell", info);
-	}
-
-	public static class PutHtmlFormatter extends HtmlFormatter<PutToSell>
+	public static class PutHtmlFormatter
 	{
 		private static final String SCHWAB = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
 		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
 
-		@Override
-		protected List<Column> getColumns()
+		public static Block toBlock(Collection<? extends PutToSell> putsToSell, double availableToTrade)
+		{
+			String info = String.format("$%.0f available", availableToTrade);
+			Table table = new Table(getColumns(), getRows(putsToSell));
+			return new Block("Candidate Puts To Sell", info, table);
+		}
+
+		private static List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Schwab", "%s", Align.L));
@@ -78,12 +83,16 @@ public class PutToSell implements Comparable<PutToSell>
 			return columns;
 		}
 
-		@Override
-		protected List<Object> getObjectElements(PutToSell p)
+		private static List<List<Object>> getRows(Collection<? extends PutToSell> putsToSell)
 		{
-			String schwabLink = toLinkSymbol(SCHWAB, p.symbol);
-			String yahooLink = toLinkSymbol(YAHOO, p.symbol);
-			String dayChangePct = p.dayChangePct != null ? color(p.dayChangePct.doubleValue(), "%.2f%%") : null;
+			return putsToSell.stream().map(PutHtmlFormatter::toRow).collect(Collectors.toList());
+		}
+
+		private static List<Object> toRow(PutToSell p)
+		{
+			String schwabLink = HtmlFormatter.toLinkSymbol(SCHWAB, p.symbol);
+			String yahooLink = HtmlFormatter.toLinkSymbol(YAHOO, p.symbol);
+			String dayChangePct = p.dayChangePct != null ? HtmlFormatter.color(p.dayChangePct.doubleValue(), "%.2f%%") : null;
 			String quantityText = OpenOrder.getPopupText(p.openOrders);
 			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, quantityText, p.underlyingPrice, dayChangePct, p.averageReturn);
 		}

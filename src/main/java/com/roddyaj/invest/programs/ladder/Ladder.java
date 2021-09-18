@@ -75,7 +75,7 @@ public class Ladder implements Program
 	{
 		List<String> lines = new ArrayList<>();
 		List<Order> actualOrders = orders.stream().map(o -> new Order(o.symbol, o.shareCount, o.price, null)).collect(Collectors.toList());
-		lines.addAll(new Order.OrderFormatter().toBlock(actualOrders, "Orders", null));
+		lines.addAll(Order.OrderFormatter.toBlock(actualOrders, "Orders", null).toHtml());
 
 		String html = HtmlFormatter.toDocument("Ladder Orders", lines);
 

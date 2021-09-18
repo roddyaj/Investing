@@ -1,7 +1,13 @@
 package com.roddyaj.invest.model;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.roddyaj.invest.html.Block;
+import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.Table.Align;
+import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.util.HtmlFormatter;
 
 public class Message
@@ -20,29 +26,33 @@ public class Message
 		INFO, WARN, ERROR
 	}
 
-	public static class MessageFormatter extends HtmlFormatter<Message>
+	public static class MessageFormatter
 	{
-		@Override
-		public String getHeader()
+		public static Block toBlock(Collection<? extends Message> messages)
 		{
-			return null;
+			Table table = new Table(getColumns(), getRows(messages));
+			table.setShowHeader(false);
+			return new Block("Messages", null, table);
 		}
 
-		@Override
-		protected List<Column> getColumns()
+		private static List<Column> getColumns()
 		{
 			return List.of(new Column("Message", "%s", Align.L));
 		}
 
-		@Override
-		protected List<Object> getObjectElements(Message o)
+		private static List<List<Object>> getRows(Collection<? extends Message> messages)
 		{
-			return List.of(color(o.text, o.level));
+			return messages.stream().map(MessageFormatter::toRow).collect(Collectors.toList());
+		}
+
+		private static List<Object> toRow(Message m)
+		{
+			return List.of(color(m.text, m.level));
 		}
 
 		private static String color(String s, Level level)
 		{
-			return color(s, level == Level.ERROR ? "red" : level == Level.WARN ? "orange" : "black");
+			return HtmlFormatter.color(s, level == Level.ERROR ? "red" : level == Level.WARN ? "orange" : "black");
 		}
 	}
 }

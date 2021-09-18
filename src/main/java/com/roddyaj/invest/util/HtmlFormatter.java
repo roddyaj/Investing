@@ -4,77 +4,77 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class HtmlFormatter<T> implements Formatter<T>
+import com.roddyaj.invest.html.Table.Align;
+import com.roddyaj.invest.html.Table.Column;
+
+public abstract class HtmlFormatter<T>
 {
 	private static int popupId;
 
-	@Override
-	public String getHeader()
-	{
-		StringBuilder builder = new StringBuilder();
-		builder.append("<tr>");
-		for (Column column : getColumns())
-		{
-			builder.append("<th");
-			if (column.align != Align.C)
-				builder.append(" class=\"").append(column.align).append("\"");
-			builder.append(">");
-			builder.append(column.name).append("</th>");
-		}
-		builder.append("</tr>");
-		return builder.toString();
-	}
-
-	@Override
-	public String format(T object)
-	{
-		StringBuilder builder = new StringBuilder();
-		builder.append("<tr>");
-		List<Column> columns = getColumns();
-		int i = 0;
-		for (Object element : getObjectElements(object))
-		{
-			Column column = columns.get(i++);
-			builder.append("<td");
-			if (column.align != Align.L)
-				builder.append(" class=\"").append(column.align).append("\"");
-			builder.append(">");
-			if (element != null)
-				builder.append(String.format(column.format, element));
-			builder.append("</td>");
-		}
-		builder.append("</tr>");
-		return builder.toString();
-	}
-
-	@Override
-	public List<String> format(Collection<? extends T> objects)
-	{
-		List<String> lines = new ArrayList<>(3 + objects.size());
-		lines.add("<table>");
-		String header = getHeader();
-		if (header != null)
-			lines.add(header);
-		for (T object : objects)
-			lines.add(format(object));
-		lines.add("</table>");
-		return lines;
-	}
-
-	public List<String> toBlock(Collection<? extends T> objects, String title, String info)
-	{
-		List<String> lines = new ArrayList<>();
-		if (!objects.isEmpty())
-		{
-			lines.add("<div class=\"block\">");
-			String heading = toHeading(title, info);
-			if (heading != null)
-				lines.add(heading);
-			lines.addAll(format(objects));
-			lines.add("</div>");
-		}
-		return lines;
-	}
+//	public String getHeader()
+//	{
+//		StringBuilder builder = new StringBuilder();
+//		builder.append("<tr>");
+//		for (Column column : getColumns())
+//		{
+//			builder.append("<th");
+//			if (column.align != Align.C)
+//				builder.append(" class=\"").append(column.align).append("\"");
+//			builder.append(">");
+//			builder.append(column.name).append("</th>");
+//		}
+//		builder.append("</tr>");
+//		return builder.toString();
+//	}
+//
+//	public String format(T object)
+//	{
+//		StringBuilder builder = new StringBuilder();
+//		builder.append("<tr>");
+//		List<Column> columns = getColumns();
+//		int i = 0;
+//		for (Object element : getObjectElements(object))
+//		{
+//			Column column = columns.get(i++);
+//			builder.append("<td");
+//			if (column.align != Align.L)
+//				builder.append(" class=\"").append(column.align).append("\"");
+//			builder.append(">");
+//			if (element != null)
+//				builder.append(String.format(column.format, element));
+//			builder.append("</td>");
+//		}
+//		builder.append("</tr>");
+//		return builder.toString();
+//	}
+//
+//	public List<String> format(Collection<? extends T> objects)
+//	{
+//		List<String> lines = new ArrayList<>(3 + objects.size());
+//		lines.add("<table>");
+//		String header = getHeader();
+//		if (header != null)
+//			lines.add(header);
+//		for (T object : objects)
+//			lines.add(format(object));
+//		lines.add("</table>");
+//		return lines;
+//	}
+//
+//	public List<String> toBlock(Collection<? extends T> objects, String title, String info)
+//	{
+//		List<String> lines = new ArrayList<>();
+//		if (!objects.isEmpty())
+//		{
+//			lines.add("<div class=\"block\">");
+//			String heading = toHeading(title, info);
+//			if (heading != null)
+//				lines.add(heading);
+//			lines.addAll(format(objects));
+//			lines.add("</div>");
+//		}
+//		return lines;
+//	}
 
 	protected abstract List<Column> getColumns();
 
@@ -156,19 +156,19 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 		return lines;
 	}
 
-	public static String toHeading(String title, String info)
-	{
-		if (title == null)
-			return null;
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("<div class=\"heading\">");
-		sb.append("<div class=\"title\">").append(title).append("</div>");
-		if (info != null)
-			sb.append("<div style=\"margin-left: 8px;\">").append(info).append("</div>");
-		sb.append("</div>");
-		return sb.toString();
-	}
+//	public static String toHeading(String title, String info)
+//	{
+//		if (title == null)
+//			return null;
+//
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("<div class=\"heading\">");
+//		sb.append("<div class=\"title\">").append(title).append("</div>");
+//		if (info != null)
+//			sb.append("<div style=\"margin-left: 8px;\">").append(info).append("</div>");
+//		sb.append("</div>");
+//		return sb.toString();
+//	}
 
 	public static String toLinkSymbol(String url, String symbol)
 	{
@@ -236,37 +236,5 @@ public abstract class HtmlFormatter<T> implements Formatter<T>
 	private static void appendKeyValue(StringBuilder sb, String key, String value)
 	{
 		sb.append(' ').append(key).append("=\"").append(value).append('"');
-	}
-
-	public enum Align
-	{
-		L("l"), C("c"), R("r");
-
-		private final String text;
-
-		private Align(String text)
-		{
-			this.text = text;
-		}
-
-		@Override
-		public String toString()
-		{
-			return text;
-		}
-	}
-
-	public class Column
-	{
-		public final String name;
-		public final String format;
-		public final Align align;
-
-		public Column(String name, String format, Align align)
-		{
-			this.name = name;
-			this.format = format;
-			this.align = align;
-		}
 	}
 }

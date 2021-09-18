@@ -4,8 +4,14 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.roddyaj.invest.html.Block;
+import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.Table.Align;
+import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.util.Chart;
 import com.roddyaj.invest.util.Chart.HLine;
 import com.roddyaj.invest.util.Chart.Point;
@@ -143,10 +149,15 @@ public class Position implements Comparable<Position>
 		return symbol.compareTo(o.symbol);
 	}
 
-	public static class StockHtmlFormatter extends HtmlFormatter<Position>
+	public static class StockHtmlFormatter
 	{
-		@Override
-		protected List<Column> getColumns()
+		public static Block toBlock(Collection<? extends Position> positions, String title, String info)
+		{
+			Table table = new Table(getColumns(), getRows(positions));
+			return new Block(title, info, table);
+		}
+
+		private static List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
@@ -157,19 +168,28 @@ public class Position implements Comparable<Position>
 			return columns;
 		}
 
-		@Override
-		protected List<Object> getObjectElements(Position p)
+		private static List<List<Object>> getRows(Collection<? extends Position> positions)
+		{
+			return positions.stream().map(StockHtmlFormatter::toRow).collect(Collectors.toList());
+		}
+
+		private static List<Object> toRow(Position p)
 		{
 			return List.of(p.symbol, p.quantity, p.getMarketValue(), p.costBasis, p.dayChangePct);
 		}
 	}
 
-	public static class OptionHtmlFormatter extends HtmlFormatter<Position>
+	public static class OptionHtmlFormatter
 	{
 		private static final String URL = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx#symbol/";
 
-		@Override
-		protected List<Column> getColumns()
+		public static Block toBlock(Collection<? extends Position> positions, String title, String info)
+		{
+			Table table = new Table(getColumns(), getRows(positions));
+			return new Block(title, info, table);
+		}
+
+		private static List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
@@ -185,16 +205,20 @@ public class Position implements Comparable<Position>
 			return columns;
 		}
 
-		@Override
-		protected List<Object> getObjectElements(Position p)
+		private static List<List<Object>> getRows(Collection<? extends Position> positions)
 		{
-			String link = toLink(URL + p.option.toOccString().replace(' ', '+'), p.symbol);
+			return positions.stream().map(OptionHtmlFormatter::toRow).collect(Collectors.toList());
+		}
+
+		private static List<Object> toRow(Position p)
+		{
+			String link = HtmlFormatter.toLink(URL + p.option.toOccString().replace(' ', '+'), p.symbol);
 			int dte = p.option.getDteCurrent();
 			Double underlyingCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getCostPerShare() : null;
 //			Double underlyingUCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getUnadjustedCostPerShare() : null;
 
 			Chart chart = getSvgChart(p.option);
-			String chartWithPopup = chart != null ? createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), false) : "";
+			String chartWithPopup = chart != null ? HtmlFormatter.createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), false) : "";
 			return Arrays.asList(link, p.quantity, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
 					p.option.getUnderlyingPrice(), underlyingCostPerShare, chartWithPopup);
 		}

@@ -3,10 +3,8 @@ package com.roddyaj.invest.programs.portfoliomanager.options;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.roddyaj.invest.html.Block;
-import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.OpenOrder;
@@ -36,18 +34,18 @@ public class CallToSell implements Comparable<CallToSell>
 		return Double.compare(o.position.getDayChangePct(), position.getDayChangePct());
 	}
 
-	public static class CallHtmlFormatter
+	public static class CallHtmlFormatter extends DataFormatter<CallToSell>
 	{
 		private static final String SCHWAB = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
 		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
 
-		public static Block toBlock(Collection<? extends CallToSell> callsToSell)
+		public CallHtmlFormatter(Collection<? extends CallToSell> records)
 		{
-			Table table = new Table(getColumns(), getRows(callsToSell));
-			return new Block("Calls To Sell", null, table);
+			super("Calls To Sell", null, records);
 		}
 
-		private static List<Column> getColumns()
+		@Override
+		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Schwab", "%s", Align.L));
@@ -60,12 +58,8 @@ public class CallToSell implements Comparable<CallToSell>
 			return columns;
 		}
 
-		private static List<List<Object>> getRows(Collection<? extends CallToSell> callsToSell)
-		{
-			return callsToSell.stream().map(CallHtmlFormatter::toRow).collect(Collectors.toList());
-		}
-
-		private static List<Object> toRow(CallToSell c)
+		@Override
+		protected List<Object> toRow(CallToSell c)
 		{
 			String schwab = HtmlFormatter.toLinkSymbol(SCHWAB, c.position.getSymbol());
 			String yahoo = HtmlFormatter.toLinkSymbol(YAHOO, c.position.getSymbol());

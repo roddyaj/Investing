@@ -35,12 +35,11 @@ public class PositionManagerOutput extends AbstractOutput
 	public List<String> getContent()
 	{
 		List<String> lines = new ArrayList<>();
-		lines.addAll(Order.OrderFormatter
-				.toBlock(orders.stream().filter(o -> !o.isOptional()).collect(Collectors.toList()), "Orders", "(Managed positions)").toHtml());
-		lines.addAll(Order.OrderFormatter.toBlock(unmanagedOrders, "Potential Orders", "(Unmanaged positions)").toHtml());
-		lines.addAll(Order.OrderFormatter
-				.toBlock(orders.stream().filter(o -> o.isOptional()).collect(Collectors.toList()), "Unfavorable Orders", "(Managed positions)")
-				.toHtml());
+		List<Order> favorableOrders = orders.stream().filter(o -> !o.isOptional()).collect(Collectors.toList());
+		List<Order> unfavorableOrders = orders.stream().filter(o -> o.isOptional()).collect(Collectors.toList());
+		lines.addAll(new Order.OrderFormatter("Orders", "(Managed positions)", favorableOrders).toHtml());
+		lines.addAll(new Order.OrderFormatter("Potential Orders", "(Unmanaged positions)", unmanagedOrders).toHtml());
+		lines.addAll(new Order.OrderFormatter("Unfavorable Orders", "(Managed positions)", unfavorableOrders).toHtml());
 		return lines;
 	}
 }

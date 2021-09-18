@@ -36,7 +36,7 @@ public class PortfolioManager implements Program
 		List<Message> messages = new ArrayList<>();
 		messages.addAll(positionsOutput.getMessages());
 		messages.addAll(optionsOutput.getMessages());
-		lines.addAll(Message.MessageFormatter.toBlock(messages).toHtml());
+		lines.addAll(new Message.MessageFormatter(messages).toHtml());
 
 		// Links block
 		lines.addAll(getLinks());

@@ -3,10 +3,8 @@ package com.roddyaj.invest.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.roddyaj.invest.html.Block;
-import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.util.HtmlFormatter;
@@ -80,15 +78,15 @@ public class Order
 		return "symbol=" + symbol + ", quantity=" + quantity + ", price=" + price;
 	}
 
-	public static class OrderFormatter
+	public static class OrderFormatter extends DataFormatter<Order>
 	{
-		public static Block toBlock(Collection<? extends Order> orders, String title, String info)
+		public OrderFormatter(String title, String info, Collection<? extends Order> records)
 		{
-			Table table = new Table(getColumns(), getRows(orders));
-			return new Block(title, info, table);
+			super(title, info, records);
 		}
 
-		private static List<Column> getColumns()
+		@Override
+		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
@@ -101,12 +99,8 @@ public class Order
 			return columns;
 		}
 
-		private static List<List<Object>> getRows(Collection<? extends Order> orders)
-		{
-			return orders.stream().map(OrderFormatter::toRow).collect(Collectors.toList());
-		}
-
-		private static List<Object> toRow(Order o)
+		@Override
+		protected List<Object> toRow(Order o)
 		{
 			String action = o.quantity >= 0 ? "Buy" : "Sell";
 			final String url = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx?tradeaction=" + action + "&amp;Symbol=%s";

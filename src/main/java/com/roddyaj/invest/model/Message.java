@@ -2,9 +2,9 @@ package com.roddyaj.invest.model;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.html.Block;
+import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.Table;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
@@ -26,28 +26,31 @@ public class Message
 		INFO, WARN, ERROR
 	}
 
-	public static class MessageFormatter
+	public static class MessageFormatter extends DataFormatter<Message>
 	{
-		public static Block toBlock(Collection<? extends Message> messages)
+		public MessageFormatter(Collection<? extends Message> records)
 		{
-			Table table = new Table(getColumns(), getRows(messages));
-			table.setShowHeader(false);
-			return new Block("Messages", null, table);
+			super("Messages", null, records);
 		}
 
-		private static List<Column> getColumns()
+		@Override
+		public Block toBlock()
+		{
+			Table table = new Table(getColumns(), getRows(records));
+			table.setShowHeader(false);
+			return new Block(title, info, table);
+		}
+
+		@Override
+		protected List<Column> getColumns()
 		{
 			return List.of(new Column("Message", "%s", Align.L));
 		}
 
-		private static List<List<Object>> getRows(Collection<? extends Message> messages)
+		@Override
+		protected List<Object> toRow(Message record)
 		{
-			return messages.stream().map(MessageFormatter::toRow).collect(Collectors.toList());
-		}
-
-		private static List<Object> toRow(Message m)
-		{
-			return List.of(color(m.text, m.level));
+			return List.of(color(record.text, record.level));
 		}
 
 		private static String color(String s, Level level)

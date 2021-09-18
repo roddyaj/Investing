@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.roddyaj.invest.html.Block;
-import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.util.Chart;
@@ -149,15 +147,15 @@ public class Position implements Comparable<Position>
 		return symbol.compareTo(o.symbol);
 	}
 
-	public static class StockHtmlFormatter
+	public static class StockHtmlFormatter extends DataFormatter<Position>
 	{
-		public static Block toBlock(Collection<? extends Position> positions, String title, String info)
+		public StockHtmlFormatter(String title, String info, Collection<? extends Position> records)
 		{
-			Table table = new Table(getColumns(), getRows(positions));
-			return new Block(title, info, table);
+			super(title, info, records);
 		}
 
-		private static List<Column> getColumns()
+		@Override
+		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
@@ -168,28 +166,24 @@ public class Position implements Comparable<Position>
 			return columns;
 		}
 
-		private static List<List<Object>> getRows(Collection<? extends Position> positions)
-		{
-			return positions.stream().map(StockHtmlFormatter::toRow).collect(Collectors.toList());
-		}
-
-		private static List<Object> toRow(Position p)
+		@Override
+		protected List<Object> toRow(Position p)
 		{
 			return List.of(p.symbol, p.quantity, p.getMarketValue(), p.costBasis, p.dayChangePct);
 		}
 	}
 
-	public static class OptionHtmlFormatter
+	public static class OptionHtmlFormatter extends DataFormatter<Position>
 	{
 		private static final String URL = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx#symbol/";
 
-		public static Block toBlock(Collection<? extends Position> positions, String title, String info)
+		public OptionHtmlFormatter(String title, String info, Collection<? extends Position> records)
 		{
-			Table table = new Table(getColumns(), getRows(positions));
-			return new Block(title, info, table);
+			super(title, info, records);
 		}
 
-		private static List<Column> getColumns()
+		@Override
+		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
@@ -205,12 +199,8 @@ public class Position implements Comparable<Position>
 			return columns;
 		}
 
-		private static List<List<Object>> getRows(Collection<? extends Position> positions)
-		{
-			return positions.stream().map(OptionHtmlFormatter::toRow).collect(Collectors.toList());
-		}
-
-		private static List<Object> toRow(Position p)
+		@Override
+		protected List<Object> toRow(Position p)
 		{
 			String link = HtmlFormatter.toLink(URL + p.option.toOccString().replace(' ', '+'), p.symbol);
 			int dte = p.option.getDteCurrent();

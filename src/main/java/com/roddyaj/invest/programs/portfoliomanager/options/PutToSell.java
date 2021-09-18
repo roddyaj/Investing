@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.roddyaj.invest.html.Block;
-import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.OpenOrder;
@@ -58,19 +56,18 @@ public class PutToSell implements Comparable<PutToSell>
 		return result;
 	}
 
-	public static class PutHtmlFormatter
+	public static class PutHtmlFormatter extends DataFormatter<PutToSell>
 	{
 		private static final String SCHWAB = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
 		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
 
-		public static Block toBlock(Collection<? extends PutToSell> putsToSell, double availableToTrade)
+		public PutHtmlFormatter(Collection<? extends PutToSell> records, double availableToTrade)
 		{
-			String info = String.format("$%.0f available", availableToTrade);
-			Table table = new Table(getColumns(), getRows(putsToSell));
-			return new Block("Candidate Puts To Sell", info, table);
+			super("Candidate Puts To Sell", String.format("$%.0f available", availableToTrade), records);
 		}
 
-		private static List<Column> getColumns()
+		@Override
+		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Schwab", "%s", Align.L));
@@ -83,12 +80,8 @@ public class PutToSell implements Comparable<PutToSell>
 			return columns;
 		}
 
-		private static List<List<Object>> getRows(Collection<? extends PutToSell> putsToSell)
-		{
-			return putsToSell.stream().map(PutHtmlFormatter::toRow).collect(Collectors.toList());
-		}
-
-		private static List<Object> toRow(PutToSell p)
+		@Override
+		protected List<Object> toRow(PutToSell p)
 		{
 			String schwabLink = HtmlFormatter.toLinkSymbol(SCHWAB, p.symbol);
 			String yahooLink = HtmlFormatter.toLinkSymbol(YAHOO, p.symbol);

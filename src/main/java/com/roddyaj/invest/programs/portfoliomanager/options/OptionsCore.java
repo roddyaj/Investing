@@ -69,10 +69,19 @@ public class OptionsCore
 
 	private void analyzeBuyToClose()
 	{
-		positions.stream()
-				.filter(p -> p.isOption() && getOptionValueRatio(p) <= .65
-						&& (p.isPutOption() || p.getOption().getUnderlyingPrice() > p.getOption().getUnderlying().getCostPerShare()))
-				.forEach(output.buyToClose::add);
+		positions.stream().filter(p -> {
+			boolean buyToClose = false;
+			if (p.isOption())
+			{
+				Double optionValueRatio = getOptionValueRatio(p);
+				if (optionValueRatio != null)
+				{
+					buyToClose = optionValueRatio <= .65
+							&& (p.isPutOption() || p.getOption().getUnderlyingPrice() > p.getOption().getUnderlying().getCostPerShare());
+				}
+			}
+			return buyToClose;
+		}).forEach(output.buyToClose::add);
 	}
 
 	private void analyzeCallsToSell()
@@ -189,10 +198,16 @@ public class OptionsCore
 				.collect(Collectors.averagingDouble(t -> t.getAnnualReturn()));
 	}
 
-	private static double getOptionValueRatio(Position position)
+	private static Double getOptionValueRatio(Position position)
 	{
-		double linearValue = ((double)position.getOption().getDteCurrent() / position.getOption().getDteOriginal())
-				* (position.getCostBasis() + (position.getQuantity() * .65));
-		return position.getMarketValue() / linearValue;
+		Double optionValueRatio = null;
+		Integer dteOriginal = position.getOption().getDteOriginal();
+		if (dteOriginal != null)
+		{
+			double linearValue = ((double)position.getOption().getDteCurrent() / dteOriginal)
+					* (position.getCostBasis() + (position.getQuantity() * .65));
+			optionValueRatio = position.getMarketValue() / linearValue;
+		}
+		return optionValueRatio;
 	}
 }

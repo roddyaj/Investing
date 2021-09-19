@@ -94,9 +94,9 @@ public class Option
 		return (int)ChronoUnit.DAYS.between(LocalDate.now(), expiryDate);
 	}
 
-	public int getDteOriginal()
+	public Integer getDteOriginal()
 	{
-		return initialDate != null ? (int)ChronoUnit.DAYS.between(initialDate, expiryDate) : -1;
+		return initialDate != null ? (int)ChronoUnit.DAYS.between(initialDate, expiryDate) : null;
 	}
 
 	public double getUnderlyingPrice()

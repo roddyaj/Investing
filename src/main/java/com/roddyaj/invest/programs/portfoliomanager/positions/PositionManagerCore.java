@@ -101,7 +101,7 @@ public class PositionManagerCore
 		Position position = order.getPosition();
 		if (position != null)
 		{
-			double minOrderAmount = Math.max(position.getMarketValue() * 0.005, 50);
+			double minOrderAmount = Math.max(position.getMarketValue() * 0.005, 40);
 			if (order.getQuantity() < 0)
 				minOrderAmount *= 2;
 			allowOrder = Math.abs(order.getAmount()) > minOrderAmount;

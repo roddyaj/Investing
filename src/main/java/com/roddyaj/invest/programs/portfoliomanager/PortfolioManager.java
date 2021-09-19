@@ -13,6 +13,7 @@ import com.roddyaj.invest.programs.portfoliomanager.options.OptionsCore;
 import com.roddyaj.invest.programs.portfoliomanager.options.OptionsOutput;
 import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerCore;
 import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerOutput;
+import com.roddyaj.invest.programs.portfoliomanager.positions.ReturnCalculator;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.HtmlFormatter;
 
@@ -37,6 +38,8 @@ public class PortfolioManager implements Program
 
 		PositionManagerOutput positionsOutput = new PositionManagerCore(input).run();
 		OptionsOutput optionsOutput = new OptionsCore(input).run();
+		double portfolioReturn = new ReturnCalculator(input.getAccount(), input.getAccount().getAccountSettings()).run();
+		System.out.println(String.format("Return: %.2f%%", portfolioReturn * 100));
 
 		showHtml(input.getAccount(), positionsOutput, optionsOutput);
 	}

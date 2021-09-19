@@ -11,6 +11,7 @@ public class AccountSettings
 	private String name;
 	private String accountNumber;
 	private double maxPosition;
+	private double startingBalance;
 	private Allocation[] allocations;
 	private AllocationMap allocation;
 
@@ -53,6 +54,18 @@ public class AccountSettings
 	public void setMaxPosition(double maxPosition)
 	{
 		this.maxPosition = maxPosition;
+	}
+
+	@JsonProperty("startingBalance")
+	public double getStartingBalance()
+	{
+		return startingBalance;
+	}
+
+	@JsonProperty("startingBalance")
+	public void setStartingBalance(double startingBalance)
+	{
+		this.startingBalance = startingBalance;
 	}
 
 	@JsonProperty("allocations")

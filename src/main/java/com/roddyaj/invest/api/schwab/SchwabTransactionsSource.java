@@ -106,6 +106,7 @@ public class SchwabTransactionsSource
 			case "Buy to Close" -> Action.BUY_TO_CLOSE;
 			case "Buy to Open" -> Action.BUY_TO_OPEN;
 			case "Sell to Close" -> Action.SELL_TO_CLOSE;
+			case "Journal", "MoneyLink Deposit", "MoneyLink Transfer", "Funds Received" -> Action.TRANSFER;
 			default -> null;
 		};
 	}

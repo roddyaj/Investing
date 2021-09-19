@@ -20,21 +20,30 @@ public class QuoteRegistry
 
 	public Quote getQuote(String symbol)
 	{
-		Quote quote = null;
+		Double price = null;
+		Double changePercent = null;
 		for (QuoteProvider provider : providers.values())
 		{
 			try
 			{
-				quote = provider.getQuote(symbol);
+				Quote quote = provider.getQuote(symbol);
+				if (quote != null)
+				{
+					if (price == null)
+						price = quote.getPrice();
+					if (changePercent == null)
+						changePercent = quote.getChangePercent();
+
+					if (price != null && changePercent != null)
+						break;
+				}
 			}
 			catch (IOException e)
 			{
 				e.printStackTrace();
 			}
-			if (quote != null)
-				break;
 		}
-		return quote;
+		return price != null || changePercent != null ? new Quote(price != null ? price : 0, changePercent != null ? changePercent : 0) : null;
 	}
 
 	public Double getPrice(String symbol)

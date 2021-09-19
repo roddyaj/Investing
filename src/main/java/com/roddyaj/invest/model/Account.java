@@ -44,7 +44,7 @@ public class Account implements QuoteProvider
 	public Quote getQuote(String symbol)
 	{
 		return getPositions(symbol).map(p -> {
-			return new Quote(p.isOption() ? p.getOption().getUnderlyingPrice() : p.getPrice(), p.isOption() ? 0 : p.getDayChangePct());
+			return new Quote(p.isOption() ? p.getOption().getUnderlyingPrice() : p.getPrice(), p.isOption() ? null : p.getDayChangePct());
 		}).findFirst().orElse(null);
 	}
 

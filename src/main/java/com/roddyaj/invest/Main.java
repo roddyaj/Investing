@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,11 +50,11 @@ public final class Main
 			return;
 		}
 
-		String commandName = args[0];
-		args = Arrays.copyOfRange(args, 1, args.length);
+		LinkedList<String> argList = new LinkedList<>(Arrays.asList(args));
+		String commandName = argList.poll();
 		Program command = commands.get(commandName);
 		if (command != null)
-			command.run(args);
+			command.run(argList);
 		else
 			System.err.println(String.format("Command '%s' not found", commandName));
 	}

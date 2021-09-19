@@ -1,7 +1,7 @@
 package com.roddyaj.invest.framework;
 
-import java.util.Arrays;
 import java.util.Map;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 public class RunCommand implements Program
@@ -20,17 +20,16 @@ public class RunCommand implements Program
 	}
 
 	@Override
-	public void run(String... args)
+	public void run(Queue<String> args)
 	{
-		if (args.length == 0)
+		if (args.isEmpty())
 		{
 			String availablePrograms = programs.keySet().stream().sorted().collect(Collectors.joining(", "));
 			System.err.println("Available programs: " + availablePrograms);
 			return;
 		}
 
-		String programName = args[0];
-		args = Arrays.copyOfRange(args, 1, args.length);
+		String programName = args.poll();
 		Program program = programs.get(programName);
 		if (program != null)
 			program.run(args);

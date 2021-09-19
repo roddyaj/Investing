@@ -23,7 +23,7 @@ public class Input
 	private final List<Account> otherAccounts;
 	private final QuoteRegistry quoteRegistry = new QuoteRegistry();
 
-	public Input(String accountName)
+	public Input(String accountName, boolean offline)
 	{
 		settings = readSettings();
 		account = newAccount(accountName);
@@ -33,22 +33,25 @@ public class Input
 		quoteRegistry.addProvider(account);
 		for (Account otherAccount : otherAccounts)
 			quoteRegistry.addProvider(otherAccount);
-		Api apiSettings;
-		FinnhubAPI finnhub = new FinnhubAPI();
-		apiSettings = settings.getApi(finnhub.getName());
-		if (apiSettings != null)
+		if (!offline)
 		{
-			finnhub.setApiKey(apiSettings.getApiKey());
-			finnhub.setRequestLimitPerMinute(apiSettings.getRequestsPerMinute());
-			quoteRegistry.addProvider(finnhub);
-		}
-		AlphaVantageAPI alphaVantage = new AlphaVantageAPI();
-		apiSettings = settings.getApi(alphaVantage.getName());
-		if (apiSettings != null)
-		{
-			alphaVantage.setApiKey(apiSettings.getApiKey());
-			alphaVantage.setRequestLimitPerMinute(apiSettings.getRequestsPerMinute());
-			quoteRegistry.addProvider(alphaVantage);
+			Api apiSettings;
+			FinnhubAPI finnhub = new FinnhubAPI();
+			apiSettings = settings.getApi(finnhub.getName());
+			if (apiSettings != null)
+			{
+				finnhub.setApiKey(apiSettings.getApiKey());
+				finnhub.setRequestLimitPerMinute(apiSettings.getRequestsPerMinute());
+				quoteRegistry.addProvider(finnhub);
+			}
+			AlphaVantageAPI alphaVantage = new AlphaVantageAPI();
+			apiSettings = settings.getApi(alphaVantage.getName());
+			if (apiSettings != null)
+			{
+				alphaVantage.setApiKey(apiSettings.getApiKey());
+				alphaVantage.setRequestLimitPerMinute(apiSettings.getRequestsPerMinute());
+				quoteRegistry.addProvider(alphaVantage);
+			}
 		}
 	}
 

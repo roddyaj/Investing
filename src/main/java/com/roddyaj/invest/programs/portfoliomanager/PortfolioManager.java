@@ -1,7 +1,9 @@
 package com.roddyaj.invest.programs.portfoliomanager;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
 
 import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.model.Account;
@@ -17,10 +19,21 @@ import com.roddyaj.invest.util.HtmlFormatter;
 public class PortfolioManager implements Program
 {
 	@Override
-	public void run(String... args)
+	public void run(Queue<String> args)
 	{
-		String accountName = args[0];
-		Input input = new Input(accountName);
+		boolean offline = false;
+		for (Iterator<String> iter = args.iterator(); iter.hasNext();)
+		{
+			String arg = iter.next();
+			if (arg.equals("-o"))
+			{
+				offline = true;
+				iter.remove();
+			}
+		}
+		String accountName = args.poll();
+
+		Input input = new Input(accountName, offline);
 
 		PositionManagerOutput positionsOutput = new PositionManagerCore(input).run();
 		OptionsOutput optionsOutput = new OptionsCore(input).run();

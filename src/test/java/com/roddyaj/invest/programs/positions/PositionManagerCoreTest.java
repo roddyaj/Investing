@@ -12,7 +12,7 @@ class PositionManagerCoreTest
 	@Test
 	void test()
 	{
-		Input input = new Input("testAccount");
+		Input input = new Input("testAccount", true);
 
 		PositionManagerOutput positionsOutput = new PositionManagerCore(input).run();
 

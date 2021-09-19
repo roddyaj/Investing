@@ -5,7 +5,9 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -21,13 +23,13 @@ public class Dataroma implements Program
 	// For running in IDE
 	public static void main(String[] args)
 	{
-		new Dataroma().run("SAM");
+		new Dataroma().run(new LinkedList<>(List.of("SAM")));
 	}
 
 	@Override
-	public void run(String... args)
+	public void run(Queue<String> args)
 	{
-		String url = args[0];
+		String url = args.poll();
 		List<Record> records = runNoOutput(url);
 		showOutput(records, url);
 	}

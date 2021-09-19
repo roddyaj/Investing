@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,11 +23,11 @@ public class Lyn implements Program
 	// For running in IDE
 	public static void main(String[] args)
 	{
-		new Lyn().run();
+		new Lyn().run(new LinkedList<>());
 	}
 
 	@Override
-	public void run(String... args)
+	public void run(Queue<String> args)
 	{
 		RecommendedStocks stocks = getStocks();
 		System.out.println(stocks.toYahooCsv());

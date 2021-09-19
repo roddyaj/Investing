@@ -1,5 +1,7 @@
 package com.roddyaj.invest.framework;
 
+import java.util.Queue;
+
 public interface Program
 {
 	default String getName()
@@ -7,5 +9,5 @@ public interface Program
 		return getClass().getSimpleName();
 	}
 
-	void run(String... args);
+	void run(Queue<String> args);
 }

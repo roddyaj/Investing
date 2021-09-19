@@ -2,7 +2,9 @@ package com.roddyaj.invest.programs.ladder;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -16,7 +18,7 @@ public class Ladder implements Program
 	// For running in IDE
 	public static void main(String[] args)
 	{
-		new Ladder().run();
+		new Ladder().run(new LinkedList<>());
 	}
 
 	public static final Function<Integer, Double> POWER_OF_2 = i -> Math.pow(2, i);
@@ -24,19 +26,19 @@ public class Ladder implements Program
 	public static final Function<Integer, Double> SLOPE_1 = i -> i + 1.;
 
 	@Override
-	public void run(String... args)
+	public void run(Queue<String> args)
 	{
-		if (args.length < 5)
+		if (args.size() < 5)
 		{
 			System.out.println("Args: symbol, shareCount, minPrice, maxPrice, numPoints");
 			return;
 		}
 
-		String symbol = args[0];
-		int shareCount = Integer.parseInt(args[1]);
-		double minPrice = Double.parseDouble(args[2]);
-		double maxPrice = Double.parseDouble(args[3]);
-		int numPoints = Integer.parseInt(args[4]);
+		String symbol = args.poll();
+		int shareCount = Integer.parseInt(args.poll());
+		double minPrice = Double.parseDouble(args.poll());
+		double maxPrice = Double.parseDouble(args.poll());
+		int numPoints = Integer.parseInt(args.poll());
 
 		LadderSettings settings = new LadderSettings(symbol, shareCount, minPrice, maxPrice, numPoints, SLOPE_1);
 		List<LadderOrder> orders = run(settings);

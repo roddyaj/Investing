@@ -1,6 +1,7 @@
 package com.roddyaj.invest.framework;
 
 import java.util.Map;
+import java.util.Queue;
 
 public class ListCommand implements Program
 {
@@ -18,7 +19,7 @@ public class ListCommand implements Program
 	}
 
 	@Override
-	public void run(String... args)
+	public void run(Queue<String> args)
 	{
 		System.out.println("\nAvailable Programs:");
 		programs.keySet().stream().sorted().forEach(System.out::println);

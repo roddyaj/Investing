@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -20,10 +21,12 @@ public class Account implements QuoteProvider
 {
 	private final String name;
 	private final AccountSettings accountSettings;
+	private final AllocationMap allocation;
 	private final SchwabPositionsSource positionsSource;
 	private final SchwabTransactionsSource transactionsSource;
 	private final SchwabOpenOrdersSource openOrdersSource;
 	private boolean costBasisCalculated;
+	private final List<Message> messages = new ArrayList<>();
 
 	public Account(String name, AccountSettings accountSettings)
 	{
@@ -32,6 +35,12 @@ public class Account implements QuoteProvider
 		positionsSource = new SchwabPositionsSource(this.name);
 		transactionsSource = new SchwabTransactionsSource(accountSettings);
 		openOrdersSource = new SchwabOpenOrdersSource(accountSettings);
+
+		// Create the allocation map
+		double untrackedTotal = getPositions().stream().filter(p -> p.getQuantity() > 0 && !accountSettings.hasAllocation(p.getSymbol()))
+				.mapToDouble(Position::getMarketValue).sum();
+		double untrackedPercent = untrackedTotal / getTotalValue();
+		allocation = new AllocationMap(accountSettings.getAllocations(), untrackedPercent, messages);
 	}
 
 	@Override
@@ -56,6 +65,11 @@ public class Account implements QuoteProvider
 	public AccountSettings getAccountSettings()
 	{
 		return accountSettings;
+	}
+
+	public double getAllocation(String symbol)
+	{
+		return allocation.getAllocation(symbol);
 	}
 
 	public List<Position> getPositions()
@@ -122,6 +136,11 @@ public class Account implements QuoteProvider
 	public Stream<Position> getPositions(String symbol)
 	{
 		return getPositions().stream().filter(p -> p.getSymbol().equals(symbol));
+	}
+
+	public List<Message> getMessages()
+	{
+		return messages;
 	}
 
 	private void updateCostBasis(Collection<Position> positions)

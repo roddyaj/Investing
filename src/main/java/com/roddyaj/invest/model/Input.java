@@ -3,6 +3,7 @@ package com.roddyaj.invest.model;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,6 +23,7 @@ public class Input
 	private final Information information = new Information();
 	private final List<Account> otherAccounts;
 	private final QuoteRegistry quoteRegistry = new QuoteRegistry();
+	private final List<Message> messages = new ArrayList<>();
 
 	public Input(String accountName, boolean offline)
 	{
@@ -53,6 +55,8 @@ public class Input
 				quoteRegistry.addProvider(alphaVantage);
 			}
 		}
+
+		messages.addAll(account.getMessages());
 	}
 
 	public Settings getSettings()
@@ -78,6 +82,11 @@ public class Input
 	public QuoteRegistry getQuoteRegistry()
 	{
 		return quoteRegistry;
+	}
+
+	public List<Message> getMessages()
+	{
+		return messages;
 	}
 
 	private Settings readSettings()

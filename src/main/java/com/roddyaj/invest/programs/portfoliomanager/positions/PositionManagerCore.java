@@ -40,12 +40,6 @@ public class PositionManagerCore
 			return output;
 		}
 
-		// Create the allocation map
-		double untrackedTotal = account.getPositions().stream().filter(p -> p.getQuantity() > 0 && !accountSettings.hasAllocation(p.getSymbol()))
-				.mapToDouble(Position::getMarketValue).sum();
-		double untrackedPercent = untrackedTotal / account.getTotalValue();
-		accountSettings.createMap(untrackedPercent, output);
-
 		if (!LocalDate.now().equals(account.getDate()))
 			output.addMessage(Level.WARN, "Account data is not from today: " + account.getDate());
 
@@ -64,7 +58,7 @@ public class PositionManagerCore
 	{
 		Order order = null;
 
-		double targetValue = account.getTotalValue() * accountSettings.getAllocation(symbol);
+		double targetValue = account.getTotalValue() * account.getAllocation(symbol);
 
 		Position position = account.getPosition(symbol);
 		if (position != null)

@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.roddyaj.invest.model.Output;
 
 public class AccountSettings
 {
@@ -13,12 +12,6 @@ public class AccountSettings
 	private double maxPosition;
 	private double startingBalance;
 	private Allocation[] allocations;
-	private AllocationMap allocation;
-
-	public void createMap(double untrackedPercent, Output output)
-	{
-		allocation = new AllocationMap(allocations, untrackedPercent, output);
-	}
 
 	@JsonProperty("name")
 	public String getName()
@@ -88,10 +81,5 @@ public class AccountSettings
 	public boolean hasAllocation(String symbol)
 	{
 		return Arrays.stream(allocations).anyMatch(a -> a.getCatLastToken().equals(symbol));
-	}
-
-	public double getAllocation(String symbol)
-	{
-		return allocation.getAllocation(symbol);
 	}
 }

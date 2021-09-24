@@ -50,6 +50,7 @@ public class PortfolioManager implements Program
 
 		// Messages block
 		List<Message> messages = new ArrayList<>();
+		messages.addAll(account.getMessages());
 		messages.addAll(positionsOutput.getMessages());
 		messages.addAll(optionsOutput.getMessages());
 		lines.addAll(new Message.MessageFormatter(messages).toHtml());

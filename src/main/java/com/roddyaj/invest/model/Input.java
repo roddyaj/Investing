@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roddyaj.invest.api.alphavantage.AlphaVantageAPI;
 import com.roddyaj.invest.api.finnhub.FinnhubAPI;
 import com.roddyaj.invest.api.model.QuoteRegistry;
+import com.roddyaj.invest.api.schwab.SchwabDataSource;
+import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.model.settings.Api;
 import com.roddyaj.invest.model.settings.Settings;
 import com.roddyaj.invest.util.AppFileUtils;
@@ -106,6 +108,7 @@ public class Input
 
 	private Account newAccount(String accountName)
 	{
-		return new Account(accountName, settings.getAccount(accountName));
+		AccountSettings accountSettings = settings.getAccount(accountName);
+		return new Account(accountSettings, new SchwabDataSource(accountSettings));
 	}
 }

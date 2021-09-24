@@ -12,6 +12,7 @@ import org.apache.commons.csv.CSVRecord;
 import com.roddyaj.invest.model.Option;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.SecurityType;
+import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.FileUtils;
 import com.roddyaj.invest.util.StringUtils;
@@ -44,22 +45,22 @@ public class SchwabPositionsSource
 	private static final String IN_THE_MONEY = "In The Money";
 	private static final String SECURITY_TYPE = "Security Type";
 
-	private final String name;
+	private final AccountSettings accountSettings;
 
 	private List<Position> positions;
 
 	private LocalDate date;
 
-	public SchwabPositionsSource(String name)
+	public SchwabPositionsSource(AccountSettings accountSettings)
 	{
-		this.name = name;
+		this.accountSettings = accountSettings;
 	}
 
 	public List<Position> getPositions()
 	{
 		if (positions == null)
 		{
-			Path positionsFile = AppFileUtils.getAccountFile(name + "-Positions-.*\\.CSV");
+			Path positionsFile = AppFileUtils.getAccountFile(accountSettings.getName() + "-Positions-.*\\.CSV");
 			if (positionsFile != null)
 			{
 				positions = FileUtils.readCsv(positionsFile, 2).stream().map(SchwabPositionsSource::convert).collect(Collectors.toList());
@@ -79,6 +80,7 @@ public class SchwabPositionsSource
 
 	public LocalDate getDate()
 	{
+		getPositions();
 		return date;
 	}
 

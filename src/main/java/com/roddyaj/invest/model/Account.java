@@ -11,30 +11,20 @@ import java.util.stream.Stream;
 
 import com.roddyaj.invest.api.model.Quote;
 import com.roddyaj.invest.api.model.QuoteProvider;
-import com.roddyaj.invest.api.schwab.SchwabOpenOrdersSource;
-import com.roddyaj.invest.api.schwab.SchwabPositionsSource;
-import com.roddyaj.invest.api.schwab.SchwabTransactionsSource;
 import com.roddyaj.invest.model.settings.AccountSettings;
-import com.roddyaj.invest.util.AppFileUtils;
 
 public class Account implements QuoteProvider
 {
-	private final String name;
 	private final AccountSettings accountSettings;
+	private final AccountDataSource dataSource;
 	private final AllocationMap allocation;
-	private final SchwabPositionsSource positionsSource;
-	private final SchwabTransactionsSource transactionsSource;
-	private final SchwabOpenOrdersSource openOrdersSource;
 	private boolean costBasisCalculated;
 	private final List<Message> messages = new ArrayList<>();
 
-	public Account(String name, AccountSettings accountSettings)
+	public Account(AccountSettings accountSettings, AccountDataSource dataSource)
 	{
-		this.name = AppFileUtils.getFullAccountName(name);
 		this.accountSettings = accountSettings;
-		positionsSource = new SchwabPositionsSource(this.name);
-		transactionsSource = new SchwabTransactionsSource(accountSettings);
-		openOrdersSource = new SchwabOpenOrdersSource(accountSettings);
+		this.dataSource = dataSource;
 
 		// Create the allocation map
 		double untrackedTotal = getPositions().stream().filter(p -> p.getQuantity() > 0 && !accountSettings.hasAllocation(p.getSymbol()))
@@ -46,7 +36,7 @@ public class Account implements QuoteProvider
 	@Override
 	public String getName()
 	{
-		return name;
+		return accountSettings.getName();
 	}
 
 	@Override
@@ -59,7 +49,7 @@ public class Account implements QuoteProvider
 
 	public LocalDate getDate()
 	{
-		return positionsSource.getDate();
+		return dataSource.getDate();
 	}
 
 	public AccountSettings getAccountSettings()
@@ -74,7 +64,7 @@ public class Account implements QuoteProvider
 
 	public List<Position> getPositions()
 	{
-		List<Position> positions = positionsSource.getPositions();
+		List<Position> positions = dataSource.getPositions();
 		if (!costBasisCalculated)
 		{
 			updateCostBasis(positions);
@@ -85,12 +75,12 @@ public class Account implements QuoteProvider
 
 	public List<Transaction> getTransactions()
 	{
-		return transactionsSource.getTransactions();
+		return dataSource.getTransactions();
 	}
 
 	public List<OpenOrder> getOpenOrders()
 	{
-		return openOrdersSource.getOpenOrders();
+		return dataSource.getOpenOrders();
 	}
 
 	public int getOpenOrderCount(String symbol, Action action)

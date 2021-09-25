@@ -13,7 +13,7 @@ import com.roddyaj.invest.api.model.Quote;
 import com.roddyaj.invest.api.model.QuoteProvider;
 import com.roddyaj.invest.model.settings.AccountSettings;
 
-public class Account implements QuoteProvider
+public class Account implements QuoteProvider, AccountDataSource
 {
 	private final AccountSettings accountSettings;
 	private final AccountDataSource dataSource;
@@ -47,11 +47,6 @@ public class Account implements QuoteProvider
 		}).findFirst().orElse(null);
 	}
 
-	public LocalDate getDate()
-	{
-		return dataSource.getDate();
-	}
-
 	public AccountSettings getAccountSettings()
 	{
 		return accountSettings;
@@ -62,6 +57,19 @@ public class Account implements QuoteProvider
 		return allocation.getAllocation(symbol);
 	}
 
+	@Override
+	public LocalDate getDate()
+	{
+		return dataSource.getDate();
+	}
+
+	@Override
+	public double getTotalValue()
+	{
+		return dataSource.getTotalValue();
+	}
+
+	@Override
 	public List<Position> getPositions()
 	{
 		List<Position> positions = dataSource.getPositions();
@@ -73,11 +81,13 @@ public class Account implements QuoteProvider
 		return positions;
 	}
 
+	@Override
 	public List<Transaction> getTransactions()
 	{
 		return dataSource.getTransactions();
 	}
 
+	@Override
 	public List<OpenOrder> getOpenOrders()
 	{
 		return dataSource.getOpenOrders();
@@ -105,12 +115,6 @@ public class Account implements QuoteProvider
 			match &= action == Action.SELL ? order.getQuantity() < 0 : order.getQuantity() > 0;
 			return match;
 		}).collect(Collectors.toList());
-	}
-
-	public double getTotalValue()
-	{
-		// TODO Make this Schwab-agnostic
-		return getPositions("Account Total").mapToDouble(Position::getMarketValue).findFirst().orElse(0);
 	}
 
 	public Position getPosition(String symbol)

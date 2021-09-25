@@ -11,6 +11,8 @@ import com.roddyaj.invest.model.settings.AccountSettings;
 
 public class OddLots
 {
+	private static final int LOT_SIZE = 100;
+
 	private final Account account;
 
 	private final AccountSettings accountSettings;
@@ -21,25 +23,20 @@ public class OddLots
 		this.accountSettings = accountSettings;
 	}
 
-	public List<Order> calculateOddLots()
+	public List<Order> run()
 	{
 		// @formatter:off
-		List<Order> orders = account.getPositions().stream()
+		return account.getPositions().stream()
 			.filter(p -> !p.isOption())
 			.filter(this::isOddLot)
 			.filter(this::isUntracked)
 			.map(this::getOrder)
 			.filter(o -> o.getQuantity() != 0)
+			.peek(o -> o.setOptional(true))
+			.peek(o -> o.setOpenOrders(account.getOpenOrders(o.getSymbol(), o.getQuantity() >= 0 ? Action.BUY : Action.SELL, null)))
 			.sorted((o1, o2) -> Double.compare(o2.getPosition().getGainLossPct(), o1.getPosition().getGainLossPct()))
 			.collect(Collectors.toList());
 		// @formatter:on
-
-		orders.forEach(order -> {
-			order.setOptional(true);
-			order.setOpenOrders(account.getOpenOrders(order.getSymbol(), order.getQuantity() >= 0 ? Action.BUY : Action.SELL, null));
-		});
-
-		return orders;
 	}
 
 	private Order getOrder(Position position)
@@ -47,53 +44,28 @@ public class OddLots
 		int quantity = 0;
 		double price = position.getPrice();
 		// Sell
-		if (position.getGainLossPct() > 3)
+		if (position.getGainLossPct() > 3 && position.getDayChangePct() > -.1)
 		{
-			if (position.getDayChangePct() > -.1)
-			{
-				quantity = -position.getQuantity();
-				price = position.getCostPerShare() * 1.1;
-			}
+			quantity = -(position.getQuantity() % LOT_SIZE);
+			price = position.getCostPerShare() * 1.1;
 		}
 		// Buy
-		else if (position.getGainLossPct() < -3)
+		else if (position.getGainLossPct() < -3 && position.getDayChangePct() < .1)
 		{
-			if (position.getDayChangePct() < .1)
-			{
-				int fullBuyQuantity = Math.max((int)Math.floor(accountSettings.getMaxPosition() / price - position.getQuantity()), 0);
-				int roundLotQuantity = 100 - position.getQuantity() % 100;
-				quantity = Math.min(fullBuyQuantity, roundLotQuantity);
-			}
+			int roundLotQuantity = LOT_SIZE - position.getQuantity() % LOT_SIZE;
+			int fullBuyQuantity = Math.max((int)Math.floor(accountSettings.getMaxPosition() / price - position.getQuantity()), 0);
+			quantity = Math.min(roundLotQuantity, fullBuyQuantity);
 		}
 		return new Order(position.getSymbol(), quantity, price, position);
 	}
 
 	private boolean isUntracked(Position position)
 	{
-		return !accountSettings.hasAllocation(position.getSymbol());
+		return account.getAllocation(position.getSymbol()) == 0;
 	}
 
 	private boolean isOddLot(Position position)
 	{
-		return position.getQuantity() > 0 && (position.getQuantity() % 100) != 0;
+		return position.getQuantity() > 0 && (position.getQuantity() % LOT_SIZE) != 0;
 	}
-
-//	// Find odd lots that can be bought
-//	untrackedOddPositions.stream()
-//		.filter(this::isEvenLotUnderMaxPosition)
-//		.filter(p -> p.dayChangePct < .1 || p.gainLossPct < .1)
-//		.sorted((p1, p2) -> Double.compare(p1.dayChangePct, p2.dayChangePct))
-//		.map(p -> new Order(p.symbol, 100 - p.quantity % 100, p.getPrice(), p))
-//		.forEach(orders::add);
-//
-//	System.out.println("\nPositions that don't have full sell orders:");
-//	untrackedOddPositions.stream()
-//		.filter(p -> (p.quantity + account.getOpenOrderCount(p.symbol, Action.SELL)) != 0)
-//		.forEach(p -> System.out.println(p.symbol));
-
-//	private boolean isEvenLotUnderMaxPosition(Position position)
-//	{
-//		double totalAmount = (position.quantity / 100 + 1) * 100 * position.price;
-//		return totalAmount < accountSettings.getMaxPosition();
-//	}
 }

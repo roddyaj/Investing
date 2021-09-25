@@ -66,7 +66,6 @@ public class Position implements Comparable<Position>
 	public double getMarketValue()
 	{
 		return marketValue;
-//		return quantity * price;
 	}
 
 	public SecurityType getSecurityType()

@@ -7,6 +7,8 @@ public interface AccountDataSource
 {
 	LocalDate getDate();
 
+	double getTotalValue();
+
 	List<Position> getPositions();
 
 	List<Transaction> getTransactions();

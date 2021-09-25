@@ -8,6 +8,16 @@ public class Allocation
 	private String cat;
 	private double percent;
 
+	public Allocation()
+	{
+	}
+
+	public Allocation(String cat, double percent)
+	{
+		this.cat = cat;
+		this.percent = percent;
+	}
+
 	@JsonProperty("cat")
 	public String getCat()
 	{

@@ -29,6 +29,12 @@ public class SchwabDataSource implements AccountDataSource
 	}
 
 	@Override
+	public double getTotalValue()
+	{
+		return getPositions().stream().filter(p -> p.getSymbol().equals("Account Total")).mapToDouble(Position::getMarketValue).findFirst().orElse(0);
+	}
+
+	@Override
 	public List<Position> getPositions()
 	{
 		return positionsSource.getPositions();

@@ -17,6 +17,12 @@ public class AllocationMap
 
 	public AllocationMap(Allocation[] allocations, double untrackedPercent, List<Message> messages)
 	{
+		if (allocations == null || allocations.length == 0)
+		{
+			messages.add(new Message(Level.WARN, "No allocations specified"));
+			return;
+		}
+
 		// Create a map of category => percent from the config
 		Map<String, Double> map = new HashMap<>();
 		for (Allocation allocation : allocations)

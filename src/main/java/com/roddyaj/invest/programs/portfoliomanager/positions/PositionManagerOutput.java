@@ -20,6 +20,11 @@ public class PositionManagerOutput extends AbstractOutput
 		this.orders.addAll(orders);
 	}
 
+	public List<Order> getOrders()
+	{
+		return orders;
+	}
+
 	public void addUnmanagedOrders(Collection<? extends Order> orders)
 	{
 		this.unmanagedOrders.addAll(orders);

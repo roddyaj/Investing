@@ -11,7 +11,7 @@ import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Message;
 import com.roddyaj.invest.programs.portfoliomanager.options.OptionsCore;
 import com.roddyaj.invest.programs.portfoliomanager.options.OptionsOutput;
-import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerCore;
+import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManager;
 import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerOutput;
 import com.roddyaj.invest.programs.portfoliomanager.positions.ReturnCalculator;
 import com.roddyaj.invest.util.AppFileUtils;
@@ -36,7 +36,7 @@ public class PortfolioManager implements Program
 
 		Input input = new Input(accountName, offline);
 
-		PositionManagerOutput positionsOutput = new PositionManagerCore(input).run();
+		PositionManagerOutput positionsOutput = new PositionManager(input).run();
 		OptionsOutput optionsOutput = new OptionsCore(input).run();
 		double portfolioReturn = new ReturnCalculator(input.getAccount(), input.getAccount().getAccountSettings()).run();
 		System.out.println(String.format("Return: %.2f%%", portfolioReturn * 100));

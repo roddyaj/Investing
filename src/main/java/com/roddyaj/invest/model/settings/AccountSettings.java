@@ -75,11 +75,12 @@ public class AccountSettings
 
 	public Stream<String> allocationStream()
 	{
-		return Arrays.stream(allocations).map(Allocation::getCatLastToken).filter(s -> s.toUpperCase().equals(s)).distinct();
+		return allocations == null ? Stream.of()
+				: Arrays.stream(allocations).map(Allocation::getCatLastToken).filter(s -> s.toUpperCase().equals(s)).distinct();
 	}
 
 	public boolean hasAllocation(String symbol)
 	{
-		return Arrays.stream(allocations).anyMatch(a -> a.getCatLastToken().equals(symbol));
+		return allocations != null && Arrays.stream(allocations).anyMatch(a -> a.getCatLastToken().equals(symbol));
 	}
 }

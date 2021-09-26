@@ -61,6 +61,15 @@ public class Input
 		messages.addAll(account.getMessages());
 	}
 
+	// Constructor for unit tests
+	public Input(Account account)
+	{
+		this.settings = null;
+		this.account = account;
+		this.otherAccounts = null;
+		quoteRegistry.addProvider(account);
+	}
+
 	public Settings getSettings()
 	{
 		return settings;

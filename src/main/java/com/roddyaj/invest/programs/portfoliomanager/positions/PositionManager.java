@@ -14,7 +14,7 @@ import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.settings.AccountSettings;
 
-public class PositionManagerCore
+public class PositionManager
 {
 	private final Account account;
 
@@ -24,7 +24,7 @@ public class PositionManagerCore
 
 	private final QuoteRegistry quoteRegistry;
 
-	public PositionManagerCore(Input input)
+	public PositionManager(Input input)
 	{
 		account = input.getAccount();
 		accountSettings = input.getAccount().getAccountSettings();

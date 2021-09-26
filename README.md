@@ -15,7 +15,7 @@ This program helps with managing stock and option positions within a portfolio.
 
 ## Usage
 
-Prerequisites: Ensure that Java (>= 15) and Maven are installed
+Prerequisites: Ensure that Java (>= 16) and Maven are installed
 
 Build: ```mvn compile```
 

@@ -21,4 +21,18 @@ class PositionManagerTest
 
 		Assertions.assertEquals(0, output.getOrders().size());
 	}
+
+	@Test
+	void testRound()
+	{
+		Assertions.assertEquals(5, PositionManager.round(5.0, 0.6));
+		Assertions.assertEquals(5, PositionManager.round(5.5, 0.6));
+		Assertions.assertEquals(6, PositionManager.round(5.6, 0.6));
+		Assertions.assertEquals(6, PositionManager.round(5.9, 0.6));
+		Assertions.assertEquals(-5, PositionManager.round(-5.0, 0.6));
+		Assertions.assertEquals(-5, PositionManager.round(-5.5, 0.6));
+		Assertions.assertEquals(-6, PositionManager.round(-5.6, 0.6));
+		Assertions.assertEquals(-6, PositionManager.round(-5.9, 0.6));
+		Assertions.assertEquals(0, PositionManager.round(0.0, 0.6));
+	}
 }

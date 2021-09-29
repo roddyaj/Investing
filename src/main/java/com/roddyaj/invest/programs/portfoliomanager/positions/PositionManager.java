@@ -20,20 +20,19 @@ public class PositionManager
 
 	private final AccountSettings accountSettings;
 
-	private final PositionManagerOutput output;
-
 	private final QuoteRegistry quoteRegistry;
 
 	public PositionManager(Input input)
 	{
 		account = input.getAccount();
 		accountSettings = input.getAccount().getAccountSettings();
-		output = new PositionManagerOutput();
 		quoteRegistry = input.getQuoteRegistry();
 	}
 
 	public PositionManagerOutput run()
 	{
+		PositionManagerOutput output = new PositionManagerOutput();
+
 		if (accountSettings == null)
 		{
 			output.addMessage(Level.INFO, "Account not found: " + account.getName());
@@ -44,7 +43,7 @@ public class PositionManager
 			output.addMessage(Level.WARN, "Account data is not from today: " + account.getDate());
 
 		// Determine the managed orders
-		List<Order> orders = accountSettings.allocationStream().map(this::createOrder).filter(Objects::nonNull).filter(this::allowOrder)
+		List<Order> orders = accountSettings.allocationStream().map(this::createOrder).filter(Objects::nonNull)
 				.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).collect(Collectors.toList());
 		output.addOrders(orders);
 
@@ -64,18 +63,23 @@ public class PositionManager
 		if (position != null)
 		{
 			double delta = targetValue - position.getMarketValue();
-			int sharesToBuy = (int)Math.round(delta / position.getPrice());
-			order = new Order(symbol, sharesToBuy, position.getPrice(), position);
-			order.setOptional(order.getPosition() != null
-					&& (order.getQuantity() >= 0 ? order.getPosition().getDayChangePct() > .1 : order.getPosition().getDayChangePct() < -.1));
+			int quantity = round(delta / position.getPrice(), .75);
+
+			boolean isBuy = quantity > 0;
+			boolean doOrder = quantity != 0 && Math.abs(delta / targetValue) > (isBuy ? 0.005 : 0.01);
+			if (doOrder)
+			{
+				order = new Order(symbol, quantity, position.getPrice(), position);
+				order.setOptional(isBuy ? position.getDayChangePct() > .1 : position.getDayChangePct() < -.1);
+			}
 		}
 		else if (targetValue > 0)
 		{
 			Double price = quoteRegistry.getPrice(symbol);
 			if (price != null)
 			{
-				int sharesToBuy = (int)Math.round(targetValue / price);
-				order = new Order(symbol, sharesToBuy, price, null);
+				int quantity = round(targetValue / price, .75);
+				order = new Order(symbol, quantity, price, null);
 			}
 			else
 			{
@@ -89,16 +93,8 @@ public class PositionManager
 		return order;
 	}
 
-	private boolean allowOrder(Order order)
+	static int round(double value, double cutoff)
 	{
-		boolean allowOrder = true;
-		Position position = order.getPosition();
-		if (position != null)
-		{
-			boolean isBuy = order.getQuantity() >= 0;
-			double minOrderAmount = position.getMarketValue() * (isBuy ? 0.005 : 0.01);
-			allowOrder = Math.abs(order.getAmount()) > minOrderAmount;
-		}
-		return allowOrder;
+		return (int)(value >= 0 ? value + (1 - cutoff) : value - (1 - cutoff));
 	}
 }

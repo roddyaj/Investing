@@ -1,4 +1,4 @@
-package com.roddyaj.invest.util;
+package com.roddyaj.invest.html;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,24 +66,6 @@ public abstract class HtmlFormatter
 		lines.addAll(input);
 		lines.add("</body>\n</html>");
 		return String.join("\n", lines);
-	}
-
-	public static List<String> toColumn(Collection<? extends String> input)
-	{
-		List<String> lines = new ArrayList<>(input.size() + 2);
-		lines.add("<div class=\"column\">");
-		lines.addAll(input);
-		lines.add("</div>");
-		return lines;
-	}
-
-	public static List<String> toRow(Collection<? extends String> input)
-	{
-		List<String> lines = new ArrayList<>(input.size() + 2);
-		lines.add("<div class=\"row\">");
-		lines.addAll(input);
-		lines.add("</div>");
-		return lines;
 	}
 
 	public static String toLinkSymbol(String url, String symbol)

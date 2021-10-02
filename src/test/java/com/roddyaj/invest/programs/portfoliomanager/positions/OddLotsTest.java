@@ -20,9 +20,9 @@ class OddLotsTest
 		AccountSettings accountSettings = new AccountSettings();
 		TestDataSource dataSource = new TestDataSource();
 
-		OddLots oddLots = new OddLots(new Account(accountSettings, dataSource), accountSettings);
+		OddLots oddLots = new OddLots(new Account(accountSettings, dataSource));
 
-		List<Order> orders = oddLots.run();
+		List<Order> orders = oddLots.run().getOrders();
 		Assertions.assertTrue(orders.isEmpty());
 	}
 
@@ -40,9 +40,9 @@ class OddLotsTest
 		dataSource.getPositions().add(newPosition("DEF", 210, 12., 11.));
 		dataSource.getPositions().add(newPosition("GHI", 190, 11., 12.));
 
-		OddLots oddLots = new OddLots(new Account(accountSettings, dataSource), accountSettings);
+		OddLots oddLots = new OddLots(new Account(accountSettings, dataSource));
 
-		List<Order> orders = oddLots.run();
+		List<Order> orders = oddLots.run().getOrders();
 		Assertions.assertEquals(2, orders.size());
 		Assertions.assertEquals("DEF", orders.get(0).getSymbol());
 		Assertions.assertEquals(-10, orders.get(0).getQuantity());

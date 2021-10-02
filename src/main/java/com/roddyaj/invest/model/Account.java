@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import com.roddyaj.invest.api.model.Quote;
 import com.roddyaj.invest.api.model.QuoteProvider;
+import com.roddyaj.invest.model.Message.Level;
 import com.roddyaj.invest.model.settings.AccountSettings;
 
 public class Account implements QuoteProvider, AccountDataSource
@@ -31,6 +32,9 @@ public class Account implements QuoteProvider, AccountDataSource
 				.mapToDouble(Position::getMarketValue).sum();
 		double untrackedPercent = untrackedTotal / getTotalValue();
 		allocation = new AllocationMap(accountSettings.getAllocations(), untrackedPercent, messages);
+
+		if (!LocalDate.now().equals(getDate()))
+			messages.add(new Message(Level.WARN, "Account data is not from today: " + getDate()));
 	}
 
 	@Override

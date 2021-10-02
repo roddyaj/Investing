@@ -9,6 +9,4 @@ public interface Output
 	void addMessage(Level level, String text);
 
 	List<Message> getMessages();
-
-	List<String> getContent();
 }

@@ -3,7 +3,7 @@ package com.roddyaj.invest.html;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Table
+public class Table implements HtmlObject
 {
 	private final List<Column> columns;
 
@@ -27,6 +27,7 @@ public class Table
 		return rows.size();
 	}
 
+	@Override
 	public List<String> toHtml()
 	{
 		List<String> lines = new ArrayList<>(3 + rows.size());

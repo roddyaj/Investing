@@ -7,13 +7,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.roddyaj.invest.html.Chart;
+import com.roddyaj.invest.html.Chart.HLine;
+import com.roddyaj.invest.html.Chart.Point;
 import com.roddyaj.invest.html.DataFormatter;
+import com.roddyaj.invest.html.HtmlFormatter;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
-import com.roddyaj.invest.util.Chart;
-import com.roddyaj.invest.util.Chart.HLine;
-import com.roddyaj.invest.util.Chart.Point;
-import com.roddyaj.invest.util.HtmlFormatter;
 
 public class Position implements Comparable<Position>
 {

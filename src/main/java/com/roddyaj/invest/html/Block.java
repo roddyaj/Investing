@@ -3,7 +3,7 @@ package com.roddyaj.invest.html;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Block
+public class Block implements HtmlObject
 {
 	private final String title;
 	private final String info;
@@ -16,6 +16,7 @@ public class Block
 		this.table = table;
 	}
 
+	@Override
 	public List<String> toHtml()
 	{
 		List<String> lines = new ArrayList<>();

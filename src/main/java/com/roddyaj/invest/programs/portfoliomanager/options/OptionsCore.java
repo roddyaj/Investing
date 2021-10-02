@@ -33,7 +33,7 @@ public class OptionsCore
 		account = input.getAccount();
 		positions = input.getAccount().getPositions();
 		historicalOptions = input.getAccount().getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
-		output = new OptionsOutput(input.getAccount().getName());
+		output = new OptionsOutput();
 	}
 
 	public OptionsOutput run()

@@ -17,26 +17,27 @@ public class OddLots
 
 	private final AccountSettings accountSettings;
 
-	public OddLots(Account account, AccountSettings accountSettings)
+	public OddLots(Account account)
 	{
 		this.account = account;
-		this.accountSettings = accountSettings;
+		this.accountSettings = account.getAccountSettings();
 	}
 
-	public List<Order> run()
+	public OddLotsOutput run()
 	{
 		// @formatter:off
-		return account.getPositions().stream()
-			.filter(p -> !p.isOption())
-			.filter(this::isOddLot)
-			.filter(this::isUntracked)
-			.map(this::getOrder)
-			.filter(o -> o.getQuantity() != 0)
-			.peek(o -> o.setOptional(true))
-			.peek(o -> o.setOpenOrders(account.getOpenOrders(o.getSymbol(), o.getQuantity() >= 0 ? Action.BUY : Action.SELL, null)))
-			.sorted((o1, o2) -> Double.compare(o2.getPosition().getGainLossPct(), o1.getPosition().getGainLossPct()))
-			.collect(Collectors.toList());
+		List<Order> orders = account.getPositions().stream()
+				.filter(p -> !p.isOption())
+				.filter(this::isOddLot)
+				.filter(this::isUntracked)
+				.map(this::getOrder)
+				.filter(o -> o.getQuantity() != 0)
+				.peek(o -> o.setOptional(true))
+				.peek(o -> o.setOpenOrders(account.getOpenOrders(o.getSymbol(), o.getQuantity() >= 0 ? Action.BUY : Action.SELL, null)))
+				.sorted((o1, o2) -> Double.compare(o2.getPosition().getGainLossPct(), o1.getPosition().getGainLossPct()))
+				.collect(Collectors.toList());
 		// @formatter:on
+		return new OddLotsOutput(orders);
 	}
 
 	private Order getOrder(Position position)

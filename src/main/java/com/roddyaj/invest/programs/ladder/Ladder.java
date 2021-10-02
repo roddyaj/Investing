@@ -9,9 +9,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.roddyaj.invest.framework.Program;
+import com.roddyaj.invest.html.HtmlFormatter;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.util.AppFileUtils;
-import com.roddyaj.invest.util.HtmlFormatter;
 
 public class Ladder implements Program
 {

@@ -3,7 +3,7 @@ package com.roddyaj.invest.model;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import com.roddyaj.invest.util.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlFormatter;
 
 public class OpenOrder
 {

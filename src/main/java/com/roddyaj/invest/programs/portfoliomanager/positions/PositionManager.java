@@ -1,6 +1,5 @@
 package com.roddyaj.invest.programs.portfoliomanager.positions;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -9,7 +8,6 @@ import com.roddyaj.invest.api.model.QuoteRegistry;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
-import com.roddyaj.invest.model.Message.Level;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.settings.AccountSettings;
@@ -31,26 +29,9 @@ public class PositionManager
 
 	public PositionManagerOutput run()
 	{
-		PositionManagerOutput output = new PositionManagerOutput();
-
-		if (accountSettings == null)
-		{
-			output.addMessage(Level.INFO, "Account not found: " + account.getName());
-			return output;
-		}
-
-		if (!LocalDate.now().equals(account.getDate()))
-			output.addMessage(Level.WARN, "Account data is not from today: " + account.getDate());
-
-		// Determine the managed orders
 		List<Order> orders = accountSettings.allocationStream().map(this::createOrder).filter(Objects::nonNull)
 				.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).collect(Collectors.toList());
-		output.addOrders(orders);
-
-		// Handle odd lots
-		output.addUnmanagedOrders(new OddLots(account, accountSettings).run());
-
-		return output;
+		return new PositionManagerOutput(orders);
 	}
 
 	private Order createOrder(String symbol)

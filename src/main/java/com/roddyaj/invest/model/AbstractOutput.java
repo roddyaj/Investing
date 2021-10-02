@@ -7,7 +7,7 @@ import com.roddyaj.invest.model.Message.Level;
 
 public abstract class AbstractOutput implements Output
 {
-	protected final List<Message> messages = new ArrayList<>();
+	private final List<Message> messages = new ArrayList<>();
 
 	@Override
 	public void addMessage(Level level, String text)

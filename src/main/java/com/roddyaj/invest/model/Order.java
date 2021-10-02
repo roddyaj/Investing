@@ -5,9 +5,9 @@ import java.util.Collection;
 import java.util.List;
 
 import com.roddyaj.invest.html.DataFormatter;
+import com.roddyaj.invest.html.HtmlFormatter;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
-import com.roddyaj.invest.util.HtmlFormatter;
 
 public class Order
 {

@@ -69,7 +69,8 @@ public class OptionsCore
 
 	private void analyzeBuyToClose()
 	{
-		positions.stream().filter(p -> {
+		for (Position p : positions)
+		{
 			boolean buyToClose = false;
 			if (p.isOption())
 			{
@@ -80,8 +81,15 @@ public class OptionsCore
 							&& (p.isPutOption() || p.getOption().getUnderlyingPrice() > p.getOption().getUnderlying().getCostPerShare());
 				}
 			}
-			return buyToClose;
-		}).forEach(output.buyToClose::add);
+
+			if (buyToClose)
+			{
+				// Not ideal - modifying shared object. Maybe do up front.
+				p.setOpenOrders(account.getOpenOrders(p.getSymbol(), Action.BUY, p.getOption().getType()));
+
+				output.buyToClose.add(p);
+			}
+		}
 	}
 
 	private void analyzeCallsToSell()

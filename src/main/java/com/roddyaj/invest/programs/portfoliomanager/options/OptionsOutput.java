@@ -30,7 +30,7 @@ public class OptionsOutput extends AbstractOutput
 		List<Block> blocks = new ArrayList<>();
 
 		String info = String.format("Frees up $%.0f", buyToClose.stream().filter(Position::isPutOption).mapToDouble(Position::getMoneyInPlay).sum());
-		blocks.add(new Position.OptionHtmlFormatter("Buy To Close", info, buyToClose).toBlock());
+		blocks.add(new Position.OptionHtmlFormatter("Buy To Close", info, buyToClose, true).toBlock());
 
 		Collections.sort(callsToSell);
 		blocks.add(new CallToSell.CallHtmlFormatter(callsToSell).toBlock());
@@ -49,7 +49,7 @@ public class OptionsOutput extends AbstractOutput
 		double putsInPlay = currentPositions.stream().filter(Position::isPutOption).mapToDouble(Position::getMoneyInPlay).sum();
 		String info = String.format("C: %d $%.0f &nbsp;P: %d $%.0f &nbsp;T: %d $%.0f", callsCount, callsInPlay, putsCount, putsInPlay,
 				callsCount + putsCount, callsInPlay + putsInPlay);
-		return new Position.OptionHtmlFormatter("Current Options", info, currentPositions).toBlock();
+		return new Position.OptionHtmlFormatter("Current Options", info, currentPositions, false).toBlock();
 	}
 
 	public Block getIncomeBlock()

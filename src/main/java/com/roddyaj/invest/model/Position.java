@@ -28,6 +28,7 @@ public class Position implements Comparable<Position>
 	private Lots lots;
 
 	private final Option option;
+	private List<OpenOrder> openOrders;
 
 	public Position(String symbol, int quantity, double price, double marketValue, SecurityType securityType, double costBasis, double dayChangePct,
 			double gainLossPct, Option option)
@@ -46,6 +47,11 @@ public class Position implements Comparable<Position>
 	public void setLots(Lots lots)
 	{
 		this.lots = lots;
+	}
+
+	public void setOpenOrders(List<OpenOrder> openOrders)
+	{
+		this.openOrders = openOrders;
 	}
 
 	public String getSymbol()
@@ -176,9 +182,12 @@ public class Position implements Comparable<Position>
 	{
 		private static final String URL = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx#symbol/";
 
-		public OptionHtmlFormatter(String title, String info, Collection<? extends Position> records)
+		private final boolean showOpenOrders;
+
+		public OptionHtmlFormatter(String title, String info, Collection<? extends Position> records, boolean showOpenOrders)
 		{
 			super(title, info, records);
+			this.showOpenOrders = showOpenOrders;
 		}
 
 		@Override
@@ -186,8 +195,8 @@ public class Position implements Comparable<Position>
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
-			columns.add(new Column("#", "%d", Align.R));
-			columns.add(new Column("", "%s", Align.C));
+			columns.add(new Column("#", "%s", showOpenOrders ? Align.L : Align.R));
+			columns.add(new Column("T", "%s", Align.L));
 			columns.add(new Column("Expiration", "%s", Align.L));
 			columns.add(new Column("DTE", "%d", Align.R));
 			columns.add(new Column("Strike", "%.2f", Align.R));
@@ -202,13 +211,16 @@ public class Position implements Comparable<Position>
 		protected List<Object> toRow(Position p)
 		{
 			String link = HtmlFormatter.toLink(URL + p.option.toOccString().replace(' ', '+'), p.symbol);
+			String quantityText = String.valueOf(Math.abs(p.quantity));
+			if (showOpenOrders)
+				quantityText += OpenOrder.getPopupText(p.openOrders);
 			int dte = p.option.getDteCurrent();
 			Double underlyingCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getCostPerShare() : null;
 //			Double underlyingUCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getUnadjustedCostPerShare() : null;
-
 			Chart chart = getSvgChart(p.option);
 			String chartWithPopup = chart != null ? HtmlFormatter.createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), false) : "";
-			return Arrays.asList(link, p.quantity, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
+
+			return Arrays.asList(link, quantityText, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
 					p.option.getUnderlyingPrice(), underlyingCostPerShare, chartWithPopup);
 		}
 

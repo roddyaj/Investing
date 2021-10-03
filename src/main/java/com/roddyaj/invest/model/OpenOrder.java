@@ -63,7 +63,10 @@ public class OpenOrder
 			String openOrderPopupText = "Open Orders<br>" + orders.stream().map(o -> {
 				String action = o.getQuantity() < 0 ? "Sell" : "Buy";
 				String price = String.format("%.2f", o.getOption() != null ? o.getOption().getStrike() : o.getPrice());
-				return action + " " + Math.abs(o.getQuantity()) + " @ " + price;
+				String text = action + " " + Math.abs(o.getQuantity()) + " @ " + price;
+				if (o.getOption() != null)
+					text += " for " + String.format("%.2f", o.getPrice());
+				return text;
 			}).collect(Collectors.joining("<br>"));
 			int openOrderCount = Math.abs(orders.stream().mapToInt(OpenOrder::getQuantity).sum());
 			popupText = " " + HtmlFormatter.createPopup("(" + openOrderCount + ")", openOrderPopupText, true);

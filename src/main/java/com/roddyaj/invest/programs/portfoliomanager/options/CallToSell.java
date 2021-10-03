@@ -52,9 +52,9 @@ public class CallToSell implements Comparable<CallToSell>
 			columns.add(new Column("Yahoo", "%s", Align.L));
 			columns.add(new Column("#", "%s", Align.L));
 			columns.add(new Column("Cost", "%.2f", Align.R));
-			columns.add(new Column("", "%s", Align.C));
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Day", "%s", Align.R));
+			columns.add(new Column("Total", "%s", Align.R));
 			return columns;
 		}
 
@@ -65,10 +65,9 @@ public class CallToSell implements Comparable<CallToSell>
 			String yahoo = HtmlFormatter.toLinkSymbol(YAHOO, c.position.getSymbol());
 			String quantityText = c.quantity + OpenOrder.getPopupText(c.openOrders);
 			double costPerShare = c.position.getCostPerShare();
-			String dir = HtmlFormatter.color(c.position.getPrice() >= costPerShare ? "&#8599;" : "&#8600;",
-					c.position.getPrice() >= costPerShare ? "green" : "red");
-			String changeColored = HtmlFormatter.color(c.position.getDayChangePct(), "%.2f%%");
-			return List.of(schwab, yahoo, quantityText, costPerShare, dir, c.position.getPrice(), changeColored);
+			String dayChange = HtmlFormatter.formatPercentChange(c.position.getDayChangePct());
+			String totalChange = HtmlFormatter.formatPercentChange(c.position.getGainLossPct());
+			return List.of(schwab, yahoo, quantityText, costPerShare, c.position.getPrice(), dayChange, totalChange);
 		}
 	}
 }

@@ -85,7 +85,7 @@ public class PutToSell implements Comparable<PutToSell>
 		{
 			String schwabLink = HtmlFormatter.toLinkSymbol(SCHWAB, p.symbol);
 			String yahooLink = HtmlFormatter.toLinkSymbol(YAHOO, p.symbol);
-			String dayChangePct = p.dayChangePct != null ? HtmlFormatter.color(p.dayChangePct.doubleValue(), "%.2f%%") : null;
+			String dayChangePct = p.dayChangePct != null ? HtmlFormatter.formatPercentChange(p.dayChangePct.doubleValue()) : null;
 			String quantityText = OpenOrder.getPopupText(p.openOrders);
 			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, quantityText, p.underlyingPrice, dayChangePct, p.averageReturn);
 		}

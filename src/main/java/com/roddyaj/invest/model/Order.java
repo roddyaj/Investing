@@ -108,8 +108,8 @@ public class Order
 					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.quantity) + "');\">%s</a>",
 					o.symbol, o.symbol);
 			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(o.openOrders);
-			String dayChangeColored = o.position != null ? HtmlFormatter.color(o.position.getDayChangePct(), "%.2f%%") : "";
-			String gainLossPctColored = o.position != null ? HtmlFormatter.color(o.position.getGainLossPct(), "%.2f%%") : "";
+			String dayChangeColored = o.position != null ? HtmlFormatter.formatPercentChange(o.position.getDayChangePct()) : "";
+			String gainLossPctColored = o.position != null ? HtmlFormatter.formatPercentChange(o.position.getGainLossPct()) : "";
 			return List.of(link, action, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
 		}
 	}

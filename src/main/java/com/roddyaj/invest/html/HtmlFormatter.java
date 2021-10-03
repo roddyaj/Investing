@@ -78,14 +78,19 @@ public abstract class HtmlFormatter
 		return String.format("<a href=\"%s\" target=\"_blank\">%s</a>", url, text);
 	}
 
-	public static String color(String text, String color)
+	public static String formatPercentChange(double d)
 	{
-		return "<span style=\"color:" + color + "\">" + text + "</span>";
+		return color(String.format("%.2f%%", Math.abs(d)), d >= 0 ? "green" : "red");
 	}
 
 	public static String color(double d, String format)
 	{
 		return color(String.format(format, d), d >= 0 ? "green" : "red");
+	}
+
+	public static String color(String text, String color)
+	{
+		return "<span style=\"color:" + color + "\">" + text + "</span>";
 	}
 
 	public static List<String> toSimpleColumnTable(Collection<? extends String> columns)

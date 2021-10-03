@@ -27,16 +27,7 @@ public class PortfolioManager implements Program
 	@Override
 	public void run(Queue<String> args)
 	{
-		boolean offline = false;
-		for (Iterator<String> iter = args.iterator(); iter.hasNext();)
-		{
-			String arg = iter.next();
-			if (arg.equals("-o"))
-			{
-				offline = true;
-				iter.remove();
-			}
-		}
+		boolean offline = isOffline(args);
 		String accountName = args.poll();
 
 		Input input = new Input(accountName, offline);
@@ -72,6 +63,21 @@ public class PortfolioManager implements Program
 		String html = HtmlFormatter.toDocument(account.getName().replace('_', ' '), lines);
 
 		AppFileUtils.showHtml(html, account.getName() + ".html");
+	}
+
+	private static boolean isOffline(Queue<String> args)
+	{
+		boolean offline = false;
+		for (Iterator<String> iter = args.iterator(); iter.hasNext();)
+		{
+			String arg = iter.next();
+			if (arg.equals("-o"))
+			{
+				offline = true;
+				iter.remove();
+			}
+		}
+		return offline;
 	}
 
 	private List<String> getLinks()

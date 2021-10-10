@@ -12,6 +12,7 @@ import com.roddyaj.invest.html.Row;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Message;
+import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.programs.portfoliomanager.options.OptionsCore;
 import com.roddyaj.invest.programs.portfoliomanager.options.OptionsOutput;
 import com.roddyaj.invest.programs.portfoliomanager.positions.OddLots;
@@ -19,6 +20,7 @@ import com.roddyaj.invest.programs.portfoliomanager.positions.OddLotsOutput;
 import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManager;
 import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerOutput;
 import com.roddyaj.invest.programs.portfoliomanager.positions.ReturnCalculator;
+import com.roddyaj.invest.programs.portfoliomanager.positions.UnmanagedPositions;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.invest.util.CollectionUtils;
 
@@ -36,10 +38,13 @@ public class PortfolioManager implements Program
 		// Run everything
 		PositionManagerOutput positionsOutput = new PositionManager(input).run();
 		OddLotsOutput oddLotsOutput = new OddLots(account).run();
-//		List<Position> unmanagedPositions = new UnmanagedPositions(account).run();
+		List<Position> unmanagedPositions = new UnmanagedPositions(account).run();
 		OptionsOutput optionsOutput = new OptionsCore(input).run();
 		double portfolioReturn = new ReturnCalculator(account, account.getAccountSettings()).run();
-		System.out.println(String.format("Return: %.2f%%", portfolioReturn * 100));
+
+		KeyValueData statistics = new KeyValueData();
+		statistics.addData("Return:", String.format("%.2f%%", portfolioReturn * 100));
+		statistics.addData("Untracked Excess:", String.format("$%.0f", unmanagedPositions.get(0).getMarketValue()));
 
 		List<String> lines = new ArrayList<>();
 
@@ -59,7 +64,7 @@ public class PortfolioManager implements Program
 		columns.add(new Column(CollectionUtils.join(positionsOutput.getBlocks(), oddLotsOutput.getBlock())));
 		columns.add(new Column(optionsOutput.getActionsBlocks()));
 		columns.add(new Column(optionsOutput.getCurrentOptionsBlock()));
-		columns.add(new Column(optionsOutput.getIncomeBlock()));
+		columns.add(new Column(List.of(optionsOutput.getIncomeBlock(), statistics.toBlock())));
 		lines.addAll(new Row(columns).toHtml());
 
 		String html = HtmlFormatter.toDocument(account.getName().replace('_', ' '), lines);

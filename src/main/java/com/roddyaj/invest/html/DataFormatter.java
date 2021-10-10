@@ -21,7 +21,13 @@ public abstract class DataFormatter<T>
 
 	public Block toBlock()
 	{
+		return toBlock(true);
+	}
+
+	public Block toBlock(boolean showHeader)
+	{
 		Table table = new Table(getColumns(), getRows(records));
+		table.setShowHeader(showHeader);
 		return new Block(title, info, table);
 	}
 

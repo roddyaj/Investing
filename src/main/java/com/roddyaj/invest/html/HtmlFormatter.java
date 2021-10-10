@@ -17,16 +17,16 @@ public abstract class HtmlFormatter
 		lines.add("<title>" + title + "</title>");
 		lines.add("<style>");
 		lines.add("""
-				body { font: 14px Arial, sans-serif; }
+				body { font: 14px Arial, sans-serif; background-color: #F7F7F7; }
 				th, td { padding: 2px 4px; }
 				a:link { text-decoration: none; }
 				a:hover { text-decoration: underline; }
 				a:visited { color: blue; }
 				.row { display: flex; flex-direction: row; }
 				.column { display: flex; flex-direction: column; margin-right: 8px; }
-				.block { border: 1px solid; border-radius: 4px; padding: 4px; margin-bottom: 8px; background-color: #F7F7F7; }
-				.heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid; }
-				.title { font-size: large; font-weight: bold; }
+				.block { border-radius: 4px; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); padding: 4px; margin-bottom: 8px; background-color: white; }
+				.heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid #DDD; }
+				.title { font-size: 16px; font-weight: bold; }
 				.popup {
 					position: relative;
 					display: inline-block;

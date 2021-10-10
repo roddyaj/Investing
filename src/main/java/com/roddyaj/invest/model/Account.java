@@ -28,7 +28,8 @@ public class Account implements QuoteProvider, AccountDataSource
 		this.dataSource = dataSource;
 
 		// Create the allocation map
-		double untrackedTotal = getPositions().stream().filter(p -> p.getQuantity() > 0 && !accountSettings.hasAllocation(p.getSymbol()))
+		double untrackedTotal = getPositions().stream()
+				.filter(p -> !p.isOption() && p.getQuantity() > 0 && !accountSettings.hasAllocation(p.getSymbol()))
 				.mapToDouble(Position::getMarketValue).sum();
 		double untrackedPercent = untrackedTotal / getTotalValue();
 		allocation = new AllocationMap(accountSettings.getAllocations(), untrackedPercent, messages);

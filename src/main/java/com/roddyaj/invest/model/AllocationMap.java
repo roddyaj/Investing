@@ -32,11 +32,14 @@ public class AllocationMap
 		String untrackedCategory = map.keySet().stream().filter(c -> getSymbol(c).equals("untracked")).findAny().orElse(null);
 		if (untrackedCategory != null)
 		{
+			double siblingPercent = map.entrySet().stream().filter(e -> isSibling(e.getKey(), untrackedCategory))
+					.mapToDouble(e -> e.getValue().doubleValue()).filter(p -> p > 0).sum();
+			double maxUntrackedPct = 1 - siblingPercent;
+
 			double factor = getTotalAllocation(getParent(untrackedCategory), map);
 			double untrackedPctAdjusted = untrackedPercent / factor;
-			map.put(untrackedCategory, untrackedPctAdjusted);
-			System.out.println("Untracked percent: " + String.format("%.2f", untrackedPctAdjusted * 100));
-			System.out.println("Tracked percent:   " + String.format("%.2f", (1 - untrackedPctAdjusted) * 100));
+
+			map.put(untrackedCategory, Math.min(untrackedPctAdjusted, maxUntrackedPct));
 		}
 
 		// Calculate any relative values

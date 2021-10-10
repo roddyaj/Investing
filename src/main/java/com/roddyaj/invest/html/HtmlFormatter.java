@@ -70,7 +70,7 @@ public abstract class HtmlFormatter
 
 	public static String toLinkSymbol(String url, String symbol)
 	{
-		return toLink(String.format(url, symbol), symbol);
+		return symbol.toUpperCase().equals(symbol) ? toLink(String.format(url, symbol), symbol) : symbol;
 	}
 
 	public static String toLink(String url, String text)

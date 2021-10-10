@@ -36,6 +36,7 @@ public class PortfolioManager implements Program
 		// Run everything
 		PositionManagerOutput positionsOutput = new PositionManager(input).run();
 		OddLotsOutput oddLotsOutput = new OddLots(account).run();
+//		List<Position> unmanagedPositions = new UnmanagedPositions(account).run();
 		OptionsOutput optionsOutput = new OptionsCore(input).run();
 		double portfolioReturn = new ReturnCalculator(account, account.getAccountSettings()).run();
 		System.out.println(String.format("Return: %.2f%%", portfolioReturn * 100));
@@ -54,10 +55,11 @@ public class PortfolioManager implements Program
 
 		// Main content blocks
 		List<Column> columns = new ArrayList<>();
+//		columns.add(new Column(new Position.StockHtmlFormatter("Untracked", null, unmanagedPositions).toBlock()));
 		columns.add(new Column(CollectionUtils.join(positionsOutput.getBlocks(), oddLotsOutput.getBlock())));
 		columns.add(new Column(optionsOutput.getActionsBlocks()));
-		columns.add(new Column(List.of(optionsOutput.getCurrentOptionsBlock())));
-		columns.add(new Column(List.of(optionsOutput.getIncomeBlock())));
+		columns.add(new Column(optionsOutput.getCurrentOptionsBlock()));
+		columns.add(new Column(optionsOutput.getIncomeBlock()));
 		lines.addAll(new Row(columns).toHtml());
 
 		String html = HtmlFormatter.toDocument(account.getName().replace('_', ' '), lines);

@@ -8,6 +8,11 @@ public class Column implements HtmlObject
 {
 	private final Collection<? extends HtmlObject> items;
 
+	public Column(HtmlObject item)
+	{
+		this.items = List.of(item);
+	}
+
 	public Column(Collection<? extends HtmlObject> items)
 	{
 		this.items = items;

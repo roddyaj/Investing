@@ -54,7 +54,7 @@ public class PositionManager
 				order.setOptional(isBuy ? position.getDayChangePct() > .1 : position.getDayChangePct() < -.1);
 			}
 		}
-		else if (targetValue > 0)
+		else if (targetValue > 0.01)
 		{
 			Double price = quoteRegistry.getPrice(symbol);
 			if (price != null)

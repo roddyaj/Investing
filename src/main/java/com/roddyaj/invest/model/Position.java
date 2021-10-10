@@ -154,6 +154,8 @@ public class Position implements Comparable<Position>
 
 	public static class StockHtmlFormatter extends DataFormatter<Position>
 	{
+		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
+
 		public StockHtmlFormatter(String title, String info, Collection<? extends Position> records)
 		{
 			super(title, info, records);
@@ -165,16 +167,17 @@ public class Position implements Comparable<Position>
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("#", "%d", Align.R));
-			columns.add(new Column("MarketValue", "$%.2f", Align.R));
-			columns.add(new Column("Cost Basis", "$%.2f", Align.R));
-			columns.add(new Column("Day Change", "%.2f%%", Align.R));
+			columns.add(new Column("Value", "%.2f", Align.R));
+			columns.add(new Column("Total", "%s", Align.R));
 			return columns;
 		}
 
 		@Override
 		protected List<Object> toRow(Position p)
 		{
-			return List.of(p.symbol, p.quantity, p.getMarketValue(), p.costBasis, p.dayChangePct);
+			String link = HtmlFormatter.toLinkSymbol(YAHOO, p.getSymbol());
+			String totalChange = HtmlFormatter.formatPercentChange(p.getGainLossPct());
+			return List.of(link, p.getQuantity(), p.getMarketValue(), totalChange);
 		}
 	}
 

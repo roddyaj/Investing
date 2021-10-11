@@ -4,67 +4,31 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.roddyaj.invest.html.Table.Align;
+import com.roddyaj.invest.util.FileUtils;
 
 public abstract class HtmlFormatter
 {
 	private static int popupId;
 
-	public static String toDocument(String title, Collection<? extends String> input)
+	public static String toDocument(String title, Collection<? extends String> body)
 	{
 		List<String> lines = new ArrayList<>();
-		lines.add("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\" />");
+		lines.add("<!DOCTYPE html>");
+		lines.add("<html lang=\"en\">");
+		lines.add("<head>");
+		lines.add("<meta charset=\"utf-8\" />");
 		lines.add("<title>" + title + "</title>");
 		lines.add("<style>");
-		lines.add("""
-				body { font: 14px Arial, sans-serif; background-color: #F7F7F7; }
-				th, td { padding: 2px 4px; }
-				a:link { text-decoration: none; }
-				a:hover { text-decoration: underline; }
-				a:visited { color: blue; }
-				.row { display: flex; flex-direction: row; }
-				.column { display: flex; flex-direction: column; margin-right: 8px; }
-				.block { border-radius: 4px; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); padding: 4px; margin-bottom: 8px; background-color: white; }
-				.heading { display: flex; align-items: center; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid #DDD; }
-				.title { font-size: 16px; font-weight: bold; }
-				.popup {
-					position: relative;
-					display: inline-block;
-					cursor: pointer;
-				}
-				.popup-text {
-					font: 12px Arial, sans-serif;
-				}
-				.popup .popup-content {
-					visibility: hidden;
-					white-space: nowrap;
-					position: absolute;
-					background-color: white;
-					padding: 4px 4px;
-					border: 1px solid;
-					border-radius: 4px;
-					left: 12px;
-					bottom: 18px;
-				}
-				.popup .show { visibility: visible; }""");
-		lines.add("." + Align.L + " { text-align: left; }");
-		lines.add("." + Align.R + " { text-align: right; }");
-		lines.add("." + Align.C + " { text-align: center; }");
+		lines.addAll(FileUtils.readResourceLines("output.css"));
 		lines.add("</style>");
-		lines.add("""
-				<script>
-				function showPopup(id) {
-					const popup = document.getElementById(id);
-					popup.classList.add("show");
-				}
-				function hidePopup(id) {
-					const popup = document.getElementById(id);
-					popup.classList.remove("show");
-				}
-				</script>""");
-		lines.add("</head>\n<body>");
-		lines.addAll(input);
-		lines.add("</body>\n</html>");
+		lines.add("<script>");
+		lines.addAll(FileUtils.readResourceLines("output.js"));
+		lines.add("</script>");
+		lines.add("</head>");
+		lines.add("<body>");
+		lines.addAll(body);
+		lines.add("</body>");
+		lines.add("</html>");
 		return String.join("\n", lines);
 	}
 

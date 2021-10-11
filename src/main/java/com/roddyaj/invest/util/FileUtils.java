@@ -1,6 +1,8 @@
 package com.roddyaj.invest.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +34,22 @@ public final class FileUtils
 //		}
 //		return List.of();
 //	}
+
+	public static List<String> readResourceLines(String resource)
+	{
+		List<String> lines = new ArrayList<String>();
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(FileUtils.class.getClassLoader().getResourceAsStream(resource))))
+		{
+			String line;
+			while ((line = reader.readLine()) != null)
+				lines.add(line);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		return lines;
+	}
 
 	public static List<CSVRecord> readCsv(Path path, int headerLine)
 	{

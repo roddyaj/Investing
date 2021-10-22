@@ -48,7 +48,6 @@ public class OddLots
 		if (position.getGainLossPct() > 3 && position.getDayChangePct() > -.1)
 		{
 			quantity = -(position.getQuantity() % LOT_SIZE);
-			price = position.getCostPerShare() * 1.1;
 		}
 		// Buy
 		else if (position.getGainLossPct() < -3 && position.getDayChangePct() < .1)

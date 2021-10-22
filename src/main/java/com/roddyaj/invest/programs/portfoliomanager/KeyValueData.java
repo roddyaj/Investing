@@ -36,7 +36,7 @@ public class KeyValueData
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Key", "%s", Align.L));
-			columns.add(new Column("Value", "%s", Align.L));
+			columns.add(new Column("Value", "%s", Align.R));
 			return columns;
 		}
 

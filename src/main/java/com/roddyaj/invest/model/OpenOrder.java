@@ -1,5 +1,6 @@
 package com.roddyaj.invest.model;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -44,15 +45,18 @@ public class OpenOrder
 		return option;
 	}
 
-//	public double getAmount()
-//	{
-//		return quantity * price;
-//	}
-
 	@Override
 	public String toString()
 	{
 		return "symbol=" + symbol + ", quantity=" + quantity + ", price=" + price;
+	}
+
+	public String getPopupText()
+	{
+		String text = String.format("%s %d @ %.2f", quantity < 0 ? "Sell" : "Buy", Math.abs(quantity), option != null ? option.getStrike() : price);
+		if (option != null)
+			text += String.format(" for %.2f exp. %s", price, option.getExpiryDate().format(DateTimeFormatter.ofPattern("MM-dd")));
+		return text;
 	}
 
 	public static String getPopupText(Collection<? extends OpenOrder> orders)
@@ -60,14 +64,7 @@ public class OpenOrder
 		String popupText = "";
 		if (orders != null && !orders.isEmpty())
 		{
-			String openOrderPopupText = "Open Orders<br>" + orders.stream().map(o -> {
-				String action = o.getQuantity() < 0 ? "Sell" : "Buy";
-				String price = String.format("%.2f", o.getOption() != null ? o.getOption().getStrike() : o.getPrice());
-				String text = action + " " + Math.abs(o.getQuantity()) + " @ " + price;
-				if (o.getOption() != null)
-					text += " for " + String.format("%.2f", o.getPrice());
-				return text;
-			}).collect(Collectors.joining("<br>"));
+			String openOrderPopupText = "Open Orders<br>" + orders.stream().map(OpenOrder::getPopupText).collect(Collectors.joining("<br>"));
 			int openOrderCount = Math.abs(orders.stream().mapToInt(OpenOrder::getQuantity).sum());
 			popupText = " " + HtmlFormatter.createPopup("(" + openOrderCount + ")", openOrderPopupText, true);
 		}

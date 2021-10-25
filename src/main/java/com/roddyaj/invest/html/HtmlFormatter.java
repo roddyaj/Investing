@@ -39,7 +39,12 @@ public abstract class HtmlFormatter
 
 	public static String toLink(String url, String text)
 	{
-		return String.format("<a href=\"%s\" target=\"_blank\">%s</a>", url, text);
+		return toLink(url, text, "");
+	}
+
+	public static String toLink(String url, String text, String additionalProperties)
+	{
+		return String.format("<a href=\"%s\" target=\"_blank\"%s>%s</a>", url, additionalProperties, text);
 	}
 
 	public static String formatPercentChange(double d)

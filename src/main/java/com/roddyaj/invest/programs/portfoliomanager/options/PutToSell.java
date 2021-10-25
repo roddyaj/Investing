@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.roddyaj.invest.api.schwab.SchwabDataSource;
 import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.HtmlFormatter;
 import com.roddyaj.invest.html.Table.Align;
@@ -58,7 +59,6 @@ public class PutToSell implements Comparable<PutToSell>
 
 	public static class PutHtmlFormatter extends DataFormatter<PutToSell>
 	{
-		private static final String SCHWAB = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
 		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
 
 		public PutHtmlFormatter(Collection<? extends PutToSell> records, double availableToTrade)
@@ -83,7 +83,7 @@ public class PutToSell implements Comparable<PutToSell>
 		@Override
 		protected List<Object> toRow(PutToSell p)
 		{
-			String schwabLink = HtmlFormatter.toLinkSymbol(SCHWAB, p.symbol);
+			String schwabLink = HtmlFormatter.toLink(SchwabDataSource.getOptionChainsUrl(p.symbol), p.symbol);
 			String yahooLink = HtmlFormatter.toLinkSymbol(YAHOO, p.symbol);
 			String openOrders = OpenOrder.getPopupText(p.openOrders);
 			String dayChangePct = p.dayChangePct != null ? HtmlFormatter.formatPercentChange(p.dayChangePct.doubleValue()) : null;

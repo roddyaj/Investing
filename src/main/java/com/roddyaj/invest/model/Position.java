@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.roddyaj.invest.api.schwab.SchwabDataSource;
 import com.roddyaj.invest.html.Chart;
 import com.roddyaj.invest.html.Chart.HLine;
 import com.roddyaj.invest.html.Chart.Point;
@@ -183,8 +184,6 @@ public class Position implements Comparable<Position>
 
 	public static class OptionHtmlFormatter extends DataFormatter<Position>
 	{
-		private static final String URL = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx#symbol/";
-
 		private final boolean showOpenOrders;
 
 		public OptionHtmlFormatter(String title, String info, Collection<? extends Position> records, boolean showOpenOrders)
@@ -213,7 +212,7 @@ public class Position implements Comparable<Position>
 		@Override
 		protected List<Object> toRow(Position p)
 		{
-			String link = HtmlFormatter.toLink(URL + p.option.toOccString().replace(' ', '+'), p.symbol);
+			String link = HtmlFormatter.toLink(SchwabDataSource.getOptionUrl(p.option.toOccString()), p.symbol);
 			String quantityText = String.valueOf(Math.abs(p.quantity));
 			if (showOpenOrders)
 				quantityText += OpenOrder.getPopupText(p.openOrders);

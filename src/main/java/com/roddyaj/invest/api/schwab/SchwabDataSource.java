@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.roddyaj.invest.model.AccountDataSource;
+import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.Transaction;
@@ -11,6 +12,24 @@ import com.roddyaj.invest.model.settings.AccountSettings;
 
 public class SchwabDataSource implements AccountDataSource
 {
+	private static final String ALL_IN_ONE_URL = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx";
+
+	public static String getOptionUrl(String occString)
+	{
+		return ALL_IN_ONE_URL + "#symbol/" + occString.replace(' ', '+');
+	}
+
+	public static String getOptionChainsUrl(String symbol)
+	{
+		return "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/" + symbol;
+	}
+
+	public static String getTradeUrl(Action action, String symbol)
+	{
+		String tradeaction = action == Action.BUY ? "Buy" : action == Action.SELL ? "Sell" : null;
+		return ALL_IN_ONE_URL + String.format("?tradeaction=%s&amp;Symbol=%s", tradeaction, symbol);
+	}
+
 	private final SchwabPositionsSource positionsSource;
 	private final SchwabTransactionsSource transactionsSource;
 	private final SchwabOpenOrdersSource openOrdersSource;

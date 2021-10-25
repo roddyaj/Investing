@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.roddyaj.invest.api.schwab.SchwabDataSource;
 import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.HtmlFormatter;
 import com.roddyaj.invest.html.Table.Align;
@@ -36,7 +37,6 @@ public class CallToSell implements Comparable<CallToSell>
 
 	public static class CallHtmlFormatter extends DataFormatter<CallToSell>
 	{
-		private static final String SCHWAB = "https://client.schwab.com/Areas/Trade/Options/Chains/Index.aspx#symbol/%s";
 		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
 
 		public CallHtmlFormatter(Collection<? extends CallToSell> records)
@@ -61,7 +61,7 @@ public class CallToSell implements Comparable<CallToSell>
 		@Override
 		protected List<Object> toRow(CallToSell c)
 		{
-			String schwab = HtmlFormatter.toLinkSymbol(SCHWAB, c.position.getSymbol());
+			String schwab = HtmlFormatter.toLink(SchwabDataSource.getOptionChainsUrl(c.position.getSymbol()), c.position.getSymbol());
 			String yahoo = HtmlFormatter.toLinkSymbol(YAHOO, c.position.getSymbol());
 			String quantityText = c.quantity + OpenOrder.getPopupText(c.openOrders);
 			double costPerShare = c.position.getCostPerShare();

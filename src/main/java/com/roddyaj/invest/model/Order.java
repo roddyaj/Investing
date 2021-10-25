@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.roddyaj.invest.api.schwab.SchwabDataSource;
 import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.HtmlFormatter;
 import com.roddyaj.invest.html.Table.Align;
@@ -102,15 +103,17 @@ public class Order
 		@Override
 		protected List<Object> toRow(Order o)
 		{
-			String action = o.quantity >= 0 ? "Buy" : "Sell";
-			final String url = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx?tradeaction=" + action + "&amp;Symbol=%s";
-			String link = String.format(
-					"<a href=\"" + url + "\" target=\"_blank\" onclick=\"navigator.clipboard.writeText('" + Math.abs(o.quantity) + "');\">%s</a>",
-					o.symbol, o.symbol);
+			boolean isBuy = o.quantity >= 0;
+
+			String url = SchwabDataSource.getTradeUrl(isBuy ? Action.BUY : Action.SELL, o.symbol);
+			String onclick = String.format(" onclick=\"navigator.clipboard.writeText('%d');\"", Math.abs(o.quantity));
+			String link = HtmlFormatter.toLink(url, o.symbol, onclick);
+
 			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(o.openOrders);
 			String dayChangeColored = o.position != null ? HtmlFormatter.formatPercentChange(o.position.getDayChangePct()) : "";
 			String gainLossPctColored = o.position != null ? HtmlFormatter.formatPercentChange(o.position.getGainLossPct()) : "";
-			return List.of(link, action, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
+
+			return List.of(link, isBuy ? "Buy" : "Sell", quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
 		}
 	}
 }

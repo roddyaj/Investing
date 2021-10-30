@@ -54,6 +54,6 @@ class OddLotsTest
 	{
 		double gainLossPct = 100 * (price / pricePaid - 1);
 		double dayChangePct = gainLossPct;
-		return new Position(symbol, quantity, price, quantity * price, SecurityType.STOCK, quantity * pricePaid, dayChangePct, gainLossPct, null);
+		return new Position(symbol, quantity, price, quantity * price, SecurityType.STOCK, quantity * pricePaid, dayChangePct, gainLossPct, 0, null);
 	}
 }

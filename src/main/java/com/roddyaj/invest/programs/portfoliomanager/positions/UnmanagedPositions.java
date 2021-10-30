@@ -23,10 +23,14 @@ public class UnmanagedPositions
 				.sorted((o1, o2) -> Double.compare(o2.getMarketValue(), o1.getMarketValue()))
 				.collect(Collectors.toList());
 		// @formatter:on
+
+//		unmanagedPositions.stream().forEach(p -> System.out.println(String.format("        { \"cat\": \"risk.%s\",%s \"%%\":  %.2f },", p.getSymbol(),
+//				StringUtils.fill(' ', 5 - p.getSymbol().length()), p.getPercentOfAccount() / .345)));
+
 		double untrackedTotal = unmanagedPositions.stream().mapToDouble(Position::getMarketValue).sum();
 		double untrackedTarget = account.getAllocation("untracked") * account.getTotalValue();
 		double difference = untrackedTotal - untrackedTarget;
-		unmanagedPositions.add(0, new Position("Overage", 0, 0, difference, null, 0, 0, 0, null));
+		unmanagedPositions.add(0, new Position("Overage", 0, 0, difference, null, 0, 0, 0, 0, null));
 		return unmanagedPositions;
 	}
 }

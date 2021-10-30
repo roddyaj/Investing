@@ -26,13 +26,14 @@ public class Position implements Comparable<Position>
 	private final double costBasis;
 	private final double dayChangePct;
 	private final double gainLossPct;
+	private final double percentOfAccount;
 	private Lots lots;
 
 	private final Option option;
 	private List<OpenOrder> openOrders;
 
 	public Position(String symbol, int quantity, double price, double marketValue, SecurityType securityType, double costBasis, double dayChangePct,
-			double gainLossPct, Option option)
+			double gainLossPct, double percentOfAccount, Option option)
 	{
 		this.symbol = symbol;
 		this.quantity = quantity;
@@ -42,6 +43,7 @@ public class Position implements Comparable<Position>
 		this.costBasis = costBasis;
 		this.dayChangePct = dayChangePct;
 		this.gainLossPct = gainLossPct;
+		this.percentOfAccount = percentOfAccount;
 		this.option = option;
 	}
 
@@ -93,6 +95,11 @@ public class Position implements Comparable<Position>
 	public double getGainLossPct()
 	{
 		return gainLossPct;
+	}
+
+	public double getPercentOfAccount()
+	{
+		return percentOfAccount;
 	}
 
 	public Lots getLots()

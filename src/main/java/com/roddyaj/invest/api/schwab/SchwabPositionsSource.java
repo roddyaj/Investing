@@ -33,7 +33,7 @@ public class SchwabPositionsSource
 	private static final String GAIN_LOSS_PERCENT = "Gain/Loss %";
 //	private static final String REINVEST_DIVIDENDS = "Reinvest Dividends?";
 //	private static final String CAPITAL_GAINS = "Capital Gains?";
-//	private static final String PERCENT_OF_ACCOUNT = "% Of Account";
+	private static final String PERCENT_OF_ACCOUNT = "% Of Account";
 //	private static final String DIVIDEND_YIELD = "Dividend Yield";
 //	private static final String LAST_DIVIDEND = "Last Dividend";
 //	private static final String EX_DIVIDEND_DATE = "Ex-Dividend Date";
@@ -93,6 +93,7 @@ public class SchwabPositionsSource
 		double dayChangePct = StringUtils.parsePercent(record.get(DAY_CHANGE_PERCENT));
 		double costBasis = StringUtils.parsePrice(record.get(COST_BASIS));
 		double gainLossPct = StringUtils.parsePercent(record.get(GAIN_LOSS_PERCENT));
+		double percentOfAccount = StringUtils.parsePercent(record.get(PERCENT_OF_ACCOUNT));
 		double intrinsicValue = record.isSet(INTRINSIC_VALUE) ? StringUtils.parseDouble(record.get(INTRINSIC_VALUE)) : 0;
 		String money = record.isSet(IN_THE_MONEY) ? record.get(IN_THE_MONEY) : null;
 		SecurityType securityType = record.isSet(SECURITY_TYPE) ? parseSecurityType(record.get(SECURITY_TYPE)) : null;
@@ -112,7 +113,7 @@ public class SchwabPositionsSource
 			symbol = symbolOrOption;
 		}
 
-		return new Position(symbol, quantity, price, marketValue, securityType, costBasis, dayChangePct, gainLossPct, option);
+		return new Position(symbol, quantity, price, marketValue, securityType, costBasis, dayChangePct, gainLossPct, percentOfAccount, option);
 	}
 
 	private static SecurityType parseSecurityType(String s)

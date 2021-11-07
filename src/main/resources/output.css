@@ -7,16 +7,16 @@ th, td {
 	padding: 2px 4px;
 }
 
+a {
+	color: blue;
+}
+
 a:link {
 	text-decoration: none;
 }
 
 a:hover {
 	text-decoration: underline;
-}
-
-a:visited {
-	color: blue;
 }
 
 .row {

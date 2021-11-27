@@ -17,10 +17,19 @@ public class Row implements HtmlObject
 	public List<String> toHtml()
 	{
 		List<String> lines = new ArrayList<>();
-		lines.add("<div class=\"row\">");
-		for (HtmlObject item : items)
-			lines.addAll(item.toHtml());
-		lines.add("</div>");
+		if (!isEmpty())
+		{
+			lines.add("<div class=\"row\">");
+			for (HtmlObject item : items)
+				lines.addAll(item.toHtml());
+			lines.add("</div>");
+		}
 		return lines;
+	}
+
+	@Override
+	public boolean isEmpty()
+	{
+		return items.stream().allMatch(HtmlObject::isEmpty);
 	}
 }

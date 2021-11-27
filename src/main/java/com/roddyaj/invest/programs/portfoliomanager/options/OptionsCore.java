@@ -38,13 +38,16 @@ public class OptionsCore
 
 	public OptionsOutput run()
 	{
-		setUp();
-		analyzeBuyToClose();
-		analyzeCallsToSell();
-		analyzePutsToSell();
-		availableToTrade();
-		currentPositions();
-		monthlyIncome();
+		if (account.getAccountSettings().isOptionsEnabled())
+		{
+			setUp();
+			analyzeBuyToClose();
+			analyzeCallsToSell();
+			analyzePutsToSell();
+			availableToTrade();
+			currentPositions();
+			monthlyIncome();
+		}
 		return output;
 	}
 

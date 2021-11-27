@@ -20,7 +20,7 @@ public class Block implements HtmlObject
 	public List<String> toHtml()
 	{
 		List<String> lines = new ArrayList<>();
-		if (table.getRowCount() > 0)
+		if (!isEmpty())
 		{
 			lines.add("<div class=\"block\">");
 			String heading = formatHeading();
@@ -30,6 +30,12 @@ public class Block implements HtmlObject
 			lines.add("</div>");
 		}
 		return lines;
+	}
+
+	@Override
+	public boolean isEmpty()
+	{
+		return table.isEmpty();
 	}
 
 	private String formatHeading()

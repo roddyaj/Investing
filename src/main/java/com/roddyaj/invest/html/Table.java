@@ -31,13 +31,22 @@ public class Table implements HtmlObject
 	public List<String> toHtml()
 	{
 		List<String> lines = new ArrayList<>(3 + rows.size());
-		lines.add("<table>");
-		if (showHeader)
-			lines.add(formatHeader());
-		for (List<Object> row : rows)
-			lines.add(formatRow(row));
-		lines.add("</table>");
+		if (!isEmpty())
+		{
+			lines.add("<table>");
+			if (showHeader)
+				lines.add(formatHeader());
+			for (List<Object> row : rows)
+				lines.add(formatRow(row));
+			lines.add("</table>");
+		}
 		return lines;
+	}
+
+	@Override
+	public boolean isEmpty()
+	{
+		return rows.isEmpty();
 	}
 
 	private String formatHeader()

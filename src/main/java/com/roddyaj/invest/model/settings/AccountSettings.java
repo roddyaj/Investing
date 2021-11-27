@@ -11,6 +11,7 @@ public class AccountSettings
 	private String accountNumber;
 	private double maxPosition;
 	private double startingBalance;
+	private boolean optionsEnabled = true;
 	private Allocation[] allocations;
 
 	@JsonProperty("name")
@@ -59,6 +60,18 @@ public class AccountSettings
 	public void setStartingBalance(double startingBalance)
 	{
 		this.startingBalance = startingBalance;
+	}
+
+	@JsonProperty("optionsEnabled")
+	public boolean isOptionsEnabled()
+	{
+		return optionsEnabled;
+	}
+
+	@JsonProperty("optionsEnabled")
+	public void setOptionsEnabled(boolean optionsEnabled)
+	{
+		this.optionsEnabled = optionsEnabled;
 	}
 
 	@JsonProperty("allocations")

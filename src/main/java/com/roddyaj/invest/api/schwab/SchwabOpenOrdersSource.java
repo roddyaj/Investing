@@ -72,7 +72,10 @@ public class SchwabOpenOrdersSource
 		String symbol = record.get(SYMBOL);
 		String action = record.get(ACTION);
 		int shareCount = Integer.parseInt(record.get(QUANTITY_FACE_VALUE).split(" ")[0]);
-		double price = StringUtils.parsePrice(record.get(PRICE).split(" ")[1]);
+		String priceText = record.get(PRICE);
+		if (priceText.contains(" "))
+			priceText = priceText.split(" ")[1];
+		double price = priceText.equals("Market") ? 0 : StringUtils.parsePrice(priceText);
 		String status = record.get(STATUS);
 
 		if (action.startsWith("Sell"))

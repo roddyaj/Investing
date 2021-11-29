@@ -17,6 +17,7 @@ import com.roddyaj.invest.programs.portfoliomanager.options.OptionsCore;
 import com.roddyaj.invest.programs.portfoliomanager.options.OptionsOutput;
 import com.roddyaj.invest.programs.portfoliomanager.positions.OddLots;
 import com.roddyaj.invest.programs.portfoliomanager.positions.OddLotsOutput;
+import com.roddyaj.invest.programs.portfoliomanager.positions.PositionList;
 import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManager;
 import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerOutput;
 import com.roddyaj.invest.programs.portfoliomanager.positions.ReturnCalculator;
@@ -64,6 +65,7 @@ public class PortfolioManager implements Program
 		columns.add(new Column(CollectionUtils.join(positionsOutput.getBlocks(), oddLotsOutput.getBlock())));
 		columns.add(new Column(optionsOutput.getActionsBlocks()));
 		columns.add(new Column(optionsOutput.getCurrentOptionsBlock()));
+		columns.add(new Column(PositionList.getBlocks(input.getAccount())));
 		columns.add(new Column(List.of(optionsOutput.getIncomeBlock(), statistics.toBlock())));
 		lines.addAll(new Row(columns).toHtml());
 

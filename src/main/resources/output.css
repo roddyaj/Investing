@@ -4,7 +4,11 @@ body {
 }
 
 th, td {
-	padding: 2px 4px;
+	padding: 2px 0px 2px 4px;
+}
+
+th.f, td.f {
+	padding: 2px 0px 2px 0px;
 }
 
 a {

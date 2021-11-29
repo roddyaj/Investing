@@ -3,6 +3,7 @@ package com.roddyaj.invest.html;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.roddyaj.invest.util.FileUtils;
 
@@ -105,7 +106,27 @@ public abstract class HtmlFormatter
 		return sb.toString();
 	}
 
-	private static void appendKeyValue(StringBuilder sb, String key, String value)
+	public static String startTag(String tag, Map<String, ? extends Object> attributes)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append('<').append(tag);
+		for (Map.Entry<String, ? extends Object> entry : attributes.entrySet())
+			appendKeyValue(sb, entry.getKey(), entry.getValue());
+		sb.append('>');
+		return sb.toString();
+	}
+
+	public static String tag(String tag, Map<String, ? extends Object> attributes)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append('<').append(tag);
+		for (Map.Entry<String, ? extends Object> entry : attributes.entrySet())
+			appendKeyValue(sb, entry.getKey(), entry.getValue());
+		sb.append(" />");
+		return sb.toString();
+	}
+
+	private static void appendKeyValue(StringBuilder sb, String key, Object value)
 	{
 		sb.append(' ').append(key).append("=\"").append(value).append('"');
 	}

@@ -2,6 +2,7 @@ package com.roddyaj.invest.html;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Table implements HtmlObject
 {
@@ -53,13 +54,20 @@ public class Table implements HtmlObject
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append("<tr>");
+		boolean isFirst = true;
 		for (Column column : columns)
 		{
-			builder.append("<th");
+			List<String> classes = new ArrayList<>();
 			if (column.align != Align.C)
-				builder.append(" class=\"").append(column.align).append("\"");
-			builder.append(">");
-			builder.append(column.name).append("</th>");
+				classes.add(column.align.toString());
+			if (isFirst)
+				classes.add("f");
+			Map<String, Object> attributes = classes.isEmpty() ? Map.of() : Map.of("class", String.join(" ", classes));
+			isFirst = false;
+
+			builder.append(HtmlFormatter.startTag("th", attributes));
+			builder.append(column.name);
+			builder.append("</th>");
 		}
 		builder.append("</tr>");
 		return builder.toString();
@@ -70,13 +78,20 @@ public class Table implements HtmlObject
 		StringBuilder builder = new StringBuilder();
 		builder.append("<tr>");
 		int i = 0;
+		boolean isFirst = true;
 		for (Object cell : row)
 		{
 			Column column = columns.get(i++);
-			builder.append("<td");
+
+			List<String> classes = new ArrayList<>();
 			if (column.align != Align.L)
-				builder.append(" class=\"").append(column.align).append("\"");
-			builder.append(">");
+				classes.add(column.align.toString());
+			if (isFirst)
+				classes.add("f");
+			Map<String, Object> attributes = classes.isEmpty() ? Map.of() : Map.of("class", String.join(" ", classes));
+			isFirst = false;
+
+			builder.append(HtmlFormatter.startTag("td", attributes));
 			if (cell != null)
 				builder.append(String.format(column.format, cell));
 			builder.append("</td>");

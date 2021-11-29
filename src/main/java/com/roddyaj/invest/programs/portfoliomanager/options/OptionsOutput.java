@@ -47,8 +47,7 @@ public class OptionsOutput extends AbstractOutput
 		double callsInPlay = currentPositions.stream().filter(Position::isCallOption).mapToDouble(Position::getMoneyInPlay).sum();
 		long putsCount = currentPositions.stream().filter(Position::isPutOption).count();
 		double putsInPlay = currentPositions.stream().filter(Position::isPutOption).mapToDouble(Position::getMoneyInPlay).sum();
-		String info = String.format("C: %d $%.0f &nbsp;P: %d $%.0f &nbsp;T: %d $%.0f", callsCount, callsInPlay, putsCount, putsInPlay,
-				callsCount + putsCount, callsInPlay + putsInPlay);
+		String info = String.format("C: %d $%.0f &nbsp;P: %d $%.0f", callsCount, callsInPlay, putsCount, putsInPlay);
 		return new Position.OptionHtmlFormatter("Current Options", info, currentPositions, false).toBlock();
 	}
 

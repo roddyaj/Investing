@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.roddyaj.invest.api.schwab.SchwabDataSource;
+import com.roddyaj.invest.api.yahoo.YahooUtils;
 import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.HtmlFormatter;
 import com.roddyaj.invest.html.Table.Align;
@@ -59,19 +60,17 @@ public class PutToSell implements Comparable<PutToSell>
 
 	public static class PutHtmlFormatter extends DataFormatter<PutToSell>
 	{
-		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
-
 		public PutHtmlFormatter(Collection<? extends PutToSell> records, double availableToTrade)
 		{
-			super("Candidate Puts To Sell", String.format("$%.0f available", availableToTrade), records);
+			super("Candidate Puts To Sell", String.format("$%.0f avail.", availableToTrade), records);
 		}
 
 		@Override
 		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
-			columns.add(new Column("Schwab", "%s", Align.L));
-			columns.add(new Column("Yahoo", "%s", Align.L));
+			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("", "%s", Align.L));
 			columns.add(new Column("Avail", "%.0f", Align.R));
 			columns.add(new Column("O", "%s", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
@@ -84,7 +83,7 @@ public class PutToSell implements Comparable<PutToSell>
 		protected List<Object> toRow(PutToSell p)
 		{
 			String schwabLink = HtmlFormatter.toLink(SchwabDataSource.getOptionChainsUrl(p.symbol), p.symbol);
-			String yahooLink = HtmlFormatter.toLinkSymbol(YAHOO, p.symbol);
+			String yahooLink = YahooUtils.getIconLink(p.symbol);
 			String openOrders = OpenOrder.getPopupText(p.openOrders);
 			String dayChangePct = p.dayChangePct != null ? HtmlFormatter.formatPercentChange(p.dayChangePct.doubleValue()) : null;
 			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, openOrders, p.underlyingPrice, dayChangePct, p.averageReturn);

@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.roddyaj.invest.api.schwab.SchwabDataSource;
+import com.roddyaj.invest.api.yahoo.YahooUtils;
 import com.roddyaj.invest.html.Chart;
 import com.roddyaj.invest.html.Chart.HLine;
 import com.roddyaj.invest.html.Chart.Point;
@@ -162,8 +164,6 @@ public class Position implements Comparable<Position>
 
 	public static class StockHtmlFormatter extends DataFormatter<Position>
 	{
-		private static final String YAHOO = "https://finance.yahoo.com/quote/%s";
-
 		public StockHtmlFormatter(String title, String info, Collection<? extends Position> records)
 		{
 			super(title, info, records);
@@ -183,7 +183,7 @@ public class Position implements Comparable<Position>
 		@Override
 		protected List<Object> toRow(Position p)
 		{
-			String link = HtmlFormatter.toLinkSymbol(YAHOO, p.getSymbol());
+			String link = YahooUtils.getLink(p.getSymbol());
 			String totalChange = HtmlFormatter.formatPercentChange(p.getGainLossPct());
 			return List.of(link, p.getQuantity(), p.getMarketValue(), totalChange);
 		}
@@ -191,6 +191,8 @@ public class Position implements Comparable<Position>
 
 	public static class OptionHtmlFormatter extends DataFormatter<Position>
 	{
+		private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yy-MM-dd");
+
 		private final boolean showOpenOrders;
 
 		public OptionHtmlFormatter(String title, String info, Collection<? extends Position> records, boolean showOpenOrders)
@@ -206,13 +208,13 @@ public class Position implements Comparable<Position>
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("#", "%s", showOpenOrders ? Align.L : Align.R));
 			columns.add(new Column("T", "%s", Align.L));
-			columns.add(new Column("Expiration", "%s", Align.L));
-			columns.add(new Column("DTE", "%d", Align.R));
+			columns.add(new Column("Expiry", "%s", Align.L));
+			columns.add(new Column("", "%s", Align.R));
 			columns.add(new Column("Strike", "%.2f", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Cost", "%.2f", Align.R));
 //			columns.add(new Column("U Cost", "%.2f", Align.R));
-			columns.add(new Column("Chart", "%s", Align.C));
+			columns.add(new Column("", "%s", Align.C));
 			return columns;
 		}
 
@@ -224,12 +226,13 @@ public class Position implements Comparable<Position>
 			if (showOpenOrders)
 				quantityText += OpenOrder.getPopupText(p.openOrders);
 			int dte = p.option.getDteCurrent();
+			String dteText = "(" + dte + ")";
 			Double underlyingCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getCostPerShare() : null;
 //			Double underlyingUCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getUnadjustedCostPerShare() : null;
 			Chart chart = getSvgChart(p.option);
 			String chartWithPopup = chart != null ? HtmlFormatter.createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), false) : "";
 
-			return Arrays.asList(link, quantityText, p.option.getType(), p.option.getExpiryDate(), dte, p.option.getStrike(),
+			return Arrays.asList(link, quantityText, p.option.getType(), p.option.getExpiryDate().format(DATE_FORMAT), dteText, p.option.getStrike(),
 					p.option.getUnderlyingPrice(), underlyingCostPerShare, chartWithPopup);
 		}
 

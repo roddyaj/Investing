@@ -91,7 +91,7 @@ public class Order
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
-			columns.add(new Column("Action", "%s", Align.C));
+			columns.add(new Column("", "%s", Align.C));
 			columns.add(new Column("#", "%s", Align.L));
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Total", "%.0f", Align.R));

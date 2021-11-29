@@ -108,7 +108,6 @@ public class PositionList
 		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
-			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("Amount", "$%.2f", Align.R));
 			columns.add(new Column("Target", "%.2f%%", Align.R));
 			columns.add(new Column("Actual", "%.2f%%", Align.R));
@@ -120,7 +119,7 @@ public class PositionList
 		{
 			double targetPercent = account.getAllocation("cash") * 100;
 			double percentOfAccount = p.getMarketValue() / account.getTotalValue() * 100;
-			return List.of("Cash", p.getMarketValue(), targetPercent, percentOfAccount);
+			return List.of(p.getMarketValue(), targetPercent, percentOfAccount);
 		}
 	}
 }

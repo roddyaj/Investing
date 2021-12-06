@@ -14,6 +14,13 @@ public class KeyValueData
 {
 	private final List<Pair<String, Object>> data = new ArrayList<>();
 
+	private final String title;
+
+	public KeyValueData(String title)
+	{
+		this.title = title;
+	}
+
 	public void addData(String key, Object value)
 	{
 		data.add(new Pair<>(key, value));
@@ -21,14 +28,14 @@ public class KeyValueData
 
 	public Block toBlock()
 	{
-		return new KeyValueFormatter(data).toBlock(false);
+		return new KeyValueFormatter(data, title).toBlock(false);
 	}
 
 	private static class KeyValueFormatter extends DataFormatter<Pair<String, Object>>
 	{
-		public KeyValueFormatter(Collection<? extends Pair<String, Object>> records)
+		public KeyValueFormatter(Collection<? extends Pair<String, Object>> records, String title)
 		{
-			super("Statistics", null, records);
+			super(title, null, records);
 		}
 
 		@Override

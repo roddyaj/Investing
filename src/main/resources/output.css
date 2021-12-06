@@ -23,6 +23,10 @@ a:hover {
 	text-decoration: underline;
 }
 
+img {
+	display: block;
+}
+
 .row {
 	display: flex;
 	flex-direction: row;

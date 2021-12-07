@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -97,6 +98,7 @@ public class Order
 			columns.add(new Column("Total", "%.0f", Align.R));
 			columns.add(new Column("Day", "%s", Align.R));
 			columns.add(new Column("Total", "%s", Align.R));
+			columns.add(new Column("Cost", "%.2f", Align.R));
 			return columns;
 		}
 
@@ -112,8 +114,9 @@ public class Order
 			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(o.openOrders);
 			String dayChangeColored = o.position != null ? HtmlFormatter.formatPercentChange(o.position.getDayChangePct()) : "";
 			String gainLossPctColored = o.position != null ? HtmlFormatter.formatPercentChange(o.position.getGainLossPct()) : "";
+			Double costBasis = o.position != null ? o.position.getCostPerShare() : null;
 
-			return List.of(link, isBuy ? "Buy" : "Sell", quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored);
+			return Arrays.asList(link, isBuy ? "Buy" : "Sell", quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, costBasis);
 		}
 	}
 }

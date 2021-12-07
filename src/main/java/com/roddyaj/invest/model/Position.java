@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.roddyaj.invest.api.schwab.SchwabDataSource;
-import com.roddyaj.invest.api.yahoo.YahooUtils;
 import com.roddyaj.invest.html.Chart;
 import com.roddyaj.invest.html.Chart.HLine;
 import com.roddyaj.invest.html.Chart.Point;
@@ -160,33 +159,6 @@ public class Position implements Comparable<Position>
 	public int compareTo(Position o)
 	{
 		return symbol.compareTo(o.symbol);
-	}
-
-	public static class StockHtmlFormatter extends DataFormatter<Position>
-	{
-		public StockHtmlFormatter(String title, String info, Collection<? extends Position> records)
-		{
-			super(title, info, records);
-		}
-
-		@Override
-		protected List<Column> getColumns()
-		{
-			List<Column> columns = new ArrayList<>();
-			columns.add(new Column("Ticker", "%s", Align.L));
-			columns.add(new Column("#", "%d", Align.R));
-			columns.add(new Column("Value", "%.2f", Align.R));
-			columns.add(new Column("Total", "%s", Align.R));
-			return columns;
-		}
-
-		@Override
-		protected List<Object> toRow(Position p)
-		{
-			String link = YahooUtils.getLink(p.getSymbol());
-			String totalChange = HtmlFormatter.formatPercentChange(p.getGainLossPct());
-			return List.of(link, p.getQuantity(), p.getMarketValue(), totalChange);
-		}
 	}
 
 	public static class OptionHtmlFormatter extends DataFormatter<Position>

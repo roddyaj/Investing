@@ -7,6 +7,7 @@ import java.util.List;
 import com.roddyaj.invest.api.yahoo.YahooUtils;
 import com.roddyaj.invest.html.Block;
 import com.roddyaj.invest.html.DataFormatter;
+import com.roddyaj.invest.html.HtmlFormatter;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.Account;
@@ -55,6 +56,7 @@ public class PositionList
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("Target", "%.2f%%", Align.R));
 			columns.add(new Column("Actual", "%.2f%%", Align.R));
+			columns.add(new Column("Ratio", "%.0f%%", Align.R));
 			return columns;
 		}
 
@@ -63,7 +65,8 @@ public class PositionList
 		{
 			double targetPercent = account.getAllocation(p.getSymbol()) * 100;
 			double percentOfAccount = p.getMarketValue() / account.getTotalValue() * 100;
-			return List.of(YahooUtils.getLink(p.getSymbol()), targetPercent, percentOfAccount);
+			double ratio = Math.min(percentOfAccount / targetPercent * 100, 999);
+			return List.of(YahooUtils.getLink(p.getSymbol()), targetPercent, percentOfAccount, ratio);
 		}
 	}
 
@@ -83,6 +86,7 @@ public class PositionList
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("Percent", "%.2f%%", Align.R));
+			columns.add(new Column("Total", "%s", Align.R));
 			return columns;
 		}
 
@@ -90,7 +94,8 @@ public class PositionList
 		protected List<Object> toRow(Position p)
 		{
 			double percentOfAccount = p.getMarketValue() / account.getTotalValue() * 100;
-			return List.of(YahooUtils.getLink(p.getSymbol()), percentOfAccount);
+			String gainLossPctColored = HtmlFormatter.formatPercentChange(p.getGainLossPct());
+			return List.of(YahooUtils.getLink(p.getSymbol()), percentOfAccount, gainLossPctColored);
 		}
 	}
 

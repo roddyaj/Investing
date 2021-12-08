@@ -44,7 +44,7 @@ public class PortfolioManager implements Program
 		double portfolioReturn = new ReturnCalculator(account, account.getAccountSettings()).run();
 
 		KeyValueData summary = new KeyValueData("Summary");
-		summary.addData("Balance:", String.format("%.2f", account.getTotalValue()));
+		summary.addData("Balance:", String.format("$%.0f", account.getTotalValue()));
 		summary.addData("Return:", String.format("%.2f%%", portfolioReturn * 100));
 		if (!unmanagedPositions.isEmpty())
 			summary.addData("Untracked Excess:", String.format("$%.0f", unmanagedPositions.get(0).getMarketValue()));
@@ -68,7 +68,7 @@ public class PortfolioManager implements Program
 		columns.add(new Column(optionsOutput.getActionsBlocks()));
 		columns.add(new Column(optionsOutput.getCurrentOptionsBlock()));
 		columns.add(new Column(PositionList.getBlocks(input.getAccount())));
-		columns.add(new Column(List.of(optionsOutput.getIncomeBlock(), summary.toBlock())));
+		columns.add(new Column(List.of(summary.toBlock(), optionsOutput.getIncomeBlock())));
 		lines.addAll(new Row(columns).toHtml());
 
 		String html = HtmlFormatter.toDocument(account.getName().replace('_', ' '), lines);

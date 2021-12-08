@@ -57,6 +57,7 @@ public class PositionList
 			columns.add(new Column("Target", "%.2f%%", Align.R));
 			columns.add(new Column("Actual", "%.2f%%", Align.R));
 			columns.add(new Column("Ratio", "%.0f%%", Align.R));
+			columns.add(new Column("Total", "%s", Align.R));
 			return columns;
 		}
 
@@ -66,7 +67,8 @@ public class PositionList
 			double targetPercent = account.getAllocation(p.getSymbol()) * 100;
 			double percentOfAccount = p.getMarketValue() / account.getTotalValue() * 100;
 			double ratio = Math.min(percentOfAccount / targetPercent * 100, 999);
-			return List.of(YahooUtils.getLink(p.getSymbol()), targetPercent, percentOfAccount, ratio);
+			String gainLossPctColored = HtmlFormatter.formatPercentChange(p.getGainLossPct());
+			return List.of(YahooUtils.getLink(p.getSymbol()), targetPercent, percentOfAccount, ratio, gainLossPctColored);
 		}
 	}
 

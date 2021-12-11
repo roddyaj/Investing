@@ -2,7 +2,7 @@ package com.roddyaj.invest.api.yahoo;
 
 import java.util.Map;
 
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 
 public final class YahooUtils
 {
@@ -12,12 +12,12 @@ public final class YahooUtils
 
 	public static String getLink(String symbol)
 	{
-		return HtmlFormatter.toLink(getUrl(symbol), symbol);
+		return HtmlUtils.toLink(getUrl(symbol), symbol);
 	}
 
 	public static String getIconLink(String symbol)
 	{
-		return HtmlFormatter.toLink(getUrl(symbol), HtmlFormatter.tag("img", Map.of("src", ICON_URL, "width", 14, "height", 14)));
+		return HtmlUtils.toLink(getUrl(symbol), HtmlUtils.tag("img", Map.of("src", ICON_URL, "width", 14, "height", 14)));
 	}
 
 	public static String getUrl(String symbol)

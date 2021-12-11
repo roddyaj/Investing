@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.roddyaj.invest.util.FileUtils;
 
-public abstract class HtmlFormatter
+public final class HtmlUtils
 {
 	private static int popupId;
 
@@ -83,10 +83,10 @@ public abstract class HtmlFormatter
 	{
 		StringBuilder sb = new StringBuilder();
 
-		final String id = "popup-" + popupId++;
+		final String id = "pop-" + popupId++;
 
 		sb.append("<div");
-		appendKeyValue(sb, "class", isText ? "popup popup-text" : "popup");
+		appendKeyValue(sb, "class", "popup");
 		sb.append(" onmouseover=\"showPopup('").append(id).append("')\"");
 		sb.append(" onmouseout=\"hidePopup('").append(id).append("')\"");
 		sb.append('>');
@@ -129,5 +129,9 @@ public abstract class HtmlFormatter
 	private static void appendKeyValue(StringBuilder sb, String key, Object value)
 	{
 		sb.append(' ').append(key).append("=\"").append(value).append('"');
+	}
+
+	private HtmlUtils()
+	{
 	}
 }

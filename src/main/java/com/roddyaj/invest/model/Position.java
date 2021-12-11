@@ -13,7 +13,7 @@ import com.roddyaj.invest.html.Chart;
 import com.roddyaj.invest.html.Chart.HLine;
 import com.roddyaj.invest.html.Chart.Point;
 import com.roddyaj.invest.html.DataFormatter;
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 
@@ -193,7 +193,7 @@ public class Position implements Comparable<Position>
 		@Override
 		protected List<Object> toRow(Position p)
 		{
-			String link = HtmlFormatter.toLink(SchwabDataSource.getOptionUrl(p.option.toOccString()), p.symbol);
+			String link = HtmlUtils.toLink(SchwabDataSource.getOptionUrl(p.option.toOccString()), p.symbol);
 			String quantityText = String.valueOf(Math.abs(p.quantity));
 			if (showOpenOrders)
 				quantityText += OpenOrder.getPopupText(p.openOrders);
@@ -202,7 +202,7 @@ public class Position implements Comparable<Position>
 			Double underlyingCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getCostPerShare() : null;
 //			Double underlyingUCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getUnadjustedCostPerShare() : null;
 			Chart chart = getSvgChart(p.option);
-			String chartWithPopup = chart != null ? HtmlFormatter.createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), false) : "";
+			String chartWithPopup = chart != null ? HtmlUtils.createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), false) : "";
 
 			return Arrays.asList(link, quantityText, p.option.getType(), p.option.getExpiryDate().format(DATE_FORMAT), dteText, p.option.getStrike(),
 					p.option.getUnderlyingPrice(), underlyingCostPerShare, chartWithPopup);

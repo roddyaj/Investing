@@ -8,7 +8,7 @@ import java.util.List;
 import com.roddyaj.invest.api.schwab.SchwabDataSource;
 import com.roddyaj.invest.api.yahoo.YahooUtils;
 import com.roddyaj.invest.html.DataFormatter;
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.OpenOrder;
@@ -82,10 +82,10 @@ public class PutToSell implements Comparable<PutToSell>
 		@Override
 		protected List<Object> toRow(PutToSell p)
 		{
-			String schwabLink = HtmlFormatter.toLink(SchwabDataSource.getOptionChainsUrl(p.symbol), p.symbol);
+			String schwabLink = HtmlUtils.toLink(SchwabDataSource.getOptionChainsUrl(p.symbol), p.symbol);
 			String yahooLink = YahooUtils.getIconLink(p.symbol);
 			String openOrders = OpenOrder.getPopupText(p.openOrders);
-			String dayChangePct = p.dayChangePct != null ? HtmlFormatter.formatPercentChange(p.dayChangePct.doubleValue()) : null;
+			String dayChangePct = p.dayChangePct != null ? HtmlUtils.formatPercentChange(p.dayChangePct.doubleValue()) : null;
 			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, openOrders, p.underlyingPrice, dayChangePct, p.averageReturn);
 		}
 	}

@@ -110,6 +110,8 @@ public class OptionsCore
 				{
 					CallToSell call = new CallToSell(position, availableCalls);
 					call.setOpenOrders(account.getOpenOrders(position.getSymbol(), Action.SELL, 'C'));
+					call.setTransactions(
+							account.getTransactions().stream().filter(t -> !t.isOption() && t.getSymbol().equals(position.getSymbol())).toList());
 					output.callsToSell.add(call);
 				}
 			}

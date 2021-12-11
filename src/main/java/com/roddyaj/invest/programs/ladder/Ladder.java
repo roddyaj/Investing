@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.roddyaj.invest.framework.Program;
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.util.AppFileUtils;
 
@@ -79,7 +79,7 @@ public class Ladder implements Program
 		List<Order> actualOrders = orders.stream().map(o -> new Order(o.symbol, o.shareCount, o.price, null)).collect(Collectors.toList());
 		lines.addAll(new Order.OrderFormatter("Orders", null, actualOrders).toHtml());
 
-		String html = HtmlFormatter.toDocument("Ladder Orders", lines);
+		String html = HtmlUtils.toDocument("Ladder Orders", lines);
 
 		AppFileUtils.showHtml(html, "LadderOrders.html");
 	}

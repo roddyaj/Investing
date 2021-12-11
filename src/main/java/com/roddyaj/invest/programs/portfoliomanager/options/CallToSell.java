@@ -7,17 +7,19 @@ import java.util.List;
 import com.roddyaj.invest.api.schwab.SchwabDataSource;
 import com.roddyaj.invest.api.yahoo.YahooUtils;
 import com.roddyaj.invest.html.DataFormatter;
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.model.Position;
+import com.roddyaj.invest.model.Transaction;
 
 public class CallToSell implements Comparable<CallToSell>
 {
 	private final Position position;
 	private final int quantity;
 	private List<OpenOrder> openOrders;
+	private List<Transaction> transactions;
 
 	public CallToSell(Position position, int quantity)
 	{
@@ -28,6 +30,11 @@ public class CallToSell implements Comparable<CallToSell>
 	public void setOpenOrders(List<OpenOrder> openOrders)
 	{
 		this.openOrders = openOrders;
+	}
+
+	public void setTransactions(List<Transaction> transactions)
+	{
+		this.transactions = transactions;
 	}
 
 	@Override
@@ -50,7 +57,7 @@ public class CallToSell implements Comparable<CallToSell>
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("", "%s", Align.L));
 			columns.add(new Column("#", "%s", Align.L));
-			columns.add(new Column("Cost", "%.2f", Align.R));
+			columns.add(new Column("Cost", "%s", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Day", "%s", Align.R));
 			columns.add(new Column("Total", "%s", Align.R));
@@ -60,13 +67,13 @@ public class CallToSell implements Comparable<CallToSell>
 		@Override
 		protected List<Object> toRow(CallToSell c)
 		{
-			String schwab = HtmlFormatter.toLink(SchwabDataSource.getOptionChainsUrl(c.position.getSymbol()), c.position.getSymbol());
+			String schwab = HtmlUtils.toLink(SchwabDataSource.getOptionChainsUrl(c.position.getSymbol()), c.position.getSymbol());
 			String yahoo = YahooUtils.getIconLink(c.position.getSymbol());
 			String quantityText = c.quantity + OpenOrder.getPopupText(c.openOrders);
-			double costPerShare = c.position.getCostPerShare();
-			String dayChange = HtmlFormatter.formatPercentChange(c.position.getDayChangePct());
-			String totalChange = HtmlFormatter.formatPercentChange(c.position.getGainLossPct());
-			return List.of(schwab, yahoo, quantityText, costPerShare, c.position.getPrice(), dayChange, totalChange);
+			String cost = HtmlUtils.createPopup(String.format("%.2f", c.position.getCostPerShare()), Transaction.getPopupText(c.transactions), true);
+			String dayChange = HtmlUtils.formatPercentChange(c.position.getDayChangePct());
+			String totalChange = HtmlUtils.formatPercentChange(c.position.getGainLossPct());
+			return List.of(schwab, yahoo, quantityText, cost, c.position.getPrice(), dayChange, totalChange);
 		}
 	}
 }

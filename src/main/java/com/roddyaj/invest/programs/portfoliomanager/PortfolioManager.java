@@ -7,7 +7,7 @@ import java.util.Queue;
 
 import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.html.Column;
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Row;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Input;
@@ -71,7 +71,7 @@ public class PortfolioManager implements Program
 		columns.add(new Column(List.of(summary.toBlock(), optionsOutput.getIncomeBlock())));
 		lines.addAll(new Row(columns).toHtml());
 
-		String html = HtmlFormatter.toDocument(account.getName().replace('_', ' '), lines);
+		String html = HtmlUtils.toDocument(account.getName().replace('_', ' '), lines);
 
 		AppFileUtils.showHtml(html, account.getName() + ".html");
 	}
@@ -94,15 +94,15 @@ public class PortfolioManager implements Program
 	private List<String> getLinks()
 	{
 		List<String> links = new ArrayList<>();
-		links.add(HtmlFormatter.toLink("https://client.schwab.com/Areas/Accounts/Positions", "Positions"));
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Areas/Accounts/Positions", "Positions"));
 		links.add("|");
-		links.add(HtmlFormatter.toLink("https://client.schwab.com/Apps/accounts/transactionhistory", "History"));
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Apps/accounts/transactionhistory", "History"));
 		links.add("|");
-		links.add(HtmlFormatter.toLink("https://client.schwab.com/Apps/Accounts/Balances", "Balances"));
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Apps/Accounts/Balances", "Balances"));
 		links.add("|");
-		links.add(HtmlFormatter.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Open", "Open Orders"));
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Open", "Open Orders"));
 		links.add("|");
-		links.add(HtmlFormatter.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Today", "Today's Orders"));
-		return HtmlFormatter.toSimpleColumnTable(links);
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Today", "Today's Orders"));
+		return HtmlUtils.toSimpleColumnTable(links);
 	}
 }

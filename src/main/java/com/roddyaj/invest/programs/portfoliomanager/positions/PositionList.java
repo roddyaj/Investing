@@ -7,7 +7,7 @@ import java.util.List;
 import com.roddyaj.invest.api.yahoo.YahooUtils;
 import com.roddyaj.invest.html.Block;
 import com.roddyaj.invest.html.DataFormatter;
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.Account;
@@ -67,7 +67,7 @@ public class PositionList
 			double targetPercent = account.getAllocation(p.getSymbol()) * 100;
 			double percentOfAccount = p.getMarketValue() / account.getTotalValue() * 100;
 			double ratio = Math.min(percentOfAccount / targetPercent * 100, 999);
-			String gainLossPctColored = HtmlFormatter.formatPercentChange(p.getGainLossPct());
+			String gainLossPctColored = HtmlUtils.formatPercentChange(p.getGainLossPct());
 			return List.of(YahooUtils.getLink(p.getSymbol()), targetPercent, percentOfAccount, ratio, gainLossPctColored);
 		}
 	}
@@ -96,7 +96,7 @@ public class PositionList
 		protected List<Object> toRow(Position p)
 		{
 			double percentOfAccount = p.getMarketValue() / account.getTotalValue() * 100;
-			String gainLossPctColored = HtmlFormatter.formatPercentChange(p.getGainLossPct());
+			String gainLossPctColored = HtmlUtils.formatPercentChange(p.getGainLossPct());
 			return List.of(YahooUtils.getLink(p.getSymbol()), percentOfAccount, gainLossPctColored);
 		}
 	}

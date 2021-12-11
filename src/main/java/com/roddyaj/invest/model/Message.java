@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.roddyaj.invest.html.Block;
 import com.roddyaj.invest.html.DataFormatter;
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
@@ -55,7 +55,7 @@ public class Message
 
 		private static String color(String s, Level level)
 		{
-			return HtmlFormatter.color(s, level == Level.ERROR ? "red" : level == Level.WARN ? "orange" : "black");
+			return HtmlUtils.color(s, level == Level.ERROR ? "red" : level == Level.WARN ? "orange" : "black");
 		}
 	}
 }

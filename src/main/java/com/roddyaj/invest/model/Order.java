@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.roddyaj.invest.api.schwab.SchwabDataSource;
 import com.roddyaj.invest.html.DataFormatter;
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 
@@ -109,11 +109,11 @@ public class Order
 
 			String url = SchwabDataSource.getTradeUrl(isBuy ? Action.BUY : Action.SELL, o.symbol);
 			String onclick = String.format(" onclick=\"navigator.clipboard.writeText('%d');\"", Math.abs(o.quantity));
-			String link = HtmlFormatter.toLink(url, o.symbol, onclick);
+			String link = HtmlUtils.toLink(url, o.symbol, onclick);
 
 			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(o.openOrders);
-			String dayChangeColored = o.position != null ? HtmlFormatter.formatPercentChange(o.position.getDayChangePct()) : "";
-			String gainLossPctColored = o.position != null ? HtmlFormatter.formatPercentChange(o.position.getGainLossPct()) : "";
+			String dayChangeColored = o.position != null ? HtmlUtils.formatPercentChange(o.position.getDayChangePct()) : "";
+			String gainLossPctColored = o.position != null ? HtmlUtils.formatPercentChange(o.position.getGainLossPct()) : "";
 			Double costBasis = o.position != null ? o.position.getCostPerShare() : null;
 
 			return Arrays.asList(link, isBuy ? "Buy" : "Sell", quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, costBasis);

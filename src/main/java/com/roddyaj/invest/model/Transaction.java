@@ -2,6 +2,8 @@ package com.roddyaj.invest.model;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.util.StringUtils;
 
@@ -112,5 +114,19 @@ public class Transaction
 		String actionText = action != null ? StringUtils.limit(action.toString(), 14) : "";
 		return String.format(OPTION_FORMAT, date, actionText, symbol, quantity, price, amount, option.getExpiryDate(), option.getStrike(),
 				option.getType(), days, annualReturn);
+	}
+
+	public String getPopupText()
+	{
+		String actionText = action != null ? StringUtils.limit(action.toString(), 14) : "";
+		return String.format("%s %d @ %.2f", actionText, quantity, price);
+	}
+
+	public static String getPopupText(Collection<? extends Transaction> transactions)
+	{
+		String popupText = "";
+		if (transactions != null && !transactions.isEmpty())
+			popupText = "Transactions<br>" + transactions.stream().limit(6).map(Transaction::getPopupText).collect(Collectors.joining("<br>"));
+		return popupText;
 	}
 }

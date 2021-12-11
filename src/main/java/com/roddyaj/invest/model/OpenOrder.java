@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import com.roddyaj.invest.html.HtmlFormatter;
+import com.roddyaj.invest.html.HtmlUtils;
 
 public class OpenOrder
 {
@@ -66,7 +66,7 @@ public class OpenOrder
 		{
 			String openOrderPopupText = "Open Orders<br>" + orders.stream().map(OpenOrder::getPopupText).collect(Collectors.joining("<br>"));
 			int openOrderCount = Math.abs(orders.stream().mapToInt(OpenOrder::getQuantity).sum());
-			popupText = " " + HtmlFormatter.createPopup("(" + openOrderCount + ")", openOrderPopupText, true);
+			popupText = " " + HtmlUtils.createPopup("(" + openOrderCount + ")", openOrderPopupText, true);
 		}
 		return popupText;
 	}

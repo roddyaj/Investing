@@ -65,10 +65,6 @@ img {
 	cursor: pointer;
 }
 
-.popup-text {
-	font: 12px Arial, sans-serif;
-}
-
 .popup .popup-content {
 	visibility: hidden;
 	white-space: nowrap;

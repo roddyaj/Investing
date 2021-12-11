@@ -65,7 +65,7 @@ public class Table implements HtmlObject
 			Map<String, Object> attributes = classes.isEmpty() ? Map.of() : Map.of("class", String.join(" ", classes));
 			isFirst = false;
 
-			builder.append(HtmlFormatter.startTag("th", attributes));
+			builder.append(HtmlUtils.startTag("th", attributes));
 			builder.append(column.name);
 			builder.append("</th>");
 		}
@@ -91,7 +91,7 @@ public class Table implements HtmlObject
 			Map<String, Object> attributes = classes.isEmpty() ? Map.of() : Map.of("class", String.join(" ", classes));
 			isFirst = false;
 
-			builder.append(HtmlFormatter.startTag("td", attributes));
+			builder.append(HtmlUtils.startTag("td", attributes));
 			if (cell != null)
 				builder.append(String.format(column.format, cell));
 			builder.append("</td>");

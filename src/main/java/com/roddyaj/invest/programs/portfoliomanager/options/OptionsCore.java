@@ -107,13 +107,7 @@ public class OptionsCore
 				int availableCalls = (int)Math.floor(availableShares / 100.0);
 				boolean isUpAtAll = position.getDayChangePct() > -.1 || position.getGainLossPct() > -.1;
 				if (availableCalls > 0 && isUpAtAll)
-				{
-					CallToSell call = new CallToSell(position, availableCalls);
-					call.setOpenOrders(account.getOpenOrders(position.getSymbol(), Action.SELL, 'C'));
-					call.setTransactions(
-							account.getTransactions().stream().filter(t -> !t.isOption() && t.getSymbol().equals(position.getSymbol())).toList());
-					output.callsToSell.add(call);
-				}
+					output.callsToSell.add(new CallToSell(position, availableCalls));
 			}
 		}
 	}

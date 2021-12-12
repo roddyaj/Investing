@@ -18,7 +18,7 @@ public class Table implements HtmlObject
 		this.rows = rows;
 	}
 
-	public void setShowHeader(boolean showHeader)
+	public final void setShowHeader(boolean showHeader)
 	{
 		this.showHeader = showHeader;
 	}
@@ -26,6 +26,19 @@ public class Table implements HtmlObject
 	public int getRowCount()
 	{
 		return rows.size();
+	}
+
+	public String toHtmlSingleLine()
+	{
+		if (isEmpty())
+			return "";
+
+		StringBuilder content = new StringBuilder();
+		if (showHeader)
+			content.append(formatHeader());
+		for (List<Object> row : rows)
+			content.append(formatRow(row));
+		return HtmlUtils.tag("table", content.toString());
 	}
 
 	@Override
@@ -54,20 +67,17 @@ public class Table implements HtmlObject
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append("<tr>");
-		boolean isFirst = true;
+		int i = 0;
 		for (Column column : columns)
 		{
 			List<String> classes = new ArrayList<>();
 			if (column.align != Align.C)
 				classes.add(column.align.toString());
-			if (isFirst)
+			if (i++ == 0)
 				classes.add("f");
-			Map<String, Object> attributes = classes.isEmpty() ? Map.of() : Map.of("class", String.join(" ", classes));
-			isFirst = false;
+			Map<String, Object> attributes = classes.isEmpty() ? null : Map.of("class", String.join(" ", classes));
 
-			builder.append(HtmlUtils.startTag("th", attributes));
-			builder.append(column.name);
-			builder.append("</th>");
+			builder.append(HtmlUtils.tag("th", attributes, column.name));
 		}
 		builder.append("</tr>");
 		return builder.toString();
@@ -78,23 +88,18 @@ public class Table implements HtmlObject
 		StringBuilder builder = new StringBuilder();
 		builder.append("<tr>");
 		int i = 0;
-		boolean isFirst = true;
 		for (Object cell : row)
 		{
-			Column column = columns.get(i++);
+			Column column = columns.get(i);
 
 			List<String> classes = new ArrayList<>();
 			if (column.align != Align.L)
 				classes.add(column.align.toString());
-			if (isFirst)
+			if (i++ == 0)
 				classes.add("f");
-			Map<String, Object> attributes = classes.isEmpty() ? Map.of() : Map.of("class", String.join(" ", classes));
-			isFirst = false;
+			Map<String, Object> attributes = classes.isEmpty() ? null : Map.of("class", String.join(" ", classes));
 
-			builder.append(HtmlUtils.startTag("td", attributes));
-			if (cell != null)
-				builder.append(String.format(column.format, cell));
-			builder.append("</td>");
+			builder.append(HtmlUtils.tag("td", attributes, cell != null ? String.format(column.format, cell) : null));
 		}
 		builder.append("</tr>");
 		return builder.toString();

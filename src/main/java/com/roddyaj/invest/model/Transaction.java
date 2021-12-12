@@ -2,9 +2,13 @@ package com.roddyaj.invest.model;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
 
+import com.roddyaj.invest.html.HtmlUtils;
+import com.roddyaj.invest.html.Table;
 import com.roddyaj.invest.util.StringUtils;
 
 public class Transaction
@@ -116,17 +120,43 @@ public class Transaction
 				option.getType(), days, annualReturn);
 	}
 
-	public String getPopupText()
+	public static String createCostPopup(Position position, Account account)
 	{
-		String actionText = action != null ? StringUtils.limit(action.toString(), 14) : "";
-		return String.format("%s %d @ %.2f", actionText, quantity, price);
+		String text = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline;"), String.format("%.2f", position.getCostPerShare()));
+		List<Transaction> transactions = account.getTransactions().stream().filter(
+				t -> !t.isOption() && t.getSymbol().equals(position.getSymbol()) && (t.getAction() == Action.BUY || t.getAction() == Action.SELL))
+				.limit(6).toList();
+		String popupContent = new Transaction.PopupTable(transactions).toHtmlSingleLine();
+		return HtmlUtils.createPopup(text, popupContent, true);
 	}
 
-	public static String getPopupText(Collection<? extends Transaction> transactions)
+	public static class PopupTable extends Table
 	{
-		String popupText = "";
-		if (transactions != null && !transactions.isEmpty())
-			popupText = "Transactions<br>" + transactions.stream().limit(6).map(Transaction::getPopupText).collect(Collectors.joining("<br>"));
-		return popupText;
+		public PopupTable(Collection<? extends Transaction> transactions)
+		{
+			super(getColumns(), getRows(transactions));
+			setShowHeader(false);
+		}
+
+		private static List<Column> getColumns()
+		{
+			return List.of(new Column("Date", "%s", Align.L), new Column("Action", "%s", Align.L), new Column("Quantity", "%d", Align.R),
+					new Column("Price", "%.2f", Align.R));
+		}
+
+		private static List<List<Object>> getRows(Collection<? extends Transaction> transactions)
+		{
+			List<List<Object>> rows = new ArrayList<>(transactions.size());
+			for (Transaction t : transactions)
+			{
+				List<Object> row = new ArrayList<>();
+				row.add(t.date.toString());
+				row.add(t.action != null ? t.action.toString() : "");
+				row.add(t.quantity);
+				row.add(t.price);
+				rows.add(row);
+			}
+			return rows;
+		}
 	}
 }

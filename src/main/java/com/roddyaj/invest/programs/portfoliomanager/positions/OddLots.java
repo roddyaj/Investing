@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.Account;
-import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.settings.AccountSettings;
@@ -33,11 +32,10 @@ public class OddLots
 				.map(this::getOrder)
 				.filter(o -> o.getQuantity() != 0)
 				.peek(o -> o.setOptional(true))
-				.peek(o -> o.setOpenOrders(account.getOpenOrders(o.getSymbol(), o.getQuantity() >= 0 ? Action.BUY : Action.SELL, null)))
 				.sorted((o1, o2) -> Double.compare(o2.getPosition().getGainLossPct(), o1.getPosition().getGainLossPct()))
 				.collect(Collectors.toList());
 		// @formatter:on
-		return new OddLotsOutput(orders);
+		return new OddLotsOutput(orders, account);
 	}
 
 	private Order getOrder(Position position)

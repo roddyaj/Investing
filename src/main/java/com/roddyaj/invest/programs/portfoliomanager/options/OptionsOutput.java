@@ -14,6 +14,7 @@ import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.AbstractOutput;
+import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Position;
 
 public class OptionsOutput extends AbstractOutput
@@ -25,7 +26,7 @@ public class OptionsOutput extends AbstractOutput
 	public final List<Position> currentPositions = new ArrayList<>();
 	public final Map<String, Double> monthToIncome = new HashMap<>();
 
-	public List<Block> getActionsBlocks()
+	public List<Block> getActionsBlocks(Account account)
 	{
 		List<Block> blocks = new ArrayList<>();
 
@@ -33,7 +34,7 @@ public class OptionsOutput extends AbstractOutput
 		blocks.add(new Position.OptionHtmlFormatter("Buy To Close", info, buyToClose, true).toBlock());
 
 		Collections.sort(callsToSell);
-		blocks.add(new CallToSell.CallHtmlFormatter(callsToSell).toBlock());
+		blocks.add(new CallToSell.CallHtmlFormatter(callsToSell, account).toBlock());
 
 		Collections.sort(putsToSell);
 		blocks.add(new PutToSell.PutHtmlFormatter(putsToSell, availableToTrade).toBlock());

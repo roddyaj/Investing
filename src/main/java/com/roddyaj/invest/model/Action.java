@@ -2,5 +2,19 @@ package com.roddyaj.invest.model;
 
 public enum Action
 {
-	BUY, SELL, SELL_TO_OPEN, BUY_TO_CLOSE, BUY_TO_OPEN, SELL_TO_CLOSE, TRANSFER;
+	BUY("Buy"), SELL("Sell"), SELL_TO_OPEN("Sell to Open"), BUY_TO_CLOSE("Buy To Close"), BUY_TO_OPEN("Buy To Open"), SELL_TO_CLOSE("Sell To Close"),
+	TRANSFER("Transfer");
+
+	private final String text;
+
+	private Action(String text)
+	{
+		this.text = text;
+	}
+
+	@Override
+	public String toString()
+	{
+		return text;
+	}
 }

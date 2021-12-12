@@ -65,7 +65,7 @@ public class PortfolioManager implements Program
 		List<Column> columns = new ArrayList<>();
 //		columns.add(new Column(new Position.StockHtmlFormatter("Untracked", null, unmanagedPositions).toBlock()));
 		columns.add(new Column(CollectionUtils.join(positionsOutput.getBlocks(), oddLotsOutput.getBlock())));
-		columns.add(new Column(optionsOutput.getActionsBlocks()));
+		columns.add(new Column(optionsOutput.getActionsBlocks(account)));
 		columns.add(new Column(optionsOutput.getCurrentOptionsBlock()));
 		columns.add(new Column(PositionList.getBlocks(input.getAccount())));
 		columns.add(new Column(List.of(summary.toBlock(), optionsOutput.getIncomeBlock())));

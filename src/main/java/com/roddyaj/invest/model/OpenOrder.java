@@ -2,6 +2,7 @@ package com.roddyaj.invest.model;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.roddyaj.invest.html.HtmlUtils;
@@ -66,7 +67,9 @@ public class OpenOrder
 		{
 			String openOrderPopupText = "Open Orders<br>" + orders.stream().map(OpenOrder::getPopupText).collect(Collectors.joining("<br>"));
 			int openOrderCount = Math.abs(orders.stream().mapToInt(OpenOrder::getQuantity).sum());
-			popupText = " " + HtmlUtils.createPopup("(" + openOrderCount + ")", openOrderPopupText, true);
+			String text = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline; font: 12px Arial, sans-serif;"),
+					String.valueOf(openOrderCount));
+			popupText = " " + HtmlUtils.createPopup(text, openOrderPopupText, true);
 		}
 		return popupText;
 	}

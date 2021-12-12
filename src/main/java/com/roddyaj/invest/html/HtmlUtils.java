@@ -2,6 +2,7 @@ package com.roddyaj.invest.html;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,12 +41,15 @@ public final class HtmlUtils
 
 	public static String toLink(String url, String text)
 	{
-		return toLink(url, text, "");
+		return toLink(url, text, null);
 	}
 
-	public static String toLink(String url, String text, String additionalProperties)
+	public static String toLink(String url, String text, Map<String, ? extends Object> additionalAttributes)
 	{
-		return String.format("<a href=\"%s\" target=\"_blank\"%s>%s</a>", url, additionalProperties, text);
+		Map<String, Object> attributes = new HashMap<>(Map.of("href", url, "target", "_blank"));
+		if (additionalAttributes != null)
+			attributes.putAll(additionalAttributes);
+		return tag("a", attributes, text);
 	}
 
 	public static String formatPercentChange(double d)
@@ -60,9 +64,10 @@ public final class HtmlUtils
 
 	public static String color(String text, String color)
 	{
-		return "<span style=\"color:" + color + "\">" + text + "</span>";
+		return tag("span", Map.of("style", "color:" + color), text);
 	}
 
+	// TODO replace with Table
 	public static List<String> toSimpleColumnTable(Collection<? extends String> columns)
 	{
 		List<String> lines = new ArrayList<>();
@@ -71,7 +76,7 @@ public final class HtmlUtils
 		StringBuilder builder = new StringBuilder();
 		builder.append("<tr>");
 		for (String column : columns)
-			builder.append("<td>").append(column).append("</td>");
+			builder.append(tag("td", column));
 		builder.append("</tr>");
 		lines.add(builder.toString());
 		lines.add("</table>");
@@ -81,54 +86,64 @@ public final class HtmlUtils
 
 	public static String createPopup(String content, String popupContent, boolean isText)
 	{
-		StringBuilder sb = new StringBuilder();
-
 		final String id = "pop-" + popupId++;
 
-		sb.append("<div");
-		appendKeyValue(sb, "class", "popup");
-		sb.append(" onmouseover=\"showPopup('").append(id).append("')\"");
-		sb.append(" onmouseout=\"hidePopup('").append(id).append("')\"");
-		sb.append('>');
-
+		StringBuilder sb = new StringBuilder();
+		sb.append(startTag("div", Map.of("class", "popup", "onmouseover", "showPopup('" + id + "')", "onmouseout", "hidePopup('" + id + "')")));
 		sb.append(content);
-
-		sb.append("<div");
-		appendKeyValue(sb, "class", "popup-content");
-		appendKeyValue(sb, "id", id);
+		Map<String, Object> attr = new HashMap<>(Map.of("class", "popup-content", "id", id));
 		if (!isText)
-			appendKeyValue(sb, "style", "line-height: 0px;");
-		sb.append('>');
-		sb.append(popupContent).append("</div>");
+			attr.put("style", "line-height: 0px;");
+		sb.append(tag("div", attr, popupContent));
+		sb.append(endTag("div"));
+		return sb.toString();
+	}
 
-		sb.append("</div>");
+	public static String tag(String tag)
+	{
+		return tag(tag, null, null);
+	}
 
+	public static String tag(String tag, String content)
+	{
+		return tag(tag, null, content);
+	}
+
+	public static String tag(String tag, Map<String, ? extends Object> attributes)
+	{
+		return tag(tag, attributes, null);
+	}
+
+	public static String tag(String tag, Map<String, ? extends Object> attributes, String content)
+	{
+		StringBuilder sb = startTag_(tag, attributes);
+		if (content != null)
+			sb.append('>').append(content).append("</").append(tag).append('>');
+		else
+			sb.append(" />");
 		return sb.toString();
 	}
 
 	public static String startTag(String tag, Map<String, ? extends Object> attributes)
 	{
-		StringBuilder sb = new StringBuilder();
-		sb.append('<').append(tag);
-		for (Map.Entry<String, ? extends Object> entry : attributes.entrySet())
-			appendKeyValue(sb, entry.getKey(), entry.getValue());
-		sb.append('>');
-		return sb.toString();
+		return startTag_(tag, attributes).append('>').toString();
 	}
 
-	public static String tag(String tag, Map<String, ? extends Object> attributes)
+	public static String endTag(String tag)
+	{
+		return new StringBuilder(tag.length() + 3).append("</").append(tag).append('>').toString();
+	}
+
+	private static StringBuilder startTag_(String tag, Map<String, ? extends Object> attributes)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append('<').append(tag);
-		for (Map.Entry<String, ? extends Object> entry : attributes.entrySet())
-			appendKeyValue(sb, entry.getKey(), entry.getValue());
-		sb.append(" />");
-		return sb.toString();
-	}
-
-	private static void appendKeyValue(StringBuilder sb, String key, Object value)
-	{
-		sb.append(' ').append(key).append("=\"").append(value).append('"');
+		if (attributes != null)
+		{
+			for (Map.Entry<String, ? extends Object> entry : attributes.entrySet())
+				sb.append(' ').append(entry.getKey()).append("=\"").append(entry.getValue()).append('"');
+		}
+		return sb;
 	}
 
 	private HtmlUtils()

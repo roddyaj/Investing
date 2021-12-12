@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.roddyaj.invest.api.schwab.SchwabDataSource;
 import com.roddyaj.invest.html.DataFormatter;
@@ -22,8 +23,6 @@ public class Order
 	// Note, this may be null if there is no position
 	private final Position position;
 
-	private List<OpenOrder> openOrders;
-
 	private boolean optional;
 
 	public Order(String symbol, int quantity, double price, Position position)
@@ -37,11 +36,6 @@ public class Order
 	public void setOptional(boolean optional)
 	{
 		this.optional = optional;
-	}
-
-	public void setOpenOrders(List<OpenOrder> openOrders)
-	{
-		this.openOrders = openOrders;
 	}
 
 	public String getSymbol()
@@ -82,9 +76,12 @@ public class Order
 
 	public static class OrderFormatter extends DataFormatter<Order>
 	{
-		public OrderFormatter(String title, String info, Collection<? extends Order> records)
+		private final Account account;
+
+		public OrderFormatter(String title, String info, Collection<? extends Order> records, Account account)
 		{
 			super(title, info, records);
+			this.account = account;
 		}
 
 		@Override
@@ -98,7 +95,7 @@ public class Order
 			columns.add(new Column("Total", "%.0f", Align.R));
 			columns.add(new Column("Day", "%s", Align.R));
 			columns.add(new Column("Total", "%s", Align.R));
-			columns.add(new Column("Cost", "%.2f", Align.R));
+			columns.add(new Column("Cost", "%s", Align.R));
 			return columns;
 		}
 
@@ -108,15 +105,16 @@ public class Order
 			boolean isBuy = o.quantity >= 0;
 
 			String url = SchwabDataSource.getTradeUrl(isBuy ? Action.BUY : Action.SELL, o.symbol);
-			String onclick = String.format(" onclick=\"navigator.clipboard.writeText('%d');\"", Math.abs(o.quantity));
-			String link = HtmlUtils.toLink(url, o.symbol, onclick);
+			String link = HtmlUtils.toLink(url, o.symbol,
+					Map.of("onclick", String.format("navigator.clipboard.writeText('%d');", Math.abs(o.quantity))));
 
-			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(o.openOrders);
+			List<OpenOrder> openOrders = account.getOpenOrders(o.getSymbol(), o.getQuantity() >= 0 ? Action.BUY : Action.SELL, null);
+			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(openOrders);
 			String dayChangeColored = o.position != null ? HtmlUtils.formatPercentChange(o.position.getDayChangePct()) : "";
 			String gainLossPctColored = o.position != null ? HtmlUtils.formatPercentChange(o.position.getGainLossPct()) : "";
-			Double costBasis = o.position != null ? o.position.getCostPerShare() : null;
+			String cost = o.position != null ? Transaction.createCostPopup(o.position, account) : "";
 
-			return Arrays.asList(link, isBuy ? "Buy" : "Sell", quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, costBasis);
+			return Arrays.asList(link, isBuy ? "Buy" : "Sell", quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, cost);
 		}
 	}
 }

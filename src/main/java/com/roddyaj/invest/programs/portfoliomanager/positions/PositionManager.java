@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import com.roddyaj.invest.api.model.QuoteRegistry;
 import com.roddyaj.invest.model.Account;
-import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
@@ -31,7 +30,7 @@ public class PositionManager
 	{
 		List<Order> orders = accountSettings.allocationStream().map(this::createOrder).filter(Objects::nonNull)
 				.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).collect(Collectors.toList());
-		return new PositionManagerOutput(orders);
+		return new PositionManagerOutput(orders, account);
 	}
 
 	private Order createOrder(String symbol)
@@ -67,9 +66,6 @@ public class PositionManager
 				order = new Order(symbol, 0, targetValue, null);
 			}
 		}
-
-		if (order != null)
-			order.setOpenOrders(account.getOpenOrders(symbol, order.getQuantity() >= 0 ? Action.BUY : Action.SELL, null));
 
 		return order;
 	}

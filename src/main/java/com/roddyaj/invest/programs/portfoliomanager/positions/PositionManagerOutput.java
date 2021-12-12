@@ -6,15 +6,18 @@ import java.util.stream.Collectors;
 
 import com.roddyaj.invest.html.Block;
 import com.roddyaj.invest.model.AbstractOutput;
+import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Order;
 
 public class PositionManagerOutput extends AbstractOutput
 {
 	private final List<Order> orders;
+	private final Account account;
 
-	public PositionManagerOutput(List<Order> orders)
+	public PositionManagerOutput(List<Order> orders, Account account)
 	{
 		this.orders = orders;
+		this.account = account;
 	}
 
 	public List<Order> getOrders()
@@ -27,8 +30,8 @@ public class PositionManagerOutput extends AbstractOutput
 		List<Block> blocks = new ArrayList<>();
 		List<Order> favorableOrders = orders.stream().filter(o -> !o.isOptional()).collect(Collectors.toList());
 		List<Order> unfavorableOrders = orders.stream().filter(o -> o.isOptional()).collect(Collectors.toList());
-		blocks.add(new Order.OrderFormatter("Orders", "(Managed positions)", favorableOrders).toBlock());
-		blocks.add(new Order.OrderFormatter("Unfavorable Orders", "(Managed positions)", unfavorableOrders).toBlock());
+		blocks.add(new Order.OrderFormatter("Orders", "(Managed positions)", favorableOrders, account).toBlock());
+		blocks.add(new Order.OrderFormatter("Unfavorable Orders", "(Managed positions)", unfavorableOrders, account).toBlock());
 		return blocks;
 	}
 }

@@ -26,17 +26,13 @@ public final class HtmlUtils
 		lines.add("<script>");
 		lines.addAll(FileUtils.readResourceLines("output.js"));
 		lines.add("</script>");
+		lines.add("<base target=\"_blank\">");
 		lines.add("</head>");
 		lines.add("<body>");
 		lines.addAll(body);
 		lines.add("</body>");
 		lines.add("</html>");
 		return String.join("\n", lines);
-	}
-
-	public static String toLinkSymbol(String url, String symbol)
-	{
-		return symbol.toUpperCase().equals(symbol) ? toLink(String.format(url, symbol), symbol) : symbol;
 	}
 
 	public static String toLink(String url, String text)
@@ -46,7 +42,8 @@ public final class HtmlUtils
 
 	public static String toLink(String url, String text, Map<String, ? extends Object> additionalAttributes)
 	{
-		Map<String, Object> attributes = new HashMap<>(Map.of("href", url, "target", "_blank"));
+		Map<String, Object> attributes = new HashMap<>();
+		attributes.put("href", url);
 		if (additionalAttributes != null)
 			attributes.putAll(additionalAttributes);
 		return tag("a", attributes, text);
@@ -67,29 +64,12 @@ public final class HtmlUtils
 		return tag("span", Map.of("style", "color:" + color), text);
 	}
 
-	// TODO replace with Table
-	public static List<String> toSimpleColumnTable(Collection<? extends String> columns)
-	{
-		List<String> lines = new ArrayList<>();
-		lines.add("<div class=\"block\">");
-		lines.add("<table>");
-		StringBuilder builder = new StringBuilder();
-		builder.append("<tr>");
-		for (String column : columns)
-			builder.append(tag("td", column));
-		builder.append("</tr>");
-		lines.add(builder.toString());
-		lines.add("</table>");
-		lines.add("</div>");
-		return lines;
-	}
-
 	public static String createPopup(String content, String popupContent, boolean isText)
 	{
 		final String id = "pop-" + popupId++;
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(startTag("div", Map.of("class", "popup", "onmouseover", "showPopup('" + id + "')", "onmouseout", "hidePopup('" + id + "')")));
+		sb.append(startTag("div", Map.of("class", "popup", "onmouseover", "showPop('" + id + "')", "onmouseout", "hidePop('" + id + "')")));
 		sb.append(content);
 		Map<String, Object> attr = new HashMap<>(Map.of("class", "popup-content", "id", id));
 		if (!isText)

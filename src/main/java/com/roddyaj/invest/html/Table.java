@@ -71,7 +71,7 @@ public class Table implements HtmlObject
 		for (Column column : columns)
 		{
 			List<String> classes = new ArrayList<>();
-			if (column.align != Align.C)
+			if (column.align != Align.R)
 				classes.add(column.align.toString());
 			if (i++ == 0)
 				classes.add("f");
@@ -93,13 +93,13 @@ public class Table implements HtmlObject
 			Column column = columns.get(i);
 
 			List<String> classes = new ArrayList<>();
-			if (column.align != Align.L)
+			if (column.align != Align.R)
 				classes.add(column.align.toString());
 			if (i++ == 0)
 				classes.add("f");
 			Map<String, Object> attributes = classes.isEmpty() ? null : Map.of("class", String.join(" ", classes));
 
-			builder.append(HtmlUtils.tag("td", attributes, cell != null ? String.format(column.format, cell) : null));
+			builder.append(HtmlUtils.tag("td", attributes, cell != null ? String.format(column.format, cell) : ""));
 		}
 		builder.append("</tr>");
 		return builder.toString();

@@ -1,8 +1,10 @@
 package com.roddyaj.invest.api.schwab;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.model.AccountDataSource;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.OpenOrder;
@@ -28,6 +30,17 @@ public class SchwabDataSource implements AccountDataSource
 	{
 		String tradeaction = action == Action.BUY ? "Buy" : action == Action.SELL ? "Sell" : null;
 		return ALL_IN_ONE_URL + String.format("?tradeaction=%s&amp;Symbol=%s", tradeaction, symbol);
+	}
+
+	public static List<String> getNavigationLinks()
+	{
+		List<String> links = new ArrayList<>();
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Areas/Accounts/Positions", "Positions"));
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Apps/accounts/transactionhistory", "History"));
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Apps/Accounts/Balances", "Balances"));
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Open", "Open Orders"));
+		links.add(HtmlUtils.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Today", "Today's Orders"));
+		return links;
 	}
 
 	private final SchwabPositionsSource positionsSource;

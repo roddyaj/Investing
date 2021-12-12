@@ -105,8 +105,7 @@ public class Order
 			boolean isBuy = o.quantity >= 0;
 
 			String url = SchwabDataSource.getTradeUrl(isBuy ? Action.BUY : Action.SELL, o.symbol);
-			String link = HtmlUtils.toLink(url, o.symbol,
-					Map.of("onclick", String.format("navigator.clipboard.writeText('%d');", Math.abs(o.quantity))));
+			String link = HtmlUtils.toLink(url, o.symbol, Map.of("onclick", String.format("copyClip('%d');", Math.abs(o.quantity))));
 
 			List<OpenOrder> openOrders = account.getOpenOrders(o.getSymbol(), o.getQuantity() >= 0 ? Action.BUY : Action.SELL, null);
 			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(openOrders);

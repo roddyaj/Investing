@@ -17,7 +17,7 @@ public final class YahooUtils
 
 	public static String getIconLink(String symbol)
 	{
-		return HtmlUtils.toLink(getUrl(symbol), HtmlUtils.tag("img", Map.of("src", ICON_URL, "width", 14, "height", 14)));
+		return HtmlUtils.toLink(getUrl(symbol), HtmlUtils.tag("img", Map.of("src", ICON_URL, "width", 14, "height", 14, "alt", "yahoo")));
 	}
 
 	public static String getUrl(String symbol)

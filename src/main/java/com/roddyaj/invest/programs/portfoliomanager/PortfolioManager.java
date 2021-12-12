@@ -3,11 +3,15 @@ package com.roddyaj.invest.programs.portfoliomanager;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
+import com.roddyaj.invest.api.schwab.SchwabDataSource;
 import com.roddyaj.invest.framework.Program;
+import com.roddyaj.invest.html.Block;
 import com.roddyaj.invest.html.Column;
 import com.roddyaj.invest.html.HtmlUtils;
+import com.roddyaj.invest.html.RawHtml;
 import com.roddyaj.invest.html.Row;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Input;
@@ -59,7 +63,7 @@ public class PortfolioManager implements Program
 		lines.addAll(new Message.MessageFormatter(messages).toHtml());
 
 		// Links block
-		lines.addAll(getLinks());
+		lines.addAll(getMainHeader(account));
 
 		// Main content blocks
 		List<Column> columns = new ArrayList<>();
@@ -91,18 +95,17 @@ public class PortfolioManager implements Program
 		return offline;
 	}
 
-	private List<String> getLinks()
+	private List<String> getMainHeader(Account account)
 	{
-		List<String> links = new ArrayList<>();
-		links.add(HtmlUtils.toLink("https://client.schwab.com/Areas/Accounts/Positions", "Positions"));
-		links.add("|");
-		links.add(HtmlUtils.toLink("https://client.schwab.com/Apps/accounts/transactionhistory", "History"));
-		links.add("|");
-		links.add(HtmlUtils.toLink("https://client.schwab.com/Apps/Accounts/Balances", "Balances"));
-		links.add("|");
-		links.add(HtmlUtils.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Open", "Open Orders"));
-		links.add("|");
-		links.add(HtmlUtils.toLink("https://client.schwab.com/Trade/OrderStatus/ViewOrderStatus.aspx?ViewTypeFilter=Today", "Today's Orders"));
-		return HtmlUtils.toSimpleColumnTable(links);
+		String links = String.join(" | ", SchwabDataSource.getNavigationLinks());
+		String title = account.getName().replace('_', ' ');
+
+		List<String> lines = new ArrayList<>();
+		lines.add(HtmlUtils.startTag("div", Map.of("style", "display: flex;")));
+		lines.add(HtmlUtils.tag("div", Map.of("style", "flex: 1 1 0;"), links));
+		lines.add(HtmlUtils.tag("div", Map.of("style", "flex: 1 1 0; text-align: center;", "class", "title"), title));
+		lines.add(HtmlUtils.tag("div", Map.of("style", "flex: 1 1 0;"), ""));
+		lines.add(HtmlUtils.endTag("div"));
+		return new Block(null, null, new RawHtml(lines)).toHtml();
 	}
 }

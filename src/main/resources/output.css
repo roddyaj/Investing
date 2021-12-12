@@ -5,6 +5,7 @@ body {
 
 th, td {
 	padding: 2px 0px 2px 4px;
+	text-align: right;
 }
 
 th.f, td.f {
@@ -75,6 +76,7 @@ img {
 	border-radius: 4px;
 	left: 12px;
 	bottom: 18px;
+	z-index: 1;
 }
 
 .popup .show {

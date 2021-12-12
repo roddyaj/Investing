@@ -7,13 +7,13 @@ public class Block implements HtmlObject
 {
 	private final String title;
 	private final String info;
-	private final Table table;
+	private final HtmlObject content;
 
-	public Block(String title, String info, Table table)
+	public Block(String title, String info, HtmlObject content)
 	{
 		this.title = title;
 		this.info = info;
-		this.table = table;
+		this.content = content;
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class Block implements HtmlObject
 			String heading = formatHeading();
 			if (heading != null)
 				lines.add(heading);
-			lines.addAll(table.toHtml());
+			lines.addAll(content.toHtml());
 			lines.add("</div>");
 		}
 		return lines;
@@ -35,7 +35,7 @@ public class Block implements HtmlObject
 	@Override
 	public boolean isEmpty()
 	{
-		return table.isEmpty();
+		return content.isEmpty();
 	}
 
 	private String formatHeading()

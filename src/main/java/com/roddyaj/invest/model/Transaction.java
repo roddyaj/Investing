@@ -122,12 +122,17 @@ public class Transaction
 
 	public static String createCostPopup(Position position, Account account)
 	{
-		String text = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline;"), String.format("%.2f", position.getCostPerShare()));
+		String cost = String.format("%.2f", position.getCostPerShare());
 		List<Transaction> transactions = account.getTransactions().stream().filter(
 				t -> !t.isOption() && t.getSymbol().equals(position.getSymbol()) && (t.getAction() == Action.BUY || t.getAction() == Action.SELL))
 				.limit(6).toList();
-		String popupContent = new Transaction.PopupTable(transactions).toHtmlSingleLine();
-		return HtmlUtils.createPopup(text, popupContent, true);
+		if (!transactions.isEmpty())
+		{
+			String text = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline;"), cost);
+			String popupContent = new Transaction.PopupTable(transactions).toHtmlSingleLine();
+			cost = HtmlUtils.createPopup(text, popupContent, true);
+		}
+		return cost;
 	}
 
 	public static class PopupTable extends Table

@@ -44,10 +44,10 @@ class OddLotsTest
 
 		List<Order> orders = oddLots.run().getOrders();
 		Assertions.assertEquals(2, orders.size());
-		Assertions.assertEquals("DEF", orders.get(0).getSymbol());
-		Assertions.assertEquals(-10, orders.get(0).getQuantity());
-		Assertions.assertEquals("GHI", orders.get(1).getSymbol());
-		Assertions.assertEquals(10, orders.get(1).getQuantity());
+		Assertions.assertEquals("DEF", orders.get(0).symbol());
+		Assertions.assertEquals(-10, orders.get(0).quantity());
+		Assertions.assertEquals("GHI", orders.get(1).symbol());
+		Assertions.assertEquals(10, orders.get(1).quantity());
 	}
 
 	private static Position newPosition(String symbol, int quantity, double price, double pricePaid)

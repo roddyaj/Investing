@@ -1,7 +1,6 @@
 package com.roddyaj.invest.programs.portfoliomanager.positions;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Order;
@@ -30,10 +29,9 @@ public class OddLots
 				.filter(this::isOddLot)
 				.filter(this::isUntracked)
 				.map(this::getOrder)
-				.filter(o -> o.getQuantity() != 0)
-				.peek(o -> o.setOptional(true))
-				.sorted((o1, o2) -> Double.compare(o2.getPosition().getGainLossPct(), o1.getPosition().getGainLossPct()))
-				.collect(Collectors.toList());
+				.filter(o -> o.quantity() != 0)
+				.sorted((o1, o2) -> Double.compare(o2.position().getGainLossPct(), o1.position().getGainLossPct()))
+				.toList();
 		// @formatter:on
 		return new OddLotsOutput(orders, account);
 	}
@@ -54,7 +52,7 @@ public class OddLots
 			int fullBuyQuantity = Math.max((int)Math.floor(accountSettings.getMaxPosition() / price - position.getQuantity()), 0);
 			quantity = Math.min(roundLotQuantity, fullBuyQuantity);
 		}
-		return new Order(position.getSymbol(), quantity, price, position);
+		return new Order(position.getSymbol(), quantity, price, position, true);
 	}
 
 	private boolean isUntracked(Position position)

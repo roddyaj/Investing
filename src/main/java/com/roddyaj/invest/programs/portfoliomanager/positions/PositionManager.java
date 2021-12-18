@@ -49,8 +49,8 @@ public class PositionManager
 			boolean doOrder = quantity != 0 && Math.abs(delta / targetValue) > (isBuy ? 0.0025 : 0.005);
 			if (doOrder)
 			{
-				order = new Order(symbol, quantity, position.getPrice(), position);
-				order.setOptional(isBuy ? position.getDayChangePct() > .1 : position.getDayChangePct() < -.1);
+				boolean optional = isBuy ? position.getDayChangePct() > .1 : position.getDayChangePct() < -.1;
+				order = new Order(symbol, quantity, position.getPrice(), position, optional);
 			}
 		}
 		else if (targetValue > 0.01)
@@ -59,11 +59,11 @@ public class PositionManager
 			if (price != null)
 			{
 				int quantity = round(targetValue / price, .75);
-				order = new Order(symbol, quantity, price, null);
+				order = new Order(symbol, quantity, price, null, false);
 			}
 			else
 			{
-				order = new Order(symbol, 0, targetValue, null);
+				order = new Order(symbol, 0, targetValue, null, false);
 			}
 		}
 

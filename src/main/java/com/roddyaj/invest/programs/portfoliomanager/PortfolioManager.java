@@ -60,7 +60,7 @@ public class PortfolioManager implements Program
 		messages.addAll(account.getMessages());
 		messages.addAll(positionsOutput.getMessages());
 		messages.addAll(optionsOutput.getMessages());
-		lines.addAll(new Message.MessageFormatter(messages).toHtml());
+		lines.addAll(Message.toHtml(messages));
 
 		// Links block
 		lines.addAll(getMainHeader(account));

@@ -55,7 +55,7 @@ public class SchwabOpenOrdersSource
 									.replace("\" Share", " Share\"").replace("\" Contracts", " Contracts\"").replace("\" Contract", " Contract\""))
 							.collect(Collectors.toList());
 
-					openOrders = FileUtils.readCsv(lines).stream().map(SchwabOpenOrdersSource::convert).filter(o -> o.getQuantity() != 0)
+					openOrders = FileUtils.readCsv(lines).stream().map(SchwabOpenOrdersSource::convert).filter(o -> o.quantity() != 0)
 							.collect(Collectors.toList());
 				}
 				catch (IOException e)

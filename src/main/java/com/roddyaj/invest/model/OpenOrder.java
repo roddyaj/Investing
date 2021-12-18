@@ -7,49 +7,20 @@ import java.util.stream.Collectors;
 
 import com.roddyaj.invest.html.HtmlUtils;
 
-public class OpenOrder
+public record OpenOrder(String symbol, int quantity, double price, Option option)
 {
-	private final String symbol;
-
-	private final int quantity;
-
-	private final double price;
-
-	// Note, this may be null if not an option order
-	private final Option option;
-
-	public OpenOrder(String symbol, int quantity, double price, Option option)
+	public static String getPopupText(Collection<? extends OpenOrder> orders)
 	{
-		this.symbol = symbol;
-		this.quantity = quantity;
-		this.price = price;
-		this.option = option;
-	}
-
-	public String getSymbol()
-	{
-		return symbol;
-	}
-
-	public int getQuantity()
-	{
-		return quantity;
-	}
-
-	public double getPrice()
-	{
-		return price;
-	}
-
-	public Option getOption()
-	{
-		return option;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "symbol=" + symbol + ", quantity=" + quantity + ", price=" + price;
+		String popupText = "";
+		if (orders != null && !orders.isEmpty())
+		{
+			String openOrderPopupText = "Open Orders<br>" + orders.stream().map(OpenOrder::getPopupText).collect(Collectors.joining("<br>"));
+			int openOrderCount = Math.abs(orders.stream().mapToInt(OpenOrder::quantity).sum());
+			String text = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline; font: 12px Arial, sans-serif;"),
+					String.valueOf(openOrderCount));
+			popupText = " " + HtmlUtils.createPopup(text, openOrderPopupText, true);
+		}
+		return popupText;
 	}
 
 	public String getPopupText()
@@ -58,19 +29,5 @@ public class OpenOrder
 		if (option != null)
 			text += String.format(" for %.2f exp. %s", price, option.getExpiryDate().format(DateTimeFormatter.ofPattern("MM-dd")));
 		return text;
-	}
-
-	public static String getPopupText(Collection<? extends OpenOrder> orders)
-	{
-		String popupText = "";
-		if (orders != null && !orders.isEmpty())
-		{
-			String openOrderPopupText = "Open Orders<br>" + orders.stream().map(OpenOrder::getPopupText).collect(Collectors.joining("<br>"));
-			int openOrderCount = Math.abs(orders.stream().mapToInt(OpenOrder::getQuantity).sum());
-			String text = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline; font: 12px Arial, sans-serif;"),
-					String.valueOf(openOrderCount));
-			popupText = " " + HtmlUtils.createPopup(text, openOrderPopupText, true);
-		}
-		return popupText;
 	}
 }

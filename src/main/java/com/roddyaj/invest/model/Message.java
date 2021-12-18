@@ -3,22 +3,16 @@ package com.roddyaj.invest.model;
 import java.util.Collection;
 import java.util.List;
 
-import com.roddyaj.invest.html.Block;
 import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.HtmlUtils;
-import com.roddyaj.invest.html.Table;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 
-public class Message
+public record Message(Level level, String text)
 {
-	public final Level level;
-	public final String text;
-
-	public Message(Level level, String text)
+	public static List<String> toHtml(Collection<? extends Message> messages)
 	{
-		this.level = level;
-		this.text = text;
+		return new MessageFormatter(messages).toBlock(false).toHtml();
 	}
 
 	public enum Level
@@ -28,17 +22,9 @@ public class Message
 
 	public static class MessageFormatter extends DataFormatter<Message>
 	{
-		public MessageFormatter(Collection<? extends Message> records)
+		public MessageFormatter(Collection<? extends Message> messages)
 		{
-			super("Messages", null, records);
-		}
-
-		@Override
-		public Block toBlock()
-		{
-			Table table = new Table(getColumns(), getRows(records));
-			table.setShowHeader(false);
-			return new Block(title, info, table);
+			super("Messages", null, messages);
 		}
 
 		@Override
@@ -48,9 +34,9 @@ public class Message
 		}
 
 		@Override
-		protected List<Object> toRow(Message record)
+		protected List<Object> toRow(Message message)
 		{
-			return List.of(color(record.text, record.level));
+			return List.of(color(message.text, message.level));
 		}
 
 		private static String color(String s, Level level)

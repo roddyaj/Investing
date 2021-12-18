@@ -105,19 +105,18 @@ public class Account implements QuoteProvider, AccountDataSource
 
 	public int getOpenOrderCount(String symbol, Action action, Character optionType)
 	{
-		return Math.abs(getOpenOrders(symbol, action, optionType).stream().mapToInt(OpenOrder::getQuantity).sum());
+		return Math.abs(getOpenOrders(symbol, action, optionType).stream().mapToInt(OpenOrder::quantity).sum());
 	}
 
 	public List<OpenOrder> getOpenOrders(String symbol, Action action, Character optionType)
 	{
 		return getOpenOrders().stream().filter(order -> {
 			boolean match = true;
-			if (order.getOption() != null)
-				match &= order.getOption().getSymbol().equals(symbol)
-						&& (optionType != null && order.getOption().getType() == optionType.charValue());
+			if (order.option() != null)
+				match &= order.option().getSymbol().equals(symbol) && (optionType != null && order.option().getType() == optionType.charValue());
 			else
-				match &= order.getSymbol().equals(symbol) && optionType == null;
-			match &= action == Action.SELL ? order.getQuantity() < 0 : order.getQuantity() > 0;
+				match &= order.symbol().equals(symbol) && optionType == null;
+			match &= action == Action.SELL ? order.quantity() < 0 : order.quantity() > 0;
 			return match;
 		}).collect(Collectors.toList());
 	}

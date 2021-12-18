@@ -2,7 +2,6 @@ package com.roddyaj.invest.programs.portfoliomanager.positions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.html.Block;
 import com.roddyaj.invest.model.AbstractOutput;
@@ -28,8 +27,8 @@ public class PositionManagerOutput extends AbstractOutput
 	public List<Block> getBlocks()
 	{
 		List<Block> blocks = new ArrayList<>();
-		List<Order> favorableOrders = orders.stream().filter(o -> !o.isOptional()).collect(Collectors.toList());
-		List<Order> unfavorableOrders = orders.stream().filter(o -> o.isOptional()).collect(Collectors.toList());
+		List<Order> favorableOrders = orders.stream().filter(o -> !o.optional()).toList();
+		List<Order> unfavorableOrders = orders.stream().filter(o -> o.optional()).toList();
 		blocks.add(new Order.OrderFormatter("Orders", "(Managed positions)", favorableOrders, account).toBlock());
 		blocks.add(new Order.OrderFormatter("Unfavorable Orders", "(Managed positions)", unfavorableOrders, account).toBlock());
 		return blocks;

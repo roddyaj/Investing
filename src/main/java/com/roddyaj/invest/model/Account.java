@@ -61,6 +61,10 @@ public class Account implements QuoteProvider, AccountDataSource
 	{
 		return allocation.getAllocation(symbol);
 	}
+	public Map<String, Double> getAllocationMap()
+	{
+		return allocation.getAllocationMap();
+	}
 
 	@Override
 	public LocalDate getDate()

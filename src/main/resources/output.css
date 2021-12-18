@@ -28,6 +28,11 @@ img {
 	display: block;
 }
 
+.main-header-item {
+	flex: 1 1 0;
+	padding: 0px 2px;
+}
+
 .row {
 	display: flex;
 	flex-direction: row;

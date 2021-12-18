@@ -102,9 +102,9 @@ public class PortfolioManager implements Program
 
 		List<String> lines = new ArrayList<>();
 		lines.add(HtmlUtils.startTag("div", Map.of("style", "display: flex;")));
-		lines.add(HtmlUtils.tag("div", Map.of("style", "flex: 1 1 0;"), links));
-		lines.add(HtmlUtils.tag("div", Map.of("style", "flex: 1 1 0; text-align: center;", "class", "title"), title));
-		lines.add(HtmlUtils.tag("div", Map.of("style", "flex: 1 1 0;"), ""));
+		lines.add(HtmlUtils.tag("div", Map.of("class", "main-header-item"), links));
+		lines.add(HtmlUtils.tag("div", Map.of("class", "main-header-item title", "style", "text-align: center;"), title));
+		lines.add(HtmlUtils.tag("div", Map.of("class", "main-header-item", "style", "text-align: right;"), account.getDate().toString()));
 		lines.add(HtmlUtils.endTag("div"));
 		return new Block(null, null, new RawHtml(lines)).toHtml();
 	}

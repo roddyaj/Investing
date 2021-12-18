@@ -94,6 +94,11 @@ public class AllocationMap
 		return allocationMap.getOrDefault(symbol, 0.);
 	}
 
+	public Map<String, Double> getAllocationMap()
+	{
+		return allocationMap;
+	}
+
 	private static double getTotalAllocation(String category, Map<String, Double> map)
 	{
 		double allocation = 1;

@@ -28,6 +28,14 @@ public class PositionManager
 
 	public PositionManagerOutput run()
 	{
+		// Print current target allocation as settings
+//		account.getAllocationMap().entrySet().stream().sorted((a1, a2) -> a2.getValue().compareTo(a1.getValue())).forEach(entry -> {
+//			String symbol = entry.getKey();
+//			double percent = entry.getValue();
+//			System.out.println(String.format("        { \"cat\": \"old.%s\",%s \"%%\":  %.4f },", symbol, StringUtils.fill(' ', 4 - symbol.length()),
+//					percent * 100));
+//		});
+
 		List<Order> orders = accountSettings.allocationStream().map(this::createOrder).filter(Objects::nonNull)
 				.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).collect(Collectors.toList());
 		return new PositionManagerOutput(orders, account);

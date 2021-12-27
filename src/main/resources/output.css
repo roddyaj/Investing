@@ -1,19 +1,30 @@
+:root {
+  --line-color: #0FF;
+  --border: 1px solid var(--line-color);
+}
+
 body {
+	background-color: #000;
+	color: #FFF;
 	font: 14px Arial, sans-serif;
-	background-color: #F7F7F7;
+}
+
+th {
+	font-weight: normal;
+	background-color: #004040;
 }
 
 th, td {
-	padding: 2px 0px 2px 4px;
+	padding: 2px 2px 2px 2px;
 	text-align: right;
 }
 
 th.f, td.f {
-	padding: 2px 0px 2px 0px;
+	padding: 2px 2px 2px 2px;
 }
 
 a {
-	color: blue;
+	color: #08F;
 }
 
 a:link {
@@ -45,19 +56,20 @@ img {
 }
 
 .block {
-	border-radius: 4px;
-	box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+	background-color: #002020;
 	padding: 4px;
+	border: var(--border);
+	border-radius: 4px;
+	box-shadow: 0 0 .5rem #0FFA;
 	margin-bottom: 8px;
-	background-color: white;
 }
 
 .heading {
 	display: flex;
 	align-items: center;
 	padding-bottom: 4px;
+	border-bottom: var(--border);
 	margin-bottom: 4px;
-	border-bottom: 1px solid #DDD;
 }
 
 .title {

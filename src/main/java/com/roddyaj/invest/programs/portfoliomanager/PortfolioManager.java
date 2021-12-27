@@ -97,7 +97,8 @@ public class PortfolioManager implements Program
 
 	private List<String> getMainHeader(Account account)
 	{
-		String links = String.join(" | ", SchwabDataSource.getNavigationLinks());
+		String delimiter = HtmlUtils.color(" | ", "var(--line-color)");
+		String links = String.join(delimiter, SchwabDataSource.getNavigationLinks());
 		String title = account.getName().replace('_', ' ');
 
 		List<String> lines = new ArrayList<>();

@@ -51,12 +51,7 @@ public final class HtmlUtils
 
 	public static String formatPercentChange(double d)
 	{
-		return color(String.format("%.2f%%", Math.abs(d)), d >= 0 ? "green" : "red");
-	}
-
-	public static String color(double d, String format)
-	{
-		return color(String.format(format, d), d >= 0 ? "green" : "red");
+		return color(String.format("%.2f%%", Math.abs(d)), d >= 0 ? "green" : "#C00");
 	}
 
 	public static String color(String text, String color)

@@ -1,11 +1,14 @@
 :root {
-  --line-color: #0FF;
-  --border: 1px solid var(--line-color);
+	--text-color: #FFF;
+	--bg-color: #000;
+	--block-bg-color: #002020;
+	--line-color: #0FF;
+	--border: 1px solid var(--line-color);
 }
 
 body {
-	background-color: #000;
-	color: #FFF;
+	background-color: var(--bg-color);
+	color: var(--text-color);
 	font: 14px Arial, sans-serif;
 }
 
@@ -56,11 +59,11 @@ img {
 }
 
 .block {
-	background-color: #002020;
+	background-color: var(--block-bg-color);
 	padding: 4px;
 	border: var(--border);
 	border-radius: 4px;
-	box-shadow: 0 0 .5rem #0FFA;
+	box-shadow: 0 0 .25rem #0FFA;
 	margin-bottom: 8px;
 }
 
@@ -84,13 +87,14 @@ img {
 }
 
 .popup .popup-content {
+	background-color: var(--block-bg-color);
+	padding: 4px;
+	border: var(--border);
+	border-radius: 4px;
+	box-shadow: 0 0 .25rem #0FFA;
 	visibility: hidden;
 	white-space: nowrap;
 	position: absolute;
-	background-color: white;
-	padding: 4px 4px;
-	border: 1px solid;
-	border-radius: 4px;
 	left: 46px;
 	bottom: -32px;
 	z-index: 1;

@@ -39,7 +39,7 @@ public record Order(String symbol, int quantity, double price, Position position
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Total", "%.0f", Align.R));
 			columns.add(new Column("Day", "%s", Align.R));
-			columns.add(new Column("Total", "%s", Align.R));
+			columns.add(new Column("G/L", "%s", Align.R));
 			columns.add(new Column("Cost", "%s", Align.R));
 			return columns;
 		}

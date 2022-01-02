@@ -3,6 +3,7 @@ package com.roddyaj.invest.model;
 import java.util.Collection;
 import java.util.List;
 
+import com.roddyaj.invest.html.Block;
 import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
@@ -10,9 +11,9 @@ import com.roddyaj.invest.html.Table.Column;
 
 public record Message(Level level, String text)
 {
-	public static List<String> toHtml(Collection<? extends Message> messages)
+	public static Block toBlock(Collection<? extends Message> messages)
 	{
-		return new MessageFormatter(messages).toBlock(false).toHtml();
+		return new MessageFormatter(messages).toBlock(false);
 	}
 
 	public enum Level

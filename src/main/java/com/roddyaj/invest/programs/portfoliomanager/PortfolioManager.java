@@ -1,7 +1,6 @@
 package com.roddyaj.invest.programs.portfoliomanager;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -16,6 +15,7 @@ import com.roddyaj.invest.html.Row;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Message;
+import com.roddyaj.invest.model.Output;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.programs.portfoliomanager.options.OptionsCore;
 import com.roddyaj.invest.programs.portfoliomanager.options.OptionsOutput;
@@ -27,6 +27,7 @@ import com.roddyaj.invest.programs.portfoliomanager.positions.PositionManagerOut
 import com.roddyaj.invest.programs.portfoliomanager.positions.ReturnCalculator;
 import com.roddyaj.invest.programs.portfoliomanager.positions.UnmanagedPositions;
 import com.roddyaj.invest.util.AppFileUtils;
+import com.roddyaj.invest.util.Args;
 import com.roddyaj.invest.util.CollectionUtils;
 
 public class PortfolioManager implements Program
@@ -34,7 +35,7 @@ public class PortfolioManager implements Program
 	@Override
 	public void run(Queue<String> args)
 	{
-		boolean offline = isOffline(args);
+		boolean offline = Args.isPresent(args, "-o");
 		String accountName = args.poll();
 
 		Input input = new Input(accountName, offline);
@@ -47,32 +48,23 @@ public class PortfolioManager implements Program
 		OptionsOutput optionsOutput = new OptionsCore(input).run();
 		double portfolioReturn = new ReturnCalculator(account, account.getAccountSettings()).run();
 
-		KeyValueData summary = new KeyValueData("Summary");
-		summary.addData("Balance:", String.format("$%.0f", account.getTotalValue()));
-		summary.addData("Return:", String.format("%.2f%%", portfolioReturn * 100));
-		if (!unmanagedPositions.isEmpty())
-			summary.addData("Untracked Excess:", String.format("$%.0f", unmanagedPositions.get(0).getMarketValue()));
-
 		List<String> lines = new ArrayList<>();
+		lines.addAll(getMessages(account, positionsOutput, optionsOutput).toHtml());
+		lines.addAll(getMainHeader(account).toHtml());
 
-		// Messages block
-		List<Message> messages = new ArrayList<>();
-		messages.addAll(account.getMessages());
-		messages.addAll(positionsOutput.getMessages());
-		messages.addAll(optionsOutput.getMessages());
-		lines.addAll(Message.toHtml(messages));
-
-		// Links block
-		lines.addAll(getMainHeader(account));
+		Block summary = getSummary(account, portfolioReturn, unmanagedPositions);
 
 		// Main content blocks
 		List<Column> columns = new ArrayList<>();
 //		columns.add(new Column(new Position.StockHtmlFormatter("Untracked", null, unmanagedPositions).toBlock()));
 		columns.add(new Column(CollectionUtils.join(positionsOutput.getBlocks(), oddLotsOutput.getBlock())));
-		columns.add(new Column(optionsOutput.getActionsBlocks(account)));
-		columns.add(new Column(optionsOutput.getCurrentOptionsBlock()));
-		columns.add(new Column(PositionList.getBlocks(input.getAccount())));
-		columns.add(new Column(List.of(summary.toBlock(), optionsOutput.getIncomeBlock())));
+		List<Block> optionsBlocks = new ArrayList<>(optionsOutput.getActionsBlocks(account));
+		optionsBlocks.add(optionsOutput.getCurrentOptionsBlock());
+		columns.add(new Column(optionsBlocks));
+		List<Block> positions = PositionList.getBlocks(input.getAccount());
+		columns.add(new Column(positions.get(1)));
+		columns.add(new Column(positions.get(2)));
+		columns.add(new Column(List.of(positions.get(0), summary, optionsOutput.getIncomeBlock())));
 		lines.addAll(new Row(columns).toHtml());
 
 		String html = HtmlUtils.toDocument(account.getName().replace('_', ' '), lines);
@@ -80,22 +72,16 @@ public class PortfolioManager implements Program
 		AppFileUtils.showHtml(html, account.getName() + ".html");
 	}
 
-	private static boolean isOffline(Queue<String> args)
+	private static Block getMessages(Account account, Output... output)
 	{
-		boolean offline = false;
-		for (Iterator<String> iter = args.iterator(); iter.hasNext();)
-		{
-			String arg = iter.next();
-			if (arg.equals("-o"))
-			{
-				offline = true;
-				iter.remove();
-			}
-		}
-		return offline;
+		List<Message> messages = new ArrayList<>();
+		messages.addAll(account.getMessages());
+		for (Output anOutput : output)
+			messages.addAll(anOutput.getMessages());
+		return Message.toBlock(messages);
 	}
 
-	private List<String> getMainHeader(Account account)
+	private static Block getMainHeader(Account account)
 	{
 		String delimiter = HtmlUtils.color(" | ", "var(--line-color)");
 		String links = String.join(delimiter, SchwabDataSource.getNavigationLinks());
@@ -107,6 +93,16 @@ public class PortfolioManager implements Program
 		lines.add(HtmlUtils.tag("div", Map.of("class", "main-header-item title", "style", "text-align: center;"), title));
 		lines.add(HtmlUtils.tag("div", Map.of("class", "main-header-item", "style", "text-align: right;"), account.getDate().toString()));
 		lines.add(HtmlUtils.endTag("div"));
-		return new Block(null, null, new RawHtml(lines)).toHtml();
+		return new Block(null, null, new RawHtml(lines));
+	}
+
+	private static Block getSummary(Account account, double portfolioReturn, List<Position> unmanagedPositions)
+	{
+		KeyValueData summary = new KeyValueData("Summary");
+		summary.addData("Balance:", String.format("$%.0f", account.getTotalValue()));
+		summary.addData("Return:", String.format("%.2f%%", portfolioReturn * 100));
+//		if (!unmanagedPositions.isEmpty())
+//			summary.addData("Untracked Excess:", String.format("$%.0f", unmanagedPositions.get(0).getMarketValue()));
+		return summary.toBlock();
 	}
 }

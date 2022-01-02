@@ -57,7 +57,7 @@ public class PositionList
 			columns.add(new Column("Target", "%.2f%%", Align.R));
 			columns.add(new Column("Actual", "%.2f%%", Align.R));
 			columns.add(new Column("Ratio", "%.0f%%", Align.R));
-			columns.add(new Column("Total", "%s", Align.R));
+			columns.add(new Column("G/L", "%s", Align.R));
 			return columns;
 		}
 
@@ -88,7 +88,7 @@ public class PositionList
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
 			columns.add(new Column("Percent", "%.2f%%", Align.R));
-			columns.add(new Column("Total", "%s", Align.R));
+			columns.add(new Column("G/L", "%s", Align.R));
 			return columns;
 		}
 

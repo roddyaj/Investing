@@ -54,7 +54,8 @@ public class PositionManager
 			int quantity = round(delta / position.getPrice(), .75);
 
 			boolean isBuy = quantity > 0;
-			boolean doOrder = quantity != 0 && Math.abs(delta / targetValue) > (isBuy ? 0.0025 : 0.005);
+			boolean doOrder = quantity != 0 && Math.abs(delta / targetValue) > (isBuy ? 0.0025 : 0.005)
+					&& Math.abs(quantity * position.getPrice()) >= 25;
 			if (doOrder)
 			{
 				boolean optional = isBuy ? position.getDayChangePct() > .1 : position.getDayChangePct() < -.1;

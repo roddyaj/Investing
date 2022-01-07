@@ -24,7 +24,7 @@ public class ReturnCalculator
 
 	public double run()
 	{
-		final LocalDate startDate = LocalDate.of(2021, 1, 1);
+		final LocalDate startDate = LocalDate.of(2022, 1, 1);
 
 		double A = accountSettings.getStartingBalance();
 		double B = account.getTotalValue();

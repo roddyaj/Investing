@@ -66,11 +66,11 @@ public class SchwabPositionsSource
 		if (positions == null)
 		{
 			Path positionsFile = AppFileUtils.getAccountFile(accountSettings.getName() + "-Positions-.*\\.CSV",
-					(p1, p2) -> getDateTime(p2).compareTo(getDateTime(p1)));
+					(p1, p2) -> getTime(p2).compareTo(getTime(p1)));
 			if (positionsFile != null)
 			{
 				positions = FileUtils.readCsv(positionsFile, 2).stream().map(SchwabPositionsSource::convert).toList();
-				dateTime = getDateTime(positionsFile);
+				dateTime = getTime(positionsFile);
 			}
 			else
 			{
@@ -86,22 +86,22 @@ public class SchwabPositionsSource
 		return dateTime;
 	}
 
-	private static ZonedDateTime getDateTime(Path file)
+	private static ZonedDateTime getTime(Path file)
 	{
-		ZonedDateTime date = null;
+		ZonedDateTime time = null;
 		try
 		{
 			List<String> lines = Files.readAllLines(file);
 
 			Matcher matcher = DATE_PATTERN.matcher(lines.get(0));
 			if (matcher.find())
-				date = ZonedDateTime.parse(matcher.group(1), DATE_TIME_FORMAT);
+				time = ZonedDateTime.parse(matcher.group(1), DATE_TIME_FORMAT);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		return date;
+		return time;
 	}
 
 	private static Position convert(CSVRecord record)

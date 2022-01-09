@@ -75,10 +75,10 @@ public class SchwabTransactionsSource
 		return file;
 	}
 
-	private static String getTime(Path path)
+	private static String getTime(Path file)
 	{
 		String timeString = null;
-		Matcher m = FILE_PATTERN.matcher(path.getFileName().toString());
+		Matcher m = FILE_PATTERN.matcher(file.getFileName().toString());
 		if (m.find())
 			timeString = m.group(2).replace("-", "");
 		return timeString;

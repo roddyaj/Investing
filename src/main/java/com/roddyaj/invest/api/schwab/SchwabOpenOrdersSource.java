@@ -3,8 +3,8 @@ package com.roddyaj.invest.api.schwab;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
 
@@ -44,7 +44,8 @@ public class SchwabOpenOrdersSource
 		{
 			openOrders = List.of();
 
-			Path ordersFile = AppFileUtils.getAccountFile(accountSettings.getAccountNumber() + " Order Details\\.CSV");
+			Path ordersFile = AppFileUtils.getAccountFile(accountSettings.getAccountNumber() + " Order Details.*\\.CSV",
+					(p1, p2) -> getTime(p2).compareTo(getTime(p1)));
 			if (ordersFile != null)
 			{
 				try
@@ -53,10 +54,9 @@ public class SchwabOpenOrdersSource
 					List<String> lines = Files
 							.lines(ordersFile).filter(line -> !line.isEmpty()).map(line -> line.replace("\" Shares", " Shares\"")
 									.replace("\" Share", " Share\"").replace("\" Contracts", " Contracts\"").replace("\" Contract", " Contract\""))
-							.collect(Collectors.toList());
+							.toList();
 
-					openOrders = FileUtils.readCsv(lines).stream().map(SchwabOpenOrdersSource::convert).filter(o -> o.quantity() != 0)
-							.collect(Collectors.toList());
+					openOrders = FileUtils.readCsv(lines).stream().map(SchwabOpenOrdersSource::convert).filter(o -> o.quantity() != 0).toList();
 				}
 				catch (IOException e)
 				{
@@ -65,6 +65,20 @@ public class SchwabOpenOrdersSource
 			}
 		}
 		return openOrders;
+	}
+
+	private static FileTime getTime(Path file)
+	{
+		FileTime time = null;
+		try
+		{
+			time = Files.getLastModifiedTime(file);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		return time;
 	}
 
 	private static OpenOrder convert(CSVRecord record)

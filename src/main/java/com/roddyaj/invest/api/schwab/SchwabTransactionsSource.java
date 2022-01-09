@@ -80,7 +80,7 @@ public class SchwabTransactionsSource
 		String timeString = null;
 		Matcher m = FILE_PATTERN.matcher(path.getFileName().toString());
 		if (m.find())
-			timeString = m.group(3).replace("-", "");
+			timeString = m.group(2).replace("-", "");
 		return timeString;
 	}
 

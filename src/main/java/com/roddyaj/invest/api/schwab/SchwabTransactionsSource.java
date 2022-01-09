@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
@@ -26,6 +28,8 @@ public class SchwabTransactionsSource
 	private static final String PRICE = "Price";
 //	private static final String FEES_AND_COMM = "Fees & Comm";
 	private static final String AMOUNT = "Amount";
+
+	private static final Pattern FILE_PATTERN = Pattern.compile("(.+?)_Transactions_([-\\d]+).CSV");
 
 	private final AccountSettings accountSettings;
 
@@ -62,13 +66,22 @@ public class SchwabTransactionsSource
 	private Path getAccountFile()
 	{
 		final String pattern = "_Transactions_.*\\.CSV";
-		Path file = AppFileUtils.getAccountFile(accountSettings.getName() + pattern);
+		Path file = AppFileUtils.getAccountFile(accountSettings.getName() + pattern, (p1, p2) -> getTime(p2).compareTo(getTime(p1)));
 		if (file == null)
 		{
 			String masked = "XXXX" + accountSettings.getAccountNumber().substring(4);
-			file = AppFileUtils.getAccountFile(masked + pattern);
+			file = AppFileUtils.getAccountFile(masked + pattern, (p1, p2) -> getTime(p2).compareTo(getTime(p1)));
 		}
 		return file;
+	}
+
+	private static String getTime(Path path)
+	{
+		String timeString = null;
+		Matcher m = FILE_PATTERN.matcher(path.getFileName().toString());
+		if (m.find())
+			timeString = m.group(3).replace("-", "");
+		return timeString;
 	}
 
 	private static Transaction convert(CSVRecord record)

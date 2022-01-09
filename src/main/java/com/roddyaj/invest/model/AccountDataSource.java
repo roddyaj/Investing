@@ -1,11 +1,11 @@
 package com.roddyaj.invest.model;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public interface AccountDataSource
 {
-	LocalDate getDate();
+	ZonedDateTime getDateTime();
 
 	double getTotalValue();
 

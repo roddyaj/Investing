@@ -1,11 +1,13 @@
 package com.roddyaj.invest.api.schwab;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
 
@@ -45,11 +47,14 @@ public class SchwabPositionsSource
 	private static final String IN_THE_MONEY = "In The Money";
 	private static final String SECURITY_TYPE = "Security Type";
 
+	private static final Pattern DATE_PATTERN = Pattern.compile("as of (.+?)\"");
+	private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("hh:mm a v, MM/dd/yyy");
+
 	private final AccountSettings accountSettings;
 
 	private List<Position> positions;
 
-	private LocalDate date;
+	private ZonedDateTime dateTime;
 
 	public SchwabPositionsSource(AccountSettings accountSettings)
 	{
@@ -60,15 +65,12 @@ public class SchwabPositionsSource
 	{
 		if (positions == null)
 		{
-			Path positionsFile = AppFileUtils.getAccountFile(accountSettings.getName() + "-Positions-.*\\.CSV");
+			Path positionsFile = AppFileUtils.getAccountFile(accountSettings.getName() + "-Positions-.*\\.CSV",
+					(p1, p2) -> getDateTime(p2).compareTo(getDateTime(p1)));
 			if (positionsFile != null)
 			{
-				positions = FileUtils.readCsv(positionsFile, 2).stream().map(SchwabPositionsSource::convert).collect(Collectors.toList());
-
-				final Pattern datePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})");
-				Matcher matcher = datePattern.matcher(positionsFile.getFileName().toString());
-				if (matcher.find())
-					date = LocalDate.parse(matcher.group(1));
+				positions = FileUtils.readCsv(positionsFile, 2).stream().map(SchwabPositionsSource::convert).toList();
+				dateTime = getDateTime(positionsFile);
 			}
 			else
 			{
@@ -78,9 +80,27 @@ public class SchwabPositionsSource
 		return positions;
 	}
 
-	public LocalDate getDate()
+	public ZonedDateTime getDateTime()
 	{
 		getPositions();
+		return dateTime;
+	}
+
+	private static ZonedDateTime getDateTime(Path file)
+	{
+		ZonedDateTime date = null;
+		try
+		{
+			List<String> lines = Files.readAllLines(file);
+
+			Matcher matcher = DATE_PATTERN.matcher(lines.get(0));
+			if (matcher.find())
+				date = ZonedDateTime.parse(matcher.group(1), DATE_TIME_FORMAT);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 		return date;
 	}
 

@@ -1,6 +1,6 @@
 package com.roddyaj.invest.programs.portfoliomanager.positions;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +14,7 @@ public class TestDataSource implements AccountDataSource
 	private final List<Position> positions = new ArrayList<>();
 
 	@Override
-	public LocalDate getDate()
+	public ZonedDateTime getDateTime()
 	{
 		return null;
 	}

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,21 +27,26 @@ public final class AppFileUtils
 		return file;
 	}
 
-	// TODO maybe get account name from account settings instead of like this
-	public static String getFullAccountName(String accountShorthand)
+	public static Path getAccountFile(String pattern, Comparator<? super Path> comparator)
 	{
-		String accountName = null;
-		String pattern = ".*" + accountShorthand + ".*-Positions-.*\\.CSV";
-		Path path = FileUtils.list(INPUT_DIR, pattern).sorted(AppFileUtils::compare).findFirst().orElse(null);
-		if (path != null)
+		Path file = null;
+		List<Path> files = FileUtils.list(INPUT_DIR, pattern).sorted(comparator).toList();
+		if (!files.isEmpty())
 		{
-			Matcher m = FILE_PATTERN.matcher(path.getFileName().toString());
-			if (m.find())
-				accountName = m.group(1);
+			file = files.get(0);
+			for (int i = 1; i < files.size(); i++)
+			{
+				try
+				{
+					Files.delete(files.get(i));
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
 		}
-		if (accountName == null)
-			accountName = accountShorthand;
-		return accountName;
+		return file;
 	}
 
 	public static void showHtml(String html, String fileName)

@@ -1,6 +1,6 @@
 package com.roddyaj.invest.api.schwab;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,9 +55,9 @@ public class SchwabDataSource implements AccountDataSource
 	}
 
 	@Override
-	public LocalDate getDate()
+	public ZonedDateTime getDateTime()
 	{
-		return positionsSource.getDate();
+		return positionsSource.getDateTime();
 	}
 
 	@Override

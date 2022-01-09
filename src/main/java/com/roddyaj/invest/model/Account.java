@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,8 +35,9 @@ public class Account implements QuoteProvider, AccountDataSource
 		double untrackedPercent = untrackedTotal / getTotalValue();
 		allocation = new AllocationMap(accountSettings.getAllocations(), untrackedPercent, messages);
 
-		if (!LocalDate.now().equals(getDate()))
-			messages.add(new Message(Level.WARN, "Account data is not from today: " + getDate()));
+		ZonedDateTime dateTime = getDateTime();
+		if (dateTime != null && !LocalDate.now().equals(dateTime.toLocalDate()))
+			messages.add(new Message(Level.WARN, "Account data is not from today: " + dateTime));
 	}
 
 	@Override
@@ -67,9 +69,9 @@ public class Account implements QuoteProvider, AccountDataSource
 	}
 
 	@Override
-	public LocalDate getDate()
+	public ZonedDateTime getDateTime()
 	{
-		return dataSource.getDate();
+		return dataSource.getDateTime();
 	}
 
 	@Override

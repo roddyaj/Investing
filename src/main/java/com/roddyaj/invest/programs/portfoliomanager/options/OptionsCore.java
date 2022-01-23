@@ -1,6 +1,5 @@
 package com.roddyaj.invest.programs.portfoliomanager.options;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -46,7 +45,6 @@ public class OptionsCore
 			analyzePutsToSell();
 			availableToTrade();
 			currentPositions();
-			monthlyIncome();
 		}
 		return output;
 	}
@@ -187,16 +185,6 @@ public class OptionsCore
 	{
 		positions.stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
 		positions.stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
-	}
-
-	private void monthlyIncome()
-	{
-		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
-		for (Transaction transaction : historicalOptions)
-		{
-			if (transaction.getAction() == Action.SELL_TO_OPEN || transaction.getAction() == Action.BUY_TO_CLOSE)
-				output.monthToIncome.merge(transaction.getDate().format(format), transaction.getAmount(), Double::sum);
-		}
 	}
 
 	private static double calculateAverageReturn(String symbol, Collection<? extends Transaction> historicalOptions)

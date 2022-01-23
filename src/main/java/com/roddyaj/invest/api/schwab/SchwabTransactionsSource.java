@@ -111,7 +111,7 @@ public class SchwabTransactionsSource
 
 	private static Action parseAction(String s)
 	{
-		return switch (s)
+		Action action = switch (s)
 		{
 			case "Buy" -> Action.BUY;
 			case "Sell" -> Action.SELL;
@@ -122,5 +122,11 @@ public class SchwabTransactionsSource
 			case "Journal", "MoneyLink Deposit", "MoneyLink Transfer", "Funds Received" -> Action.TRANSFER;
 			default -> null;
 		};
+		if (action == null)
+		{
+			if (s.contains(" Div"))
+				action = Action.DIVIDEND;
+		}
+		return action;
 	}
 }

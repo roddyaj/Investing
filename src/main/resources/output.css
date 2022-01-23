@@ -1,8 +1,8 @@
 :root {
-	--text-color: #FFF;
-	--bg-color: #000;
-	--block-bg-color: #002020;
-	--line-color: #0FF;
+	--text-color: #000;
+	--bg-color: #EEE;
+	--block-bg-color: #FFF;
+	--line-color: #AAA;
 	--border: 1px solid var(--line-color);
 }
 
@@ -14,7 +14,7 @@ body {
 
 th {
 	font-weight: normal;
-	background-color: #004040;
+	background-color: #CCC;
 }
 
 th, td {
@@ -27,7 +27,7 @@ th.f, td.f {
 }
 
 a {
-	color: #08F;
+	color: #00F;
 }
 
 a:link {
@@ -61,9 +61,8 @@ img {
 .block {
 	background-color: var(--block-bg-color);
 	padding: 4px;
-	border: var(--border);
 	border-radius: 4px;
-	box-shadow: 0 0 .25rem #0FFA;
+	box-shadow: 0 0 .25rem #AAAA;
 	margin-bottom: 8px;
 }
 
@@ -89,9 +88,8 @@ img {
 .popup .popup-content {
 	background-color: var(--block-bg-color);
 	padding: 4px;
-	border: var(--border);
 	border-radius: 4px;
-	box-shadow: 0 0 .25rem #0FFA;
+	box-shadow: 0 0 .25rem #AAAA;
 	visibility: hidden;
 	white-space: nowrap;
 	position: absolute;

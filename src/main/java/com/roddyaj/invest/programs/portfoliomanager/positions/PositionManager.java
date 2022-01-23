@@ -55,10 +55,12 @@ public class PositionManager
 
 			boolean isBuy = quantity > 0;
 			boolean doOrder = quantity != 0 && Math.abs(delta / targetValue) > (isBuy ? 0.0025 : 0.005)
-					&& Math.abs(quantity * position.getPrice()) >= 25;
+					&& Math.abs(quantity * position.getPrice()) >= 20;
 			if (doOrder)
 			{
 				boolean optional = isBuy ? position.getDayChangePct() > .1 : position.getDayChangePct() < -.1;
+//				if (List.of("RSP", "IWD", "XYLD", "VWO", "IEMG", "EFA", "VXUS", "VEA").contains(position.getSymbol()))
+//					optional = false;
 				order = new Order(symbol, quantity, position.getPrice(), position, optional);
 			}
 		}

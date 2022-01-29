@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.programs.dataroma.Dataroma;
 import com.roddyaj.invest.util.AppFileUtils;
@@ -21,7 +20,7 @@ public class Information
 		{
 			Path file = Paths.get(AppFileUtils.INPUT_DIR.toString(), "Results.csv");
 			if (Files.exists(file))
-				optionableStocks = FileUtils.readCsv(file, 0).stream().map(OptionableStock::new).collect(Collectors.toList());
+				optionableStocks = FileUtils.readCsv(file, 0).stream().map(OptionableStock::new).toList();
 			else
 				optionableStocks = List.of();
 		}

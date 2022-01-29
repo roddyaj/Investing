@@ -2,7 +2,6 @@ package com.roddyaj.invest.programs.portfoliomanager.positions;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.api.model.QuoteRegistry;
 import com.roddyaj.invest.model.Account;
@@ -37,7 +36,7 @@ public class PositionManager
 //		});
 
 		List<Order> orders = accountSettings.allocationStream().map(this::createOrder).filter(Objects::nonNull)
-				.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).collect(Collectors.toList());
+				.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).toList();
 		return new PositionManagerOutput(orders, account);
 	}
 

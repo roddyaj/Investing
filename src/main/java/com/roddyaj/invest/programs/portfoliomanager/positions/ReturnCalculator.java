@@ -3,7 +3,6 @@ package com.roddyaj.invest.programs.portfoliomanager.positions;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
@@ -29,7 +28,7 @@ public class ReturnCalculator
 		double A = accountSettings.getStartingBalance();
 		double B = account.getTotalValue();
 		List<Transaction> transfers = account.getTransactions().stream()
-				.filter(t -> t.getAction() == Action.TRANSFER && !t.getDate().isBefore(startDate)).collect(Collectors.toList());
+				.filter(t -> t.getAction() == Action.TRANSFER && !t.getDate().isBefore(startDate)).toList();
 		double F = transfers.stream().mapToDouble(t -> t.getAmount()).sum();
 		double weightedF = transfers.stream().mapToDouble(t -> getWeight(t, startDate) * t.getAmount()).sum();
 		double R = (B - A - F) / (A + weightedF);

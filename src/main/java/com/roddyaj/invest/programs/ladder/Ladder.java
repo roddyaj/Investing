@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.framework.Program;
 import com.roddyaj.invest.html.HtmlUtils;
@@ -76,7 +75,7 @@ public class Ladder implements Program
 	private void showHtml(Collection<? extends LadderOrder> orders)
 	{
 		List<String> lines = new ArrayList<>();
-		List<Order> actualOrders = orders.stream().map(o -> new Order(o.symbol, o.shareCount, o.price, null, false)).collect(Collectors.toList());
+		List<Order> actualOrders = orders.stream().map(o -> new Order(o.symbol, o.shareCount, o.price, null, false)).toList();
 		lines.addAll(new Order.OrderFormatter("Orders", null, actualOrders, null).toHtml());
 
 		String html = HtmlUtils.toDocument("Ladder Orders", lines);

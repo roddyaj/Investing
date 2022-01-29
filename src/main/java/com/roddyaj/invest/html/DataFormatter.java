@@ -2,7 +2,6 @@ package com.roddyaj.invest.html;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.html.Table.Column;
 
@@ -42,6 +41,6 @@ public abstract class DataFormatter<T>
 
 	protected List<List<Object>> getRows(Collection<? extends T> records)
 	{
-		return records.stream().map(this::toRow).collect(Collectors.toList());
+		return records.stream().map(this::toRow).toList();
 	}
 }

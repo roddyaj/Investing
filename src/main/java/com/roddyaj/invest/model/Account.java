@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.roddyaj.invest.api.model.Quote;
@@ -124,7 +123,7 @@ public class Account implements QuoteProvider, AccountDataSource
 				match &= order.symbol().equals(symbol) && optionType == null;
 			match &= action == Action.SELL ? order.quantity() < 0 : order.quantity() > 0;
 			return match;
-		}).collect(Collectors.toList());
+		}).toList();
 	}
 
 	public Position getPosition(String symbol)

@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,8 +30,7 @@ public class Input
 	{
 		settings = readSettings();
 		account = newAccount(accountName);
-		otherAccounts = Stream.of(settings.getAccounts()).filter(a -> !a.getName().equals(accountName)).map(a -> newAccount(a.getName()))
-				.collect(Collectors.toList());
+		otherAccounts = Stream.of(settings.getAccounts()).filter(a -> !a.getName().equals(accountName)).map(a -> newAccount(a.getName())).toList();
 
 		quoteRegistry.addProvider(account);
 		for (Account otherAccount : otherAccounts)

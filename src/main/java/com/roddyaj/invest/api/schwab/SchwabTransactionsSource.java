@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
 
@@ -52,8 +51,7 @@ public class SchwabTransactionsSource
 					LocalDate date = StringUtils.parseDate(record.get(0));
 					return date != null && date.isAfter(yearAgo);
 				};
-				transactions = FileUtils.readCsv(transactionsFile, 1).stream().filter(filter).map(SchwabTransactionsSource::convert)
-						.collect(Collectors.toList());
+				transactions = FileUtils.readCsv(transactionsFile, 1).stream().filter(filter).map(SchwabTransactionsSource::convert).toList();
 			}
 			else
 			{

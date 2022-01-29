@@ -1,7 +1,6 @@
 package com.roddyaj.invest.programs.portfoliomanager.positions;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Position;
@@ -21,7 +20,7 @@ public class UnmanagedPositions
 		List<Position> unmanagedPositions = account.getPositions().stream()
 				.filter(p -> !p.isOption() && p.getQuantity() != 0 && account.getAllocation(p.getSymbol()) == 0)
 				.sorted((o1, o2) -> Double.compare(o2.getMarketValue(), o1.getMarketValue()))
-				.collect(Collectors.toList());
+				.toList();
 		// @formatter:on
 
 //		unmanagedPositions.stream().forEach(p -> System.out.println(String.format("        { \"cat\": \"risk.%s\",%s \"%%\":  %.2f },", p.getSymbol(),

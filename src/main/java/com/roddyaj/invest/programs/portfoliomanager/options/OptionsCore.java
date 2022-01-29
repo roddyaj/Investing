@@ -31,7 +31,7 @@ public class OptionsCore
 		this.input = input;
 		account = input.getAccount();
 		positions = input.getAccount().getPositions();
-		historicalOptions = input.getAccount().getTransactions().stream().filter(Transaction::isOption).collect(Collectors.toList());
+		historicalOptions = input.getAccount().getTransactions().stream().filter(Transaction::isOption).toList();
 		output = new OptionsOutput();
 	}
 
@@ -137,7 +137,7 @@ public class OptionsCore
 			Double dayChangePct = quote != null ? quote.getChangePercent() : null;
 			boolean isDownForDay = dayChangePct == null || dayChangePct.doubleValue() < .1;
 
-			List<Position> symbolPositions = account.getPositions(symbol).collect(Collectors.toList());
+			List<Position> symbolPositions = account.getPositions(symbol).toList();
 			// Existing position: see if we can sell more put(s)
 			if (!symbolPositions.isEmpty())
 			{

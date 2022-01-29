@@ -33,26 +33,35 @@ public class IncomeCalculator
 		final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM");
 		Map<String, Double> monthToOptionsIncome = new HashMap<>();
 		Map<String, Double> monthToDividendIncome = new HashMap<>();
+		Map<String, Double> monthToContributions = new HashMap<>();
 		for (Transaction transaction : account.getTransactions())
 		{
+			String dateString = transaction.getDate().format(format);
 			if (transaction.getAction() == Action.SELL_TO_OPEN || transaction.getAction() == Action.BUY_TO_CLOSE)
-				monthToOptionsIncome.merge(transaction.getDate().format(format), transaction.getAmount(), Double::sum);
+				monthToOptionsIncome.merge(dateString, transaction.getAmount(), Double::sum);
 			else if (transaction.getAction() == Action.DIVIDEND)
-				monthToDividendIncome.merge(transaction.getDate().format(format), transaction.getAmount(), Double::sum);
+				monthToDividendIncome.merge(dateString, transaction.getAmount(), Double::sum);
+			else if (transaction.getAction() == Action.TRANSFER)
+				monthToContributions.merge(dateString, transaction.getAmount(), Double::sum);
 		}
 
 		Set<String> allMonths = new HashSet<>();
 		allMonths.addAll(monthToOptionsIncome.keySet());
 		allMonths.addAll(monthToDividendIncome.keySet());
+		allMonths.addAll(monthToContributions.keySet());
 		List<String> sortedMonths = new ArrayList<>(allMonths);
 		Collections.sort(sortedMonths, Collections.reverseOrder());
 		for (String month : sortedMonths)
-			monthToIncome.add(new MonthlyIncome(month, monthToOptionsIncome.getOrDefault(month, 0.), monthToDividendIncome.getOrDefault(month, 0.)));
+			monthToIncome.add(new MonthlyIncome(
+				month,
+				monthToOptionsIncome.getOrDefault(month, 0.),
+				monthToDividendIncome.getOrDefault(month, 0.),
+				monthToContributions.getOrDefault(month, 0.)));
 
 		return monthToIncome;
 	}
 
-	public record MonthlyIncome(String month, double optionsIncome, double dividendIncome)
+	public record MonthlyIncome(String month, double optionsIncome, double dividendIncome, double contrib)
 	{
 	}
 
@@ -69,14 +78,15 @@ public class IncomeCalculator
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Month", "%s", Align.L));
 			columns.add(new Column("Options", "%.2f", Align.R));
-			columns.add(new Column("Dividends", "%.2f", Align.R));
+			columns.add(new Column("Dividend", "%.2f", Align.R));
+			columns.add(new Column("Contrib", "%.2f", Align.R));
 			return columns;
 		}
 
 		@Override
 		protected List<Object> toRow(MonthlyIncome record)
 		{
-			return List.of(record.month(), record.optionsIncome(), record.dividendIncome());
+			return List.of(record.month(), record.optionsIncome(), record.dividendIncome(), record.contrib());
 		}
 	}
 }

@@ -125,7 +125,7 @@ public class Transaction
 		String cost = String.format("%.2f", position.getCostPerShare());
 		List<Transaction> transactions = account.getTransactions().stream().filter(
 				t -> !t.isOption() && t.getSymbol().equals(position.getSymbol()) && (t.getAction() == Action.BUY || t.getAction() == Action.SELL))
-				.limit(6).toList();
+				.limit(8).toList();
 		if (!transactions.isEmpty())
 		{
 			String text = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline;"), cost);

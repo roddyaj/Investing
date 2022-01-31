@@ -93,7 +93,7 @@ public class PortfolioManager implements Program
 		lines.add(HtmlUtils.tag("div", Map.of("class", "main-header-item"), links));
 		lines.add(HtmlUtils.tag("div", Map.of("class", "main-header-item title", "style", "text-align: center;"), title));
 		lines.add(HtmlUtils.tag("div", Map.of("class", "main-header-item", "style", "text-align: right;"),
-				account.getDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+				account.getDateTime().format(DateTimeFormatter.ofPattern("M/d/yy h:mm a"))));
 		lines.add(HtmlUtils.endTag("div"));
 		return new Block(null, null, new RawHtml(lines));
 	}

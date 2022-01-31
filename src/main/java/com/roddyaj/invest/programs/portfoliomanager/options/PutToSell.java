@@ -19,7 +19,6 @@ public class PutToSell implements Comparable<PutToSell>
 	private final double availableAmount;
 	private final Double underlyingPrice;
 	private final Double dayChangePct;
-	private double averageReturn;
 	private List<OpenOrder> openOrders;
 
 	public PutToSell(String symbol, double availableAmount, Double underlyingPrice, Double dayChangePct)
@@ -28,11 +27,6 @@ public class PutToSell implements Comparable<PutToSell>
 		this.availableAmount = availableAmount;
 		this.underlyingPrice = underlyingPrice;
 		this.dayChangePct = dayChangePct;
-	}
-
-	public void setAverageReturn(double averageReturn)
-	{
-		this.averageReturn = averageReturn;
 	}
 
 	public void setOpenOrders(List<OpenOrder> openOrders)
@@ -50,11 +44,7 @@ public class PutToSell implements Comparable<PutToSell>
 	{
 		int result = Double.compare(dayChangePct != null ? dayChangePct.doubleValue() : 0, o.dayChangePct != null ? o.dayChangePct.doubleValue() : 0);
 		if (result == 0)
-		{
-			result = Double.compare(o.averageReturn, averageReturn);
-			if (result == 0)
-				result = symbol.compareTo(o.symbol);
-		}
+			result = symbol.compareTo(o.symbol);
 		return result;
 	}
 
@@ -75,7 +65,6 @@ public class PutToSell implements Comparable<PutToSell>
 			columns.add(new Column("O", "%s", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
 			columns.add(new Column("Day", "%s", Align.R));
-			columns.add(new Column("Return", "%.0f%%", Align.R));
 			return columns;
 		}
 
@@ -86,7 +75,7 @@ public class PutToSell implements Comparable<PutToSell>
 			String yahooLink = YahooUtils.getIconLink(p.symbol);
 			String openOrders = OpenOrder.getPopupText(p.openOrders);
 			String dayChangePct = p.dayChangePct != null ? HtmlUtils.formatPercentChange(p.dayChangePct.doubleValue()) : null;
-			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, openOrders, p.underlyingPrice, dayChangePct, p.averageReturn);
+			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, openOrders, p.underlyingPrice, dayChangePct);
 		}
 	}
 }

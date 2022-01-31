@@ -163,7 +163,7 @@ public class Position implements Comparable<Position>
 
 	public static class OptionHtmlFormatter extends DataFormatter<Position>
 	{
-		private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yy-MM-dd");
+		private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yy/MM/dd");
 
 		private final boolean showOpenOrders;
 

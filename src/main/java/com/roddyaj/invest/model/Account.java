@@ -62,6 +62,7 @@ public class Account implements QuoteProvider, AccountDataSource
 	{
 		return allocation.getAllocation(symbol);
 	}
+
 	public Map<String, Double> getAllocationMap()
 	{
 		return allocation.getAllocationMap();
@@ -153,15 +154,15 @@ public class Account implements QuoteProvider, AccountDataSource
 		for (int i = transactions.size() - 1; i >= 0; i--)
 		{
 			Transaction transaction = transactions.get(i);
-			if (transaction.getAction() == Action.BUY)
+			if (transaction.action() == Action.BUY)
 			{
-				costBasisMap.computeIfAbsent(transaction.getSymbol(), k -> new Lots()).add(transaction.getQuantity(), transaction.getPrice());
+				costBasisMap.computeIfAbsent(transaction.symbol(), k -> new Lots()).add(transaction.quantity(), transaction.price());
 			}
-			else if (transaction.getAction() == Action.SELL)
+			else if (transaction.action() == Action.SELL)
 			{
-				Lots lots = costBasisMap.get(transaction.getSymbol());
+				Lots lots = costBasisMap.get(transaction.symbol());
 				if (lots != null)
-					lots.removeFifo(transaction.getQuantity());
+					lots.removeFifo(transaction.quantity());
 			}
 		}
 

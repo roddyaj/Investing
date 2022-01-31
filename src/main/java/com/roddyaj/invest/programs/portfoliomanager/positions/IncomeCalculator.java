@@ -36,13 +36,13 @@ public class IncomeCalculator
 		Map<String, Double> monthToContributions = new HashMap<>();
 		for (Transaction transaction : account.getTransactions())
 		{
-			String dateString = transaction.getDate().format(format);
-			if (transaction.getAction() == Action.SELL_TO_OPEN || transaction.getAction() == Action.BUY_TO_CLOSE)
-				monthToOptionsIncome.merge(dateString, transaction.getAmount(), Double::sum);
-			else if (transaction.getAction() == Action.DIVIDEND)
-				monthToDividendIncome.merge(dateString, transaction.getAmount(), Double::sum);
-			else if (transaction.getAction() == Action.TRANSFER)
-				monthToContributions.merge(dateString, transaction.getAmount(), Double::sum);
+			String dateString = transaction.date().format(format);
+			if (transaction.action() == Action.SELL_TO_OPEN || transaction.action() == Action.BUY_TO_CLOSE)
+				monthToOptionsIncome.merge(dateString, transaction.amount(), Double::sum);
+			else if (transaction.action() == Action.DIVIDEND)
+				monthToDividendIncome.merge(dateString, transaction.amount(), Double::sum);
+			else if (transaction.action() == Action.TRANSFER)
+				monthToContributions.merge(dateString, transaction.amount(), Double::sum);
 		}
 
 		Set<String> allMonths = new HashSet<>();
@@ -52,11 +52,8 @@ public class IncomeCalculator
 		List<String> sortedMonths = new ArrayList<>(allMonths);
 		Collections.sort(sortedMonths, Collections.reverseOrder());
 		for (String month : sortedMonths)
-			monthToIncome.add(new MonthlyIncome(
-				month,
-				monthToOptionsIncome.getOrDefault(month, 0.),
-				monthToDividendIncome.getOrDefault(month, 0.),
-				monthToContributions.getOrDefault(month, 0.)));
+			monthToIncome.add(new MonthlyIncome(month, monthToOptionsIncome.getOrDefault(month, 0.), monthToDividendIncome.getOrDefault(month, 0.),
+					monthToContributions.getOrDefault(month, 0.)));
 
 		return monthToIncome;
 	}

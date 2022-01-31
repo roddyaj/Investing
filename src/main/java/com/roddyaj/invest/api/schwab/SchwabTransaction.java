@@ -6,8 +6,15 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.roddyaj.invest.util.StringUtils;
 
-public record SchwabTransaction(LocalDate date, String action, String symbol, String description, int quantity, double price, double feesAndComm,
-		double amount)
+public record SchwabTransaction(
+	LocalDate date,
+	String action,
+	String symbol,
+	String description,
+	int quantity,
+	double price,
+	double feesAndComm,
+	double amount)
 {
 	public SchwabTransaction(CSVRecord record)
 	{

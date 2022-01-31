@@ -27,10 +27,10 @@ public class ReturnCalculator
 
 		double A = accountSettings.getStartingBalance();
 		double B = account.getTotalValue();
-		List<Transaction> transfers = account.getTransactions().stream()
-				.filter(t -> t.getAction() == Action.TRANSFER && !t.getDate().isBefore(startDate)).toList();
-		double F = transfers.stream().mapToDouble(t -> t.getAmount()).sum();
-		double weightedF = transfers.stream().mapToDouble(t -> getWeight(t, startDate) * t.getAmount()).sum();
+		List<Transaction> transfers = account.getTransactions().stream().filter(t -> t.action() == Action.TRANSFER && !t.date().isBefore(startDate))
+				.toList();
+		double F = transfers.stream().mapToDouble(t -> t.amount()).sum();
+		double weightedF = transfers.stream().mapToDouble(t -> getWeight(t, startDate) * t.amount()).sum();
 		double R = (B - A - F) / (A + weightedF);
 		return R;
 	}
@@ -38,7 +38,7 @@ public class ReturnCalculator
 	private static double getWeight(Transaction transaction, LocalDate startDate)
 	{
 		long C = 365;
-		long D = ChronoUnit.DAYS.between(startDate, transaction.getDate());
+		long D = ChronoUnit.DAYS.between(startDate, transaction.date());
 		double W = D >= 0 ? (C - D) / (double)C : 0;
 		return W;
 	}

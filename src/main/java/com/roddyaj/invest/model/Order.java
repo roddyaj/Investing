@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.roddyaj.invest.api.schwab.SchwabDataSource;
+import com.roddyaj.invest.api.yahoo.YahooUtils;
 import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
@@ -14,6 +15,7 @@ import com.roddyaj.invest.html.Table.Column;
 
 public record Order(String symbol, int quantity, double price, Position position, boolean optional)
 {
+
 	public double getAmount()
 	{
 		return quantity * price;
@@ -34,6 +36,7 @@ public record Order(String symbol, int quantity, double price, Position position
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("", "%s", Align.L));
 			columns.add(new Column("", "%s", Align.C));
 			columns.add(new Column("#", "%s", Align.L));
 			columns.add(new Column("Price", "%.2f", Align.R));
@@ -51,6 +54,7 @@ public record Order(String symbol, int quantity, double price, Position position
 
 			String url = SchwabDataSource.getTradeUrl(isBuy ? Action.BUY : Action.SELL, o.symbol);
 			String link = HtmlUtils.toLink(url, o.symbol, Map.of("onclick", String.format("copyClip('%d');", Math.abs(o.quantity))));
+			String yahoo = YahooUtils.getIconLink(o.symbol);
 
 			List<OpenOrder> openOrders = account.getOpenOrders(o.symbol(), o.quantity() >= 0 ? Action.BUY : Action.SELL, null);
 			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(openOrders);
@@ -58,7 +62,8 @@ public record Order(String symbol, int quantity, double price, Position position
 			String gainLossPctColored = o.position != null ? HtmlUtils.formatPercentChange(o.position.getGainLossPct()) : "";
 			String cost = o.position != null ? Transaction.createCostPopup(o.position, account) : "";
 
-			return Arrays.asList(link, isBuy ? "Buy" : "Sell", quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, cost);
+			return Arrays.asList(link, yahoo, isBuy ? "Buy" : "Sell", quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored,
+					cost);
 		}
 	}
 }

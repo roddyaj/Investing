@@ -1,11 +1,9 @@
 package com.roddyaj.invest.programs.portfoliomanager.options;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.api.model.Quote;
 import com.roddyaj.invest.model.Account;
@@ -57,9 +55,9 @@ public class OptionsCore
 			{
 				// Set the opening date
 				Transaction recentTransaction = historicalOptions.stream()
-						.filter(o -> o.getAction() == Action.SELL_TO_OPEN && o.getOption().equals(position.getOption())).findFirst().orElse(null);
+						.filter(o -> o.action() == Action.SELL_TO_OPEN && o.option().equals(position.getOption())).findFirst().orElse(null);
 				if (recentTransaction != null)
-					position.getOption().setInitialDate(recentTransaction.getDate());
+					position.getOption().setInitialDate(recentTransaction.date());
 
 				// Set the underlying position if available
 				Position underlying = account.getPositions(position.getSymbol()).filter(p -> !p.isOption()).findAny().orElse(null);
@@ -164,12 +162,6 @@ public class OptionsCore
 					output.putsToSell.add(new PutToSell(symbol, available, price, dayChangePct));
 			}
 		}
-
-		// Calculate historical return on each one
-		for (PutToSell put : output.putsToSell)
-		{
-			put.setAverageReturn(calculateAverageReturn(put.getSymbol(), historicalOptions));
-		}
 	}
 
 	private void availableToTrade()
@@ -185,12 +177,6 @@ public class OptionsCore
 	{
 		positions.stream().filter(Position::isCallOption).sorted().forEach(output.currentPositions::add);
 		positions.stream().filter(Position::isPutOption).sorted().forEach(output.currentPositions::add);
-	}
-
-	private static double calculateAverageReturn(String symbol, Collection<? extends Transaction> historicalOptions)
-	{
-		return historicalOptions.stream().filter(t -> t.getSymbol().equals(symbol) && t.getAction() == Action.SELL_TO_OPEN)
-				.collect(Collectors.averagingDouble(t -> t.getAnnualReturn()));
 	}
 
 	private static Double getOptionValueRatio(Position position)

@@ -1,14 +1,9 @@
 package com.roddyaj.invest.util;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 
 public final class StringUtils
 {
-	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-
 	public static double parsePrice(String s)
 	{
 		double value = 0;
@@ -75,23 +70,6 @@ public final class StringUtils
 			}
 		}
 		return value;
-	}
-
-	public static LocalDate parseDate(String s)
-	{
-		LocalDate date = null;
-		if (s.contains("/"))
-		{
-			try
-			{
-				date = LocalDate.parse(s, DATE_FORMAT);
-			}
-			catch (DateTimeParseException e)
-			{
-				date = LocalDate.parse(s.split(" ")[0], DATE_FORMAT);
-			}
-		}
-		return date;
 	}
 
 	public static String limit(String s, int length)

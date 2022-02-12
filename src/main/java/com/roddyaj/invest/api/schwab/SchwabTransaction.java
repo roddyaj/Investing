@@ -20,7 +20,7 @@ public record SchwabTransaction(
 	{
 		// @formatter:off
 		this(
-			StringUtils.parseDate(record.get("Date")),
+			SchwabUtils.parseDate(record.get("Date")),
 			record.get("Action"),
 			record.get("Symbol"),
 			record.get("Description"),

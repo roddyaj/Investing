@@ -9,6 +9,7 @@ import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.settings.AccountSettings;
+import com.roddyaj.invest.util.StringUtils;
 
 public class PositionManager
 {
@@ -27,16 +28,10 @@ public class PositionManager
 
 	public PositionManagerOutput run()
 	{
-		// Print current target allocation as settings
-//		account.getAllocationMap().entrySet().stream().sorted((a1, a2) -> a2.getValue().compareTo(a1.getValue())).forEach(entry -> {
-//			String symbol = entry.getKey();
-//			double percent = entry.getValue();
-//			System.out.println(String.format("        { \"cat\": \"old.%s\",%s \"%%\":  %.4f },", symbol, StringUtils.fill(' ', 4 - symbol.length()),
-//					percent * 100));
-//		});
+//		logCurrentAllocations();
 
 		List<Order> orders = accountSettings.allocationStream().map(this::createOrder).filter(Objects::nonNull)
-				.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).toList();
+			.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).toList();
 		return new PositionManagerOutput(orders, account);
 	}
 
@@ -54,7 +49,7 @@ public class PositionManager
 
 			boolean isBuy = quantity > 0;
 			boolean doOrder = quantity != 0 && Math.abs(delta / targetValue) > (isBuy ? 0.005 : 0.01)
-					&& Math.abs(quantity * position.getPrice()) >= accountSettings.getMinOrder();
+				&& Math.abs(quantity * position.getPrice()) >= accountSettings.getMinOrder();
 			if (doOrder)
 			{
 				boolean optional = isBuy ? position.getDayChangePct() > .1 : position.getDayChangePct() < -.1;
@@ -78,6 +73,32 @@ public class PositionManager
 		}
 
 		return order;
+	}
+
+	private void logTargetAllocations()
+	{
+		account.getAllocationMap().entrySet().stream().sorted((a1, a2) -> a2.getValue().compareTo(a1.getValue())).forEach(entry -> {
+			String symbol = entry.getKey();
+			double percent = entry.getValue();
+			if (symbol.length() <= 4)
+			{
+				System.out.println(String.format("        { \"cat\": \"old.%s\",%s \"%%\":  %.4f },", symbol,
+					StringUtils.fill(' ', 4 - symbol.length()), percent * 100));
+			}
+		});
+	}
+
+	private void logCurrentAllocations()
+	{
+		account.getPositions().stream().sorted((p1, p2) -> Double.compare(p2.getPercentOfAccount(), p1.getPercentOfAccount())).forEach(p -> {
+			String symbol = p.getSymbol();
+			double percent = p.getPercentOfAccount();
+			if (symbol.length() <= 4)
+			{
+				System.out.println(String.format("        { \"cat\": \"old.%s\",%s \"%%\": %.2f },", symbol,
+					StringUtils.fill(' ', 4 - symbol.length()), percent));
+			}
+		});
 	}
 
 	static int round(double value, double cutoff)

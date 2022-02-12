@@ -34,7 +34,7 @@ public record SchwabOpenOrder(
 			Integer.parseInt(record.get("Quantity|Face Value").split(" ")[0]),
 			getOrderType(record.get("Price")),
 			getLimitPrice(record.get("Price")),
-			SchwabUtils.parseDate(record.get("Timing").split(" ")[2]),
+			getTiming(record.get("Timing")),
 			LocalDateTime.parse(record.get("Time and Date (ET)"), TIME_AND_DATE_FORMAT),
 			record.get("Status"),
 			Integer.parseInt(record.get("Order Number")));
@@ -55,5 +55,10 @@ public record SchwabOpenOrder(
 	private static Double getLimitPrice(String price)
 	{
 		return price.contains(" ") ? StringUtils.parsePrice(price.split(" ")[1]) : null;
+	}
+
+	private static LocalDate getTiming(String timing)
+	{
+		return timing.equals("Day Only") ? LocalDate.now() : SchwabUtils.parseDate(timing.split(" ")[2]);
 	}
 }

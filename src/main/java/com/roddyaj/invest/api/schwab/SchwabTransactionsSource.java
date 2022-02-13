@@ -52,7 +52,7 @@ public class SchwabTransactionsSource
 	{
 		Option option = null;
 		String symbol;
-		boolean isOption = transaction.symbol().contains(" ");
+		boolean isOption = transaction.symbol() != null && transaction.symbol().contains(" ");
 		if (isOption)
 		{
 			option = SchwabUtils.parseOptionText(transaction.symbol());
@@ -67,10 +67,10 @@ public class SchwabTransactionsSource
 		return new Transaction(
 			transaction.date(),
 			parseAction(transaction.action()),
-			symbol,
-			transaction.quantity(),
-			transaction.price(),
-			transaction.amount(),
+			symbol != null ? symbol : "",
+			transaction.quantity() != null ? (int)Math.round(transaction.quantity().doubleValue()) : 0,
+			transaction.price() != null ? transaction.price().doubleValue() : 0,
+			transaction.amount() != null ? transaction.amount().doubleValue() : 0,
 			option);
 		// @formatter:on
 	}

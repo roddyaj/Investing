@@ -4,17 +4,15 @@ import java.time.LocalDate;
 
 import org.apache.commons.csv.CSVRecord;
 
-import com.roddyaj.invest.util.StringUtils;
-
 public record SchwabTransaction(
 	LocalDate date,
 	String action,
 	String symbol,
 	String description,
-	int quantity,
-	double price,
-	double feesAndComm,
-	double amount)
+	Double quantity,
+	Double price,
+	Double feesAndComm,
+	Double amount)
 {
 	public SchwabTransaction(CSVRecord record)
 	{
@@ -22,12 +20,12 @@ public record SchwabTransaction(
 		this(
 			SchwabUtils.parseDate(record.get("Date")),
 			record.get("Action"),
-			record.get("Symbol"),
+			SchwabUtils.parseString(record.get("Symbol")),
 			record.get("Description"),
-			(int)Math.round(StringUtils.parseDouble(record.get("Quantity"))),
-			StringUtils.parsePrice(record.get("Price")),
-			StringUtils.parsePrice(record.get("Fees & Comm")),
-			StringUtils.parsePrice(record.get("Amount")));
+			SchwabUtils.parseDouble(record.get("Quantity")),
+			SchwabUtils.parseDouble(record.get("Price")),
+			SchwabUtils.parseDouble(record.get("Fees & Comm")),
+			SchwabUtils.parseDouble(record.get("Amount")));
 		// @formatter:on
 	}
 }

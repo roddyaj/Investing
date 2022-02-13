@@ -21,7 +21,6 @@ public class Input
 {
 	private final Settings settings;
 	private final Account account;
-	private final Information information = new Information();
 	private final List<Account> otherAccounts;
 	private final QuoteRegistry quoteRegistry = new QuoteRegistry();
 	private final List<Message> messages = new ArrayList<>();
@@ -76,11 +75,6 @@ public class Input
 	public Account getAccount()
 	{
 		return account;
-	}
-
-	public Information getInformation()
-	{
-		return information;
 	}
 
 	public List<Account> getOtherAccounts()

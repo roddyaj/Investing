@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.roddyaj.invest.util.FileUtils;
 
@@ -47,11 +46,6 @@ public class SchwabOpenOrdersFile
 			}
 		}
 		return openOrders;
-	}
-
-	public String toCsvString()
-	{
-		return getOpenOrders().stream().map(SchwabOpenOrder::toCsvString).collect(Collectors.joining("\n"));
 	}
 
 	public static LocalDateTime getTime(Path file)

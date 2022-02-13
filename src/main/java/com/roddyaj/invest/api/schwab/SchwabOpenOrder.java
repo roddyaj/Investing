@@ -3,12 +3,8 @@ package com.roddyaj.invest.api.schwab;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVRecord;
-
-import com.roddyaj.invest.util.StringUtils;
 
 public record SchwabOpenOrder(
 	String symbol,
@@ -37,14 +33,8 @@ public record SchwabOpenOrder(
 			getTiming(record.get("Timing")),
 			LocalDateTime.parse(record.get("Time and Date (ET)"), TIME_AND_DATE_FORMAT),
 			record.get("Status"),
-			Integer.parseInt(record.get("Order Number")));
+			SchwabUtils.parseInt(record.get("Order Number")));
 		// @formatter:on
-	}
-
-	public String toCsvString()
-	{
-		return List.of(symbol, nameOfSecurity, action, quantity, orderType, limitPrice, timing, timeAndDate_ET, status, orderNumber).stream()
-			.map(Object::toString).collect(Collectors.joining(","));
 	}
 
 	private static String getOrderType(String price)
@@ -54,7 +44,7 @@ public record SchwabOpenOrder(
 
 	private static Double getLimitPrice(String price)
 	{
-		return price.contains(" ") ? StringUtils.parsePrice(price.split(" ")[1]) : null;
+		return price.contains(" ") ? SchwabUtils.parseDouble(price.split(" ")[1]) : null;
 	}
 
 	private static LocalDate getTiming(String timing)

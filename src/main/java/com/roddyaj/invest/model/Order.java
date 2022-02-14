@@ -15,7 +15,6 @@ import com.roddyaj.invest.html.Table.Column;
 
 public record Order(String symbol, int quantity, double price, Position position, boolean optional)
 {
-
 	public double getAmount()
 	{
 		return quantity * price;

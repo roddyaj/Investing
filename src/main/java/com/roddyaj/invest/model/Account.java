@@ -104,6 +104,12 @@ public class Account implements QuoteProvider, AccountDataSource
 		return dataSource.getOpenOrders();
 	}
 
+	@Override
+	public List<CompletePosition> getCompletePositions()
+	{
+		return dataSource.getCompletePositions();
+	}
+
 	public int getOpenOrderCount(String symbol, Action action)
 	{
 		return getOpenOrderCount(symbol, action, null);
@@ -140,6 +146,11 @@ public class Account implements QuoteProvider, AccountDataSource
 	public Stream<Position> getPositions(String symbol)
 	{
 		return getPositions().stream().filter(p -> p.getSymbol().equals(symbol));
+	}
+
+	public CompletePosition getCompletePosition(String symbol)
+	{
+		return getCompletePositions().stream().filter(p -> p.getPosition().getSymbol().equals(symbol)).findAny().orElse(null);
 	}
 
 	public List<Message> getMessages()

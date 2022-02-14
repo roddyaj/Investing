@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import com.roddyaj.invest.api.model.QuoteRegistry;
 import com.roddyaj.invest.model.Account;
+import com.roddyaj.invest.model.CompletePosition;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Order;
 import com.roddyaj.invest.model.Position;
@@ -41,9 +42,11 @@ public class PositionManager
 
 		double targetValue = account.getTotalValue() * account.getAllocation(symbol);
 
-		Position position = account.getPosition(symbol);
-		if (position != null)
+		CompletePosition completePosition = account.getCompletePosition(symbol);
+		if (completePosition != null)
 		{
+			Position position = completePosition.getPosition();
+
 			double delta = targetValue - position.getMarketValue();
 			int quantity = round(delta / position.getPrice(), .75);
 

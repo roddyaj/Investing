@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.roddyaj.invest.model.AccountDataSource;
+import com.roddyaj.invest.model.CompletePosition;
 import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.Transaction;
@@ -39,6 +40,12 @@ public class TestDataSource implements AccountDataSource
 
 	@Override
 	public List<OpenOrder> getOpenOrders()
+	{
+		return List.of();
+	}
+
+	@Override
+	public List<CompletePosition> getCompletePositions()
 	{
 		return List.of();
 	}

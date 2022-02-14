@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.roddyaj.invest.html.HtmlUtils;
-import com.roddyaj.invest.model.AccountDataSource;
+import com.roddyaj.invest.model.AbstractDataSource;
 import com.roddyaj.invest.model.Action;
 import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.Transaction;
 import com.roddyaj.invest.model.settings.AccountSettings;
 
-public class SchwabDataSource implements AccountDataSource
+public class SchwabDataSource extends AbstractDataSource
 {
 	private static final String ALL_IN_ONE_URL = "https://client.schwab.com/Areas/Trade/Allinone/index.aspx";
 

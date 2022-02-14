@@ -14,4 +14,6 @@ public interface AccountDataSource
 	List<Transaction> getTransactions();
 
 	List<OpenOrder> getOpenOrders();
+
+	List<CompletePosition> getCompletePositions();
 }

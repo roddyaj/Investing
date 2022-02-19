@@ -81,7 +81,7 @@ public class SchwabPositionsSource
 			position.marketValue(),
 			securityType,
 			position.costBasis() != null ? position.costBasis().doubleValue() : 0,
-			position.dayChangePct(),
+			position.dayChangePct() != null ? position.dayChangePct().doubleValue() : 0,
 			position.gainLossPct() != null ? position.gainLossPct().doubleValue() : 0,
 			position.percentOfAccount() != null ? position.percentOfAccount().doubleValue() : 0,
 			option

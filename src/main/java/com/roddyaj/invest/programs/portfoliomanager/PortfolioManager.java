@@ -59,7 +59,7 @@ public class PortfolioManager implements Program
 		// Main content blocks
 		List<Column> columns = new ArrayList<>();
 		columns.add(new Column(CollectionUtils.join(positionsOutput.getBlocks(), oddLotsOutput.getBlock())));
-		List<Block> optionsBlocks = new ArrayList<>(optionsOutput.getActionsBlocks(account));
+		List<Block> optionsBlocks = new ArrayList<>(optionsOutput.getActionsBlocks());
 		optionsBlocks.add(optionsOutput.getCurrentOptionsBlock());
 		columns.add(new Column(optionsBlocks));
 		List<Block> positions = PositionList.getBlocks(input.getAccount());

@@ -1,7 +1,10 @@
 package com.roddyaj.invest.programs.portfoliomanager.positions;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.api.model.QuoteRegistry;
 import com.roddyaj.invest.model.Account;
@@ -16,6 +19,8 @@ public class PositionManager
 {
 	private final Account account;
 
+	private final Map<String, CompletePosition> positions;
+
 	private final AccountSettings accountSettings;
 
 	private final QuoteRegistry quoteRegistry;
@@ -23,6 +28,8 @@ public class PositionManager
 	public PositionManager(Input input)
 	{
 		account = input.getAccount();
+		positions = account.getCompletePositions().stream().filter(p -> !p.getPosition().isOption())
+			.collect(Collectors.toMap(CompletePosition::getSymbol, Function.identity()));
 		accountSettings = input.getAccount().getAccountSettings();
 		quoteRegistry = input.getQuoteRegistry();
 	}
@@ -33,7 +40,7 @@ public class PositionManager
 
 		List<Order> orders = accountSettings.allocationStream().map(this::createOrder).filter(Objects::nonNull)
 			.sorted((o1, o2) -> Double.compare(o1.getAmount(), o2.getAmount())).toList();
-		return new PositionManagerOutput(orders, account);
+		return new PositionManagerOutput(orders);
 	}
 
 	private Order createOrder(String symbol)
@@ -42,7 +49,7 @@ public class PositionManager
 
 		double targetValue = account.getTotalValue() * account.getAllocation(symbol);
 
-		CompletePosition completePosition = account.getCompletePosition(symbol);
+		CompletePosition completePosition = positions.get(symbol);
 		if (completePosition != null)
 		{
 			Position position = completePosition.getPosition();
@@ -56,9 +63,7 @@ public class PositionManager
 			if (doOrder)
 			{
 				boolean optional = isBuy ? position.getDayChangePct() > .1 : position.getDayChangePct() < -.1;
-//				if (List.of("RSP", "IWD", "XYLD", "VWO", "IEMG", "EFA", "VXUS", "VEA").contains(position.getSymbol()))
-//					optional = false;
-				order = new Order(symbol, quantity, position.getPrice(), position, optional);
+				order = new Order(symbol, quantity, position.getPrice(), completePosition, optional);
 			}
 		}
 		else if (targetValue > 0.01)
@@ -98,8 +103,8 @@ public class PositionManager
 			double percent = p.getPercentOfAccount();
 			if (symbol.length() <= 4)
 			{
-				System.out.println(String.format("        { \"cat\": \"old.%s\",%s \"%%\": %.2f },", symbol,
-					StringUtils.fill(' ', 4 - symbol.length()), percent));
+				System.out.println(
+					String.format("        { \"cat\": \"old.%s\",%s \"%%\": %.2f },", symbol, StringUtils.fill(' ', 4 - symbol.length()), percent));
 			}
 		});
 	}

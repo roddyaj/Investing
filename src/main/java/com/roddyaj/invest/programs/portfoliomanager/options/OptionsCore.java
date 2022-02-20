@@ -8,6 +8,7 @@ import java.util.Set;
 import com.roddyaj.invest.api.model.Quote;
 import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Action;
+import com.roddyaj.invest.model.CompletePosition;
 import com.roddyaj.invest.model.Input;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.Transaction;
@@ -20,8 +21,6 @@ public class OptionsCore
 
 	private final List<Position> positions;
 
-	private final List<Transaction> historicalOptions;
-
 	private final OptionsOutput output;
 
 	public OptionsCore(Input input)
@@ -29,7 +28,6 @@ public class OptionsCore
 		this.input = input;
 		account = input.getAccount();
 		positions = input.getAccount().getPositions();
-		historicalOptions = input.getAccount().getTransactions().stream().filter(Transaction::isOption).toList();
 		output = new OptionsOutput();
 	}
 
@@ -49,13 +47,14 @@ public class OptionsCore
 
 	private void setUp()
 	{
-		for (Position position : positions)
+		for (CompletePosition completePosition : input.getAccount().getCompletePositions())
 		{
+			Position position = completePosition.getPosition();
 			if (position.isOption())
 			{
 				// Set the opening date
-				Transaction recentTransaction = historicalOptions.stream()
-						.filter(o -> o.action() == Action.SELL_TO_OPEN && o.option().equals(position.getOption())).findFirst().orElse(null);
+				Transaction recentTransaction = completePosition.getTransactions().stream()
+					.filter(o -> o.action() == Action.SELL_TO_OPEN && o.option().equals(position.getOption())).findFirst().orElse(null);
 				if (recentTransaction != null)
 					position.getOption().setInitialDate(recentTransaction.date());
 
@@ -77,33 +76,29 @@ public class OptionsCore
 				if (optionValueRatio != null)
 				{
 					buyToClose = optionValueRatio <= .65
-							&& (p.isPutOption() || p.getOption().getUnderlyingPrice() > p.getOption().getUnderlying().getCostPerShare());
+						&& (p.isPutOption() || p.getOption().getUnderlyingPrice() > p.getOption().getUnderlying().getCostPerShare());
 				}
 			}
 
 			if (buyToClose)
-			{
-				// Not ideal - modifying shared object. Maybe do up front.
-				p.setOpenOrders(account.getOpenOrders(p.getSymbol(), Action.BUY, p.getOption().getType()));
-
 				output.buyToClose.add(p);
-			}
 		}
 	}
 
 	private void analyzeCallsToSell()
 	{
-		for (Position position : positions)
+		for (CompletePosition completePosition : input.getAccount().getCompletePositions())
 		{
+			Position position = completePosition.getPosition();
 			if (!position.isOption() && position.getQuantity() >= 100 && !input.getSettings().excludeOption(position.getSymbol()))
 			{
 				int totalCallsSold = positions.stream().filter(p -> p.getSymbol().equals(position.getSymbol()) && p.isCallOption())
-						.mapToInt(Position::getQuantity).sum();
+					.mapToInt(Position::getQuantity).sum();
 				int availableShares = position.getQuantity() + totalCallsSold * 100;
 				int availableCalls = (int)Math.floor(availableShares / 100.0);
 				boolean isUpAtAll = position.getDayChangePct() > -.1 || position.getGainLossPct() > -.1;
 				if (availableCalls > 0 && isUpAtAll)
-					output.callsToSell.add(new CallToSell(position, availableCalls));
+					output.callsToSell.add(new CallToSell(completePosition, availableCalls));
 			}
 		}
 	}
@@ -111,18 +106,6 @@ public class OptionsCore
 	private void analyzePutsToSell()
 	{
 		Set<String> symbols = new HashSet<>();
-
-//		// Get list of CSP candidates based on historical activity
-//		symbols.addAll(historicalOptions.stream().map(Transaction::getSymbol)
-//				.filter(s -> !input.getSettings().excludeOption(s) && !s.matches(".*\\d.*")).collect(Collectors.toSet()));
-
-//		// Add in other candidates
-//		Set<String> optionable = input.information.getOptionableStocks().stream().map(r -> r.symbol).collect(Collectors.toSet());
-//		String[] guruCodes = new String[] { "SAM" };
-//		Set<String> guruPicks = input.information.getDataromaStocks(guruCodes).stream().map(r -> r.symbol).collect(Collectors.toSet());
-//		Set<String> intersection = new HashSet<>(optionable);
-//		intersection.retainAll(guruPicks);
-//		symbols.addAll(intersection);
 
 		// Add in options from the config
 		symbols.addAll(Arrays.asList(input.getSettings().getOptionsInclude()));
@@ -167,9 +150,9 @@ public class OptionsCore
 	private void availableToTrade()
 	{
 		double cashBalance = positions.stream().filter(p -> p.getSymbol().equals("Cash & Cash Investments")).mapToDouble(Position::getMarketValue)
-				.findAny().orElse(0);
+			.findAny().orElse(0);
 		double putOnHold = positions.stream().filter(Position::isPutOption).mapToDouble(p -> p.getOption().getStrike() * p.getQuantity() * -100)
-				.sum();
+			.sum();
 		output.availableToTrade = cashBalance - putOnHold;
 	}
 
@@ -186,7 +169,7 @@ public class OptionsCore
 		if (dteOriginal != null)
 		{
 			double linearValue = ((double)position.getOption().getDteCurrent() / dteOriginal)
-					* (position.getCostBasis() + (position.getQuantity() * .65));
+				* (position.getCostBasis() + (position.getQuantity() * .65));
 			optionValueRatio = position.getMarketValue() / linearValue;
 		}
 		return optionValueRatio;

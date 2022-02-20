@@ -110,16 +110,6 @@ public class Account implements QuoteProvider, AccountDataSource
 		return dataSource.getCompletePositions();
 	}
 
-	public int getOpenOrderCount(String symbol, Action action)
-	{
-		return getOpenOrderCount(symbol, action, null);
-	}
-
-	public int getOpenOrderCount(String symbol, Action action, Character optionType)
-	{
-		return Math.abs(getOpenOrders(symbol, action, optionType).stream().mapToInt(OpenOrder::quantity).sum());
-	}
-
 	public List<OpenOrder> getOpenOrders(String symbol, Action action, Character optionType)
 	{
 		return getOpenOrders().stream().filter(order -> {
@@ -133,24 +123,9 @@ public class Account implements QuoteProvider, AccountDataSource
 		}).toList();
 	}
 
-	public Position getPosition(String symbol)
-	{
-		return getPositions(symbol).findFirst().orElse(null);
-	}
-
-	public boolean hasSymbol(String symbol)
-	{
-		return getPositions(symbol).findAny().isPresent();
-	}
-
 	public Stream<Position> getPositions(String symbol)
 	{
 		return getPositions().stream().filter(p -> p.getSymbol().equals(symbol));
-	}
-
-	public CompletePosition getCompletePosition(String symbol)
-	{
-		return getCompletePositions().stream().filter(p -> p.getPosition().getSymbol().equals(symbol)).findAny().orElse(null);
 	}
 
 	public List<Message> getMessages()

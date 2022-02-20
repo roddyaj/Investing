@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.roddyaj.invest.html.Block;
 import com.roddyaj.invest.model.AbstractOutput;
-import com.roddyaj.invest.model.Account;
 import com.roddyaj.invest.model.Position;
 
 public class OptionsOutput extends AbstractOutput
@@ -17,7 +16,7 @@ public class OptionsOutput extends AbstractOutput
 	public double availableToTrade;
 	public final List<Position> currentPositions = new ArrayList<>();
 
-	public List<Block> getActionsBlocks(Account account)
+	public List<Block> getActionsBlocks()
 	{
 		List<Block> blocks = new ArrayList<>();
 
@@ -25,7 +24,7 @@ public class OptionsOutput extends AbstractOutput
 		blocks.add(new Position.OptionHtmlFormatter("Buy To Close", info, buyToClose, true).toBlock());
 
 		Collections.sort(callsToSell);
-		blocks.add(new CallToSell.CallHtmlFormatter(callsToSell, account).toBlock());
+		blocks.add(new CallToSell.CallHtmlFormatter(callsToSell).toBlock());
 
 		Collections.sort(putsToSell);
 		blocks.add(new PutToSell.PutHtmlFormatter(putsToSell, availableToTrade).toBlock());

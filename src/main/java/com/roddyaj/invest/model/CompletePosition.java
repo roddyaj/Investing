@@ -16,6 +16,11 @@ public class CompletePosition
 		this.position = position;
 	}
 
+	public String getSymbol()
+	{
+		return position.getSymbol();
+	}
+
 	public Position getPosition()
 	{
 		return position;

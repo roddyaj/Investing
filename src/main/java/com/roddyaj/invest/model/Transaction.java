@@ -12,7 +12,6 @@ import com.roddyaj.invest.util.StringUtils;
 
 public record Transaction(LocalDate date, Action action, String symbol, int quantity, double price, double amount, Option option)
 {
-
 	public boolean isOption()
 	{
 		return option != null;
@@ -38,14 +37,12 @@ public record Transaction(LocalDate date, Action action, String symbol, int quan
 		return text;
 	}
 
-	public static String createCostPopup(Position position, Account account)
+	public static String createCostPopup(CompletePosition completePosition)
 	{
+		Position position = completePosition.getPosition();
 		String cost = String.format("%.2f", position.getCostPerShare());
-		CompletePosition completePosition = account.getCompletePosition(position.getSymbol());
-		List<Transaction> transactions = completePosition != null
-			? completePosition.getTransactions().stream().filter(t -> !t.isOption() && (t.action() == Action.BUY || t.action() == Action.SELL))
-				.limit(8).toList()
-			: List.of();
+		List<Transaction> transactions = completePosition.getTransactions().stream()
+			.filter(t -> !t.isOption() && (t.action() == Action.BUY || t.action() == Action.SELL)).limit(8).toList();
 		if (!transactions.isEmpty())
 		{
 			String text = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline;"), cost);

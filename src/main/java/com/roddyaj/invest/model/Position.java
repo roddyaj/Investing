@@ -31,7 +31,6 @@ public class Position implements Comparable<Position>
 	private Lots lots;
 
 	private final Option option;
-	private List<OpenOrder> openOrders;
 
 	public Position(String symbol, int quantity, double price, double marketValue, SecurityType securityType, double costBasis, double dayChangePct,
 			double gainLossPct, double percentOfAccount, Option option)
@@ -51,11 +50,6 @@ public class Position implements Comparable<Position>
 	public void setLots(Lots lots)
 	{
 		this.lots = lots;
-	}
-
-	public void setOpenOrders(List<OpenOrder> openOrders)
-	{
-		this.openOrders = openOrders;
 	}
 
 	public String getSymbol()
@@ -195,8 +189,12 @@ public class Position implements Comparable<Position>
 		{
 			String link = HtmlUtils.toLink(SchwabDataSource.getOptionUrl(p.option.toOccString()), p.symbol);
 			String quantityText = String.valueOf(Math.abs(p.quantity));
-			if (showOpenOrders)
-				quantityText += OpenOrder.getPopupText(p.openOrders);
+//			if (showOpenOrders)
+//			{
+//				List<OpenOrder> openOrders = completePosition.getOpenOrders().stream()
+//					.filter(o -> o.option() != null && o.option().getType() == p.getOption().getType() && o.quantity() > 0).toList();
+//				quantityText += OpenOrder.getPopupText(p.openOrders);
+//			}
 			int dte = p.option.getDteCurrent();
 			String dteText = "(" + dte + ")";
 			Double underlyingCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getCostPerShare() : null;

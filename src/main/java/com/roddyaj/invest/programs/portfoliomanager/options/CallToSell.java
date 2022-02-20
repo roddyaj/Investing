@@ -10,20 +10,21 @@ import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
-import com.roddyaj.invest.model.Account;
-import com.roddyaj.invest.model.Action;
+import com.roddyaj.invest.model.CompletePosition;
 import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.Transaction;
 
 public class CallToSell implements Comparable<CallToSell>
 {
+	private final CompletePosition completePosition;
 	private final Position position;
 	private final int quantity;
 
-	public CallToSell(Position position, int quantity)
+	public CallToSell(CompletePosition completePosition, int quantity)
 	{
-		this.position = position;
+		this.completePosition = completePosition;
+		this.position = completePosition.getPosition();
 		this.quantity = quantity;
 	}
 
@@ -35,12 +36,9 @@ public class CallToSell implements Comparable<CallToSell>
 
 	public static class CallHtmlFormatter extends DataFormatter<CallToSell>
 	{
-		private final Account account;
-
-		public CallHtmlFormatter(Collection<? extends CallToSell> records, Account account)
+		public CallHtmlFormatter(Collection<? extends CallToSell> records)
 		{
 			super("Calls To Sell", null, records);
-			this.account = account;
 		}
 
 		@Override
@@ -62,9 +60,10 @@ public class CallToSell implements Comparable<CallToSell>
 		{
 			String schwab = HtmlUtils.toLink(SchwabDataSource.getOptionChainsUrl(c.position.getSymbol()), c.position.getSymbol());
 			String yahoo = YahooUtils.getIconLink(c.position.getSymbol());
-			List<OpenOrder> openOrders = account.getOpenOrders(c.position.getSymbol(), Action.SELL, 'C');
+			List<OpenOrder> openOrders = c.completePosition.getOpenOrders().stream()
+				.filter(o -> o.option() != null && o.option().getType() == 'C' && o.quantity() < 0).toList();
 			String quantityText = c.quantity + OpenOrder.getPopupText(openOrders);
-			String cost = Transaction.createCostPopup(c.position, account);
+			String cost = Transaction.createCostPopup(c.completePosition);
 			String dayChange = HtmlUtils.formatPercentChange(c.position.getDayChangePct());
 			String totalChange = HtmlUtils.formatPercentChange(c.position.getGainLossPct());
 			return List.of(schwab, yahoo, quantityText, cost, c.position.getPrice(), dayChange, totalChange);

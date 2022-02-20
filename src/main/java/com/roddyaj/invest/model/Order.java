@@ -13,7 +13,7 @@ import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 
-public record Order(String symbol, int quantity, double price, Position position, boolean optional)
+public record Order(String symbol, int quantity, double price, CompletePosition completePosition, boolean optional)
 {
 	public double getAmount()
 	{
@@ -22,12 +22,9 @@ public record Order(String symbol, int quantity, double price, Position position
 
 	public static class OrderFormatter extends DataFormatter<Order>
 	{
-		private final Account account;
-
-		public OrderFormatter(String title, String info, Collection<? extends Order> records, Account account)
+		public OrderFormatter(String title, String info, Collection<? extends Order> records)
 		{
 			super(title, info, records);
-			this.account = account;
 		}
 
 		@Override
@@ -49,20 +46,20 @@ public record Order(String symbol, int quantity, double price, Position position
 		@Override
 		protected List<Object> toRow(Order o)
 		{
-			boolean isBuy = o.quantity >= 0;
+			Position position = o.completePosition.getPosition();
+			Action action = o.quantity >= 0 ? Action.BUY : Action.SELL;
 
-			String url = SchwabDataSource.getTradeUrl(isBuy ? Action.BUY : Action.SELL, o.symbol);
+			String url = SchwabDataSource.getTradeUrl(action, o.symbol);
 			String link = HtmlUtils.toLink(url, o.symbol, Map.of("onclick", String.format("copyClip('%d');", Math.abs(o.quantity))));
 			String yahoo = YahooUtils.getIconLink(o.symbol);
 
-			List<OpenOrder> openOrders = account.getOpenOrders(o.symbol(), o.quantity() >= 0 ? Action.BUY : Action.SELL, null);
+			List<OpenOrder> openOrders = o.completePosition.getOpenOrders().stream().filter(oo -> (oo.quantity() > 0) == (o.quantity() > 0)).toList();
 			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(openOrders);
-			String dayChangeColored = o.position != null ? HtmlUtils.formatPercentChange(o.position.getDayChangePct()) : "";
-			String gainLossPctColored = o.position != null ? HtmlUtils.formatPercentChange(o.position.getGainLossPct()) : "";
-			String cost = o.position != null ? Transaction.createCostPopup(o.position, account) : "";
+			String dayChangeColored = position != null ? HtmlUtils.formatPercentChange(position.getDayChangePct()) : "";
+			String gainLossPctColored = position != null ? HtmlUtils.formatPercentChange(position.getGainLossPct()) : "";
+			String cost = position != null ? Transaction.createCostPopup(o.completePosition) : "";
 
-			return Arrays.asList(link, yahoo, isBuy ? "Buy" : "Sell", quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored,
-					cost);
+			return Arrays.asList(link, yahoo, action.toString(), quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, cost);
 		}
 	}
 }

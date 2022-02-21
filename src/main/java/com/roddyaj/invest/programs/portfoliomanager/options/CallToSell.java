@@ -13,7 +13,7 @@ import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.CompletePosition;
 import com.roddyaj.invest.model.OpenOrder;
 import com.roddyaj.invest.model.Position;
-import com.roddyaj.invest.model.Transaction;
+import com.roddyaj.invest.model.PositionPopup;
 
 public class CallToSell implements Comparable<CallToSell>
 {
@@ -63,7 +63,7 @@ public class CallToSell implements Comparable<CallToSell>
 			List<OpenOrder> openOrders = c.completePosition.getOpenOrders().stream()
 				.filter(o -> o.option() != null && o.option().getType() == 'C' && o.quantity() < 0).toList();
 			String quantityText = c.quantity + OpenOrder.getPopupText(openOrders);
-			String cost = Transaction.createCostPopup(c.completePosition);
+			String cost = new PositionPopup(c.completePosition).createCostPopup();
 			String dayChange = HtmlUtils.formatPercentChange(c.position.getDayChangePct());
 			String totalChange = HtmlUtils.formatPercentChange(c.position.getGainLossPct());
 			return List.of(schwab, yahoo, quantityText, cost, c.position.getPrice(), dayChange, totalChange);

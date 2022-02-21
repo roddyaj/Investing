@@ -109,6 +109,11 @@ public final class HtmlUtils
 		return new StringBuilder(tag.length() + 3).append("</").append(tag).append('>').toString();
 	}
 
+	public static String div(Map<String, ? extends Object> attributes, String content)
+	{
+		return tag("div", attributes, content);
+	}
+
 	private static StringBuilder startTag_(String tag, Map<String, ? extends Object> attributes)
 	{
 		StringBuilder sb = new StringBuilder();

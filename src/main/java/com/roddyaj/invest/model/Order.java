@@ -46,18 +46,20 @@ public record Order(String symbol, int quantity, double price, CompletePosition 
 		@Override
 		protected List<Object> toRow(Order o)
 		{
-			Position position = o.completePosition.getPosition();
+			Position position = o.completePosition != null ? o.completePosition.getPosition() : null;
 			Action action = o.quantity >= 0 ? Action.BUY : Action.SELL;
 
 			String url = SchwabDataSource.getTradeUrl(action, o.symbol);
 			String link = HtmlUtils.toLink(url, o.symbol, Map.of("onclick", String.format("copyClip('%d');", Math.abs(o.quantity))));
 			String yahoo = YahooUtils.getIconLink(o.symbol);
 
-			List<OpenOrder> openOrders = o.completePosition.getOpenOrders().stream().filter(oo -> (oo.quantity() > 0) == (o.quantity() > 0)).toList();
+			List<OpenOrder> openOrders = o.completePosition != null
+				? o.completePosition.getOpenOrders().stream().filter(oo -> (oo.quantity() > 0) == (o.quantity() > 0)).toList()
+				: List.of();
 			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(openOrders);
 			String dayChangeColored = position != null ? HtmlUtils.formatPercentChange(position.getDayChangePct()) : "";
 			String gainLossPctColored = position != null ? HtmlUtils.formatPercentChange(position.getGainLossPct()) : "";
-			String cost = position != null ? Transaction.createCostPopup(o.completePosition) : "";
+			String cost = o.completePosition != null ? new PositionPopup(o.completePosition).createCostPopup() : "";
 
 			return Arrays.asList(link, yahoo, action.toString(), quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, cost);
 		}

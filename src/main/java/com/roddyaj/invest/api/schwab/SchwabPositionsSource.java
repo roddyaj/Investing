@@ -76,6 +76,7 @@ public class SchwabPositionsSource
 		// @formatter:off
 		return new Position(
 			symbol,
+			position.description(),
 			position.quantity() != null ? position.quantity().intValue() : 0,
 			position.price() != null ? position.price().doubleValue() : 0,
 			position.marketValue(),

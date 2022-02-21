@@ -20,6 +20,7 @@ import com.roddyaj.invest.html.Table.Column;
 public class Position implements Comparable<Position>
 {
 	private final String symbol;
+	private final String description;
 	private final int quantity;
 	private final double price;
 	private final double marketValue;
@@ -32,10 +33,11 @@ public class Position implements Comparable<Position>
 
 	private final Option option;
 
-	public Position(String symbol, int quantity, double price, double marketValue, SecurityType securityType, double costBasis, double dayChangePct,
-			double gainLossPct, double percentOfAccount, Option option)
+	public Position(String symbol, String description, int quantity, double price, double marketValue, SecurityType securityType, double costBasis,
+		double dayChangePct, double gainLossPct, double percentOfAccount, Option option)
 	{
 		this.symbol = symbol;
+		this.description = description;
 		this.quantity = quantity;
 		this.price = price;
 		this.marketValue = marketValue;
@@ -55,6 +57,11 @@ public class Position implements Comparable<Position>
 	public String getSymbol()
 	{
 		return symbol;
+	}
+
+	public String getDescription()
+	{
+		return description;
 	}
 
 	public int getQuantity()
@@ -146,7 +153,7 @@ public class Position implements Comparable<Position>
 	public String toString()
 	{
 		return symbol + ", quantity=" + quantity + ", price=" + price + ", marketValue=" + getMarketValue() + ", dayChangePct=" + dayChangePct
-				+ ", costBasis=" + costBasis + ", option=[" + option + "], moneyInPlay=" + getMoneyInPlay();
+			+ ", costBasis=" + costBasis + ", option=[" + option + "], moneyInPlay=" + getMoneyInPlay();
 	}
 
 	@Override
@@ -203,7 +210,7 @@ public class Position implements Comparable<Position>
 			String chartWithPopup = chart != null ? HtmlUtils.createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), false) : "";
 
 			return Arrays.asList(link, quantityText, p.option.getType(), p.option.getExpiryDate().format(DATE_FORMAT), dteText, p.option.getStrike(),
-					p.option.getUnderlyingPrice(), underlyingCostPerShare, chartWithPopup);
+				p.option.getUnderlyingPrice(), underlyingCostPerShare, chartWithPopup);
 		}
 
 		private static Chart getSvgChart(Option option)

@@ -11,7 +11,8 @@ import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
 import com.roddyaj.invest.model.Account;
-import com.roddyaj.invest.model.Position;
+import com.roddyaj.invest.model.CompletePosition;
+import com.roddyaj.invest.model.PositionPopup;
 
 public class PositionList
 {
@@ -19,18 +20,19 @@ public class PositionList
 	{
 		List<Block> blocks = new ArrayList<>();
 
-		List<Position> positions = account.getPositions().stream().filter(p -> !p.isOption() && !p.getSymbol().contains("Total")).toList();
+		List<CompletePosition> positions = account.getCompletePositions().stream()
+			.filter(p -> !p.getPosition().isOption() && !p.getSymbol().contains("Total")).toList();
 
-		List<Position> cashPositions = positions.stream().filter(p -> p.getSymbol().contains("Cash")).toList();
+		List<CompletePosition> cashPositions = positions.stream().filter(p -> p.getSymbol().contains("Cash")).toList();
 		blocks.add(new CashPositionFormatter(cashPositions, account).toBlock());
 
-		List<Position> managedPositions = positions.stream().filter(p -> account.getAllocation(p.getSymbol()) != 0)
-				.sorted((p1, p2) -> Double.compare(account.getAllocation(p2.getSymbol()), account.getAllocation(p1.getSymbol()))).toList();
+		List<CompletePosition> managedPositions = positions.stream().filter(p -> account.getAllocation(p.getSymbol()) != 0)
+			.sorted((p1, p2) -> Double.compare(account.getAllocation(p2.getSymbol()), account.getAllocation(p1.getSymbol()))).toList();
 		blocks.add(new ManagedPositionFormatter(managedPositions, account).toBlock());
 
-		List<Position> unmanagedPositions = positions.stream()
-				.filter(p -> account.getAllocation(p.getSymbol()) == 0 && !p.getSymbol().contains("Cash"))
-				.sorted((p1, p2) -> Double.compare(p2.getMarketValue(), p1.getMarketValue())).toList();
+		List<CompletePosition> unmanagedPositions = positions.stream()
+			.filter(p -> account.getAllocation(p.getSymbol()) == 0 && !p.getSymbol().contains("Cash"))
+			.sorted((p1, p2) -> Double.compare(p2.getPosition().getMarketValue(), p1.getPosition().getMarketValue())).toList();
 		blocks.add(new UnmanagedPositionFormatter(unmanagedPositions, account).toBlock());
 
 //		double totalPercent = positions.stream().mapToDouble(p -> p.getMarketValue() / account.getTotalValue()).sum();
@@ -39,11 +41,11 @@ public class PositionList
 		return blocks;
 	}
 
-	private static class ManagedPositionFormatter extends DataFormatter<Position>
+	private static class ManagedPositionFormatter extends DataFormatter<CompletePosition>
 	{
 		private final Account account;
 
-		public ManagedPositionFormatter(Collection<? extends Position> positions, Account account)
+		public ManagedPositionFormatter(Collection<? extends CompletePosition> positions, Account account)
 		{
 			super("Managed Positions", null, positions);
 			this.account = account;
@@ -62,21 +64,22 @@ public class PositionList
 		}
 
 		@Override
-		protected List<Object> toRow(Position p)
+		protected List<Object> toRow(CompletePosition p)
 		{
+			String link = new PositionPopup(p).createPopup(YahooUtils.getLink(p.getSymbol()));
 			double targetPercent = account.getAllocation(p.getSymbol()) * 100;
-			double percentOfAccount = p.getMarketValue() / account.getTotalValue() * 100;
+			double percentOfAccount = p.getPosition().getMarketValue() / account.getTotalValue() * 100;
 			double ratio = Math.min(percentOfAccount / targetPercent * 100, 999);
-			String gainLossPctColored = HtmlUtils.formatPercentChange(p.getGainLossPct());
-			return List.of(YahooUtils.getLink(p.getSymbol()), targetPercent, percentOfAccount, ratio, gainLossPctColored);
+			String gainLossPctColored = HtmlUtils.formatPercentChange(p.getPosition().getGainLossPct());
+			return List.of(link, targetPercent, percentOfAccount, ratio, gainLossPctColored);
 		}
 	}
 
-	private static class UnmanagedPositionFormatter extends DataFormatter<Position>
+	private static class UnmanagedPositionFormatter extends DataFormatter<CompletePosition>
 	{
 		private final Account account;
 
-		public UnmanagedPositionFormatter(Collection<? extends Position> positions, Account account)
+		public UnmanagedPositionFormatter(Collection<? extends CompletePosition> positions, Account account)
 		{
 			super("Unmanaged Positions", null, positions);
 			this.account = account;
@@ -93,19 +96,20 @@ public class PositionList
 		}
 
 		@Override
-		protected List<Object> toRow(Position p)
+		protected List<Object> toRow(CompletePosition p)
 		{
-			double percentOfAccount = p.getMarketValue() / account.getTotalValue() * 100;
-			String gainLossPctColored = HtmlUtils.formatPercentChange(p.getGainLossPct());
-			return List.of(YahooUtils.getLink(p.getSymbol()), percentOfAccount, gainLossPctColored);
+			String link = new PositionPopup(p).createPopup(YahooUtils.getLink(p.getSymbol()));
+			double percentOfAccount = p.getPosition().getMarketValue() / account.getTotalValue() * 100;
+			String gainLossPctColored = HtmlUtils.formatPercentChange(p.getPosition().getGainLossPct());
+			return List.of(link, percentOfAccount, gainLossPctColored);
 		}
 	}
 
-	private static class CashPositionFormatter extends DataFormatter<Position>
+	private static class CashPositionFormatter extends DataFormatter<CompletePosition>
 	{
 		private final Account account;
 
-		public CashPositionFormatter(Collection<? extends Position> positions, Account account)
+		public CashPositionFormatter(Collection<? extends CompletePosition> positions, Account account)
 		{
 			super("Cash", null, positions);
 			this.account = account;
@@ -122,11 +126,11 @@ public class PositionList
 		}
 
 		@Override
-		protected List<Object> toRow(Position p)
+		protected List<Object> toRow(CompletePosition p)
 		{
 			double targetPercent = account.getAllocation("cash") * 100;
-			double percentOfAccount = p.getMarketValue() / account.getTotalValue() * 100;
-			return List.of(p.getMarketValue(), targetPercent, percentOfAccount);
+			double percentOfAccount = p.getPosition().getMarketValue() / account.getTotalValue() * 100;
+			return List.of(p.getPosition().getMarketValue(), targetPercent, percentOfAccount);
 		}
 	}
 }

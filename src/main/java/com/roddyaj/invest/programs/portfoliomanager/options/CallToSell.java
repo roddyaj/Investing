@@ -59,11 +59,12 @@ public class CallToSell implements Comparable<CallToSell>
 		protected List<Object> toRow(CallToSell c)
 		{
 			String schwab = HtmlUtils.toLink(SchwabDataSource.getOptionChainsUrl(c.position.getSymbol()), c.position.getSymbol());
+			schwab = new PositionPopup(c.completePosition).createPopup(schwab);
 			String yahoo = YahooUtils.getIconLink(c.position.getSymbol());
 			List<OpenOrder> openOrders = c.completePosition.getOpenOrders().stream()
 				.filter(o -> o.option() != null && o.option().getType() == 'C' && o.quantity() < 0).toList();
 			String quantityText = c.quantity + OpenOrder.getPopupText(openOrders);
-			String cost = new PositionPopup(c.completePosition).createCostPopup();
+			String cost = String.format("%.2f", c.position.getCostPerShare());
 			String dayChange = HtmlUtils.formatPercentChange(c.position.getDayChangePct());
 			String totalChange = HtmlUtils.formatPercentChange(c.position.getGainLossPct());
 			return List.of(schwab, yahoo, quantityText, cost, c.position.getPrice(), dayChange, totalChange);

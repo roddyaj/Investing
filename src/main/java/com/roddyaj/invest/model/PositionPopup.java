@@ -23,7 +23,12 @@ public class PositionPopup
 	{
 		String costText = String.format("%.2f", completePosition.getPosition().getCostPerShare());
 		String costDiv = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline;"), costText);
-		return HtmlUtils.createPopup(costDiv, getPopupContent(), true);
+		return createPopup(costDiv);
+	}
+
+	public String createPopup(String content)
+	{
+		return HtmlUtils.createPopup(content, getPopupContent(), true);
 	}
 
 	public String getPopupContent()
@@ -59,7 +64,7 @@ public class PositionPopup
 	{
 		String text = "";
 		List<OpenOrder> shareOrders = completePosition.getOpenOrders().stream().filter(o -> o.option() == null)
-			.sorted((a, b) -> Double.compare(b.price(), a.price())).toList();
+			.sorted((a, b) -> Double.compare(a.price(), b.price())).toList();
 		if (!shareOrders.isEmpty())
 			text = div(Map.of("style", "font-weight: bold;"), "Open Orders") + new OrdersTable(shareOrders).toHtmlSingleLine();
 		return text.toString();

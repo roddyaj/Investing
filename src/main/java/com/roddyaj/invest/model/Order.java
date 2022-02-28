@@ -51,6 +51,9 @@ public record Order(String symbol, int quantity, double price, CompletePosition 
 
 			String url = SchwabDataSource.getTradeUrl(action, o.symbol);
 			String link = HtmlUtils.toLink(url, o.symbol, Map.of("onclick", String.format("copyClip('%d');", Math.abs(o.quantity))));
+			if (o.completePosition != null) {
+				link = new PositionPopup(o.completePosition).createPopup(link);
+			}
 			String yahoo = YahooUtils.getIconLink(o.symbol);
 
 			List<OpenOrder> openOrders = o.completePosition != null
@@ -59,7 +62,7 @@ public record Order(String symbol, int quantity, double price, CompletePosition 
 			String quantityText = String.valueOf(Math.abs(o.quantity)) + OpenOrder.getPopupText(openOrders);
 			String dayChangeColored = position != null ? HtmlUtils.formatPercentChange(position.getDayChangePct()) : "";
 			String gainLossPctColored = position != null ? HtmlUtils.formatPercentChange(position.getGainLossPct()) : "";
-			String cost = o.completePosition != null ? new PositionPopup(o.completePosition).createCostPopup() : "";
+			String cost = position != null ? String.format("%.2f", position.getCostPerShare()) : "";
 
 			return Arrays.asList(link, yahoo, action.toString(), quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, cost);
 		}

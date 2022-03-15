@@ -50,7 +50,7 @@ public class SchwabOpenOrdersSource
 
 		// @formatter:off
 		return new OpenOrder(
-			order.symbol(),
+			option != null ? option.getSymbol() : order.symbol(),
 			quantity,
 			order.limitPrice() != null ? order.limitPrice() : 0,
 			option);

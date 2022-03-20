@@ -51,7 +51,15 @@ public final class HtmlUtils
 
 	public static String formatPercentChange(double d)
 	{
-		return color(String.format("%.2f%%", Math.abs(d)), d >= 0 ? "green" : "#C00");
+		return formatPercentChange(d, false);
+	}
+
+	public static String formatPercentChange(double d, boolean signed)
+	{
+		String text = String.format("%.2f%%", Math.abs(d));
+		if (signed)
+			text = (d >= 0 ? "+" : "-") + text;
+		return color(text, d >= 0 ? "green" : "#C00");
 	}
 
 	public static String color(String text, String color)

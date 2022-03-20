@@ -9,6 +9,8 @@ import java.util.Map;
 
 import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table;
+import com.roddyaj.invest.html.Table.Align;
+import com.roddyaj.invest.html.Table.Column;
 
 public class PositionPopup
 {
@@ -22,7 +24,7 @@ public class PositionPopup
 	public String createCostPopup()
 	{
 		String costText = String.format("%.2f", completePosition.getPosition().getCostPerShare());
-		String costDiv = HtmlUtils.tag("div", Map.of("style", "text-decoration: underline;"), costText);
+		String costDiv = div(Map.of("style", "text-decoration: underline;"), costText);
 		return createPopup(costDiv);
 	}
 
@@ -45,8 +47,8 @@ public class PositionPopup
 		StringBuilder text = new StringBuilder();
 		Position position = completePosition.getPosition();
 		text.append(position.getDescription()).append("<br><br>");
-		text.append(position.getQuantity()).append(" shares @ ").append(String.format("$%.2f", position.getPrice()));
-		text.append(": ").append(String.format("$%.2f", position.getMarketValue()));
+		text.append(position.getQuantity()).append(" shares<br><br>");
+		text.append(new PriceTable(completePosition).toHtmlSingleLine());
 		return text.toString();
 	}
 
@@ -68,6 +70,35 @@ public class PositionPopup
 		if (!shareOrders.isEmpty())
 			text = div(Map.of("style", "font-weight: bold;"), "Open Orders") + new OrdersTable(shareOrders).toHtmlSingleLine();
 		return text.toString();
+	}
+
+	private static class PriceTable extends Table
+	{
+		public PriceTable(CompletePosition completePosition)
+		{
+			super(getColumns(), getRows(completePosition));
+			setShowHeader(false);
+		}
+
+		private static List<Column> getColumns()
+		{
+			List<Column> columns = new ArrayList<>(4);
+			columns.add(new Column("", "%s", Align.L));
+			columns.add(new Column("Price", "%.2f", Align.R));
+			columns.add(new Column("Value", "$%.2f", Align.R));
+			columns.add(new Column("G/L", "%s", Align.R));
+			return columns;
+		}
+
+		private static List<List<Object>> getRows(CompletePosition completePosition)
+		{
+			List<List<Object>> rows = new ArrayList<>(2);
+			Position position = completePosition.getPosition();
+			String gainLoss = HtmlUtils.formatPercentChange(position.getGainLossPct(), true);
+			rows.add(List.of("Current:", position.getPrice(), position.getMarketValue(), gainLoss));
+			rows.add(List.of("Cost:", position.getCostPerShare(), position.getCostBasis()));
+			return rows;
+		}
 	}
 
 	private static class TransactionsTable extends Table

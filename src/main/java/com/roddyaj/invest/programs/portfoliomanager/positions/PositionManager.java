@@ -94,6 +94,10 @@ public class PositionManager
 					StringUtils.fill(' ', 4 - symbol.length()), percent * 100));
 			}
 		});
+//		accountSettings.allocationStream().forEach(s -> {
+//			System.out.println(String.format("        { \"cat\": \"%s\",%s \"%%\":  %.2f },", s, StringUtils.fill(' ', 5 - s.length()),
+//				account.getAllocationMap().get(s) * 100));
+//		});
 	}
 
 	private void logCurrentAllocations()

@@ -9,8 +9,6 @@ import java.util.Map;
 
 import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table;
-import com.roddyaj.invest.html.Table.Align;
-import com.roddyaj.invest.html.Table.Column;
 
 public class PositionPopup
 {
@@ -46,7 +44,7 @@ public class PositionPopup
 	{
 		StringBuilder text = new StringBuilder();
 		Position position = completePosition.getPosition();
-		text.append(position.getDescription()).append("<br><br>");
+		text.append(removeAfter(position.getDescription(), " ADR")).append("<br><br>");
 		text.append(position.getQuantity()).append(" shares<br><br>");
 		text.append(new PriceTable(completePosition).toHtmlSingleLine());
 		return text.toString();
@@ -70,6 +68,12 @@ public class PositionPopup
 		if (!shareOrders.isEmpty())
 			text = div(Map.of("style", "font-weight: bold;"), "Open Orders") + new OrdersTable(shareOrders).toHtmlSingleLine();
 		return text.toString();
+	}
+
+	private static String removeAfter(String s, String text)
+	{
+		int index = s.indexOf(text);
+		return index != -1 ? s.substring(0, index + text.length()) : s;
 	}
 
 	private static class PriceTable extends Table

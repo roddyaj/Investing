@@ -3,7 +3,10 @@ package com.roddyaj.invest.programs.portfoliomanager.options;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.api.model.Quote;
 import com.roddyaj.invest.model.Account;
@@ -110,6 +113,9 @@ public class OptionsCore
 		// Add in options from the config
 		symbols.addAll(Arrays.asList(input.getSettings().getOptionsInclude()));
 
+		Map<String, CompletePosition> positions = account.getCompletePositions().stream().filter(p -> !p.getPosition().isOption())
+			.collect(Collectors.toMap(CompletePosition::getSymbol, Function.identity()));
+
 		// Create the orders with amount available
 		for (String symbol : symbols)
 		{
@@ -130,7 +136,7 @@ public class OptionsCore
 				boolean canSell = (available / (price * 100)) > 0.9; // Hack: using price in place of strike since we don't have strike
 				if (canSell && isDownForDay)
 				{
-					PutToSell put = new PutToSell(symbol, available, price, dayChangePct);
+					PutToSell put = new PutToSell(symbol, positions.get(symbol), available, price, dayChangePct);
 					put.setOpenOrders(account.getOpenOrders(symbol, Action.SELL, 'P'));
 					output.putsToSell.add(put);
 				}
@@ -142,7 +148,7 @@ public class OptionsCore
 				// Hack: using price in place of strike since we don't have strike
 				boolean canSell = price == null || (available / (price * 100)) > 0.9;
 				if (canSell && isDownForDay)
-					output.putsToSell.add(new PutToSell(symbol, available, price, dayChangePct));
+					output.putsToSell.add(new PutToSell(symbol, positions.get(symbol), available, price, dayChangePct));
 			}
 		}
 	}

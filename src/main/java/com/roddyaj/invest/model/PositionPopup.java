@@ -54,7 +54,7 @@ public class PositionPopup
 	{
 		String text = "";
 		List<Transaction> shareTransactions = completePosition.getTransactions().stream()
-			.filter(t -> t.action() == Action.BUY || t.action() == Action.SELL).limit(8).toList();
+			.filter(t -> t.action() == Action.BUY || t.action() == Action.SELL || t.action() == Action.SELL_TO_OPEN).limit(8).toList();
 		if (!shareTransactions.isEmpty())
 			text = div(Map.of("style", "font-weight: bold;"), "Recent Transactions") + new TransactionsTable(shareTransactions).toHtmlSingleLine();
 		return text.toString();
@@ -128,11 +128,19 @@ public class PositionPopup
 			List<List<Object>> rows = new ArrayList<>(transactions.size());
 			for (Transaction transaction : transactions)
 			{
+				String action = "";
+				if (transaction.action() != null)
+				{
+					action = transaction.action().toString();
+					if (transaction.isOption())
+						action = action.replace("to Open", transaction.option().getTypeText());
+
+				}
 				List<Object> row = new ArrayList<>(4);
 				row.add(transaction.date().toString());
-				row.add(transaction.action() != null ? transaction.action().toString() : "");
+				row.add(action);
 				row.add(transaction.quantity());
-				row.add(transaction.price());
+				row.add(transaction.isOption() ? transaction.option().getStrike() : transaction.price());
 				rows.add(row);
 			}
 			return rows;

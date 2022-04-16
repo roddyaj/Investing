@@ -11,19 +11,23 @@ import com.roddyaj.invest.html.DataFormatter;
 import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table.Align;
 import com.roddyaj.invest.html.Table.Column;
+import com.roddyaj.invest.model.CompletePosition;
 import com.roddyaj.invest.model.OpenOrder;
+import com.roddyaj.invest.model.PositionPopup;
 
 public class PutToSell implements Comparable<PutToSell>
 {
 	private final String symbol;
+	private final CompletePosition completePosition;
 	private final double availableAmount;
 	private final Double underlyingPrice;
 	private final Double dayChangePct;
 	private List<OpenOrder> openOrders;
 
-	public PutToSell(String symbol, double availableAmount, Double underlyingPrice, Double dayChangePct)
+	public PutToSell(String symbol, CompletePosition completePosition, double availableAmount, Double underlyingPrice, Double dayChangePct)
 	{
 		this.symbol = symbol;
+		this.completePosition = completePosition;
 		this.availableAmount = availableAmount;
 		this.underlyingPrice = underlyingPrice;
 		this.dayChangePct = dayChangePct;
@@ -52,7 +56,7 @@ public class PutToSell implements Comparable<PutToSell>
 	{
 		public PutHtmlFormatter(Collection<? extends PutToSell> records, double availableToTrade)
 		{
-			super("Candidate Puts To Sell", String.format("$%.0f avail.", availableToTrade), records);
+			super("Candidate Puts To Sell", String.format("$%.0f available", availableToTrade), records);
 		}
 
 		@Override
@@ -71,11 +75,13 @@ public class PutToSell implements Comparable<PutToSell>
 		@Override
 		protected List<Object> toRow(PutToSell p)
 		{
-			String schwabLink = HtmlUtils.toLink(SchwabDataSource.getOptionChainsUrl(p.symbol), p.symbol);
+			String schwab = HtmlUtils.toLink(SchwabDataSource.getOptionChainsUrl(p.symbol), p.symbol);
+			if (p.completePosition != null)
+				schwab = new PositionPopup(p.completePosition).createPopup(schwab);
 			String yahooLink = YahooUtils.getIconLink(p.symbol);
 			String openOrders = OpenOrder.getPopupText(p.openOrders);
 			String dayChangePct = p.dayChangePct != null ? HtmlUtils.formatPercentChange(p.dayChangePct.doubleValue()) : null;
-			return Arrays.asList(schwabLink, yahooLink, p.availableAmount, openOrders, p.underlyingPrice, dayChangePct);
+			return Arrays.asList(schwab, yahooLink, p.availableAmount, openOrders, p.underlyingPrice, dayChangePct);
 		}
 	}
 }

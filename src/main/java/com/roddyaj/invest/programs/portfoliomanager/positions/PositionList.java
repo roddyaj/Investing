@@ -90,6 +90,7 @@ public class PositionList
 		{
 			List<Column> columns = new ArrayList<>();
 			columns.add(new Column("Ticker", "%s", Align.L));
+			columns.add(new Column("#", "%d", Align.R));
 			columns.add(new Column("Percent", "%.2f%%", Align.R));
 			columns.add(new Column("G/L", "%s", Align.R));
 			return columns;
@@ -101,7 +102,7 @@ public class PositionList
 			String link = new PositionPopup(p).createPopup(YahooUtils.getLink(p.getSymbol()));
 			double percentOfAccount = p.getPosition().getMarketValue() / account.getTotalValue() * 100;
 			String gainLossPctColored = HtmlUtils.formatPercentChange(p.getPosition().getGainLossPct());
-			return List.of(link, percentOfAccount, gainLossPctColored);
+			return List.of(link, p.getPosition().getQuantity(), percentOfAccount, gainLossPctColored);
 		}
 	}
 
@@ -119,7 +120,7 @@ public class PositionList
 		protected List<Column> getColumns()
 		{
 			List<Column> columns = new ArrayList<>();
-			columns.add(new Column("Amount", "$%.2f", Align.R));
+			columns.add(new Column("Amount", "$%,.2f", Align.R));
 			columns.add(new Column("Target", "%.2f%%", Align.R));
 			columns.add(new Column("Actual", "%.2f%%", Align.R));
 			return columns;

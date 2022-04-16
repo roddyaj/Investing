@@ -101,7 +101,7 @@ public class PortfolioManager implements Program
 	private static Block getSummary(Account account, double portfolioReturn)
 	{
 		KeyValueData summary = new KeyValueData("Summary");
-		summary.addData("Balance:", String.format("$%.0f", account.getTotalValue()));
+		summary.addData("Balance:", String.format("$%,.0f", account.getTotalValue()));
 		summary.addData("Return:", String.format("%.2f%%", portfolioReturn * 100));
 		return summary.toBlock();
 	}

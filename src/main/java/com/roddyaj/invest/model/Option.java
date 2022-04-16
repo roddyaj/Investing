@@ -69,6 +69,11 @@ public class Option
 		return type;
 	}
 
+	public String getTypeText()
+	{
+		return type == 'C' ? "Call" : type == 'P' ? "Put" : null;
+	}
+
 	public String getMoney()
 	{
 		return money;

@@ -47,6 +47,8 @@ public class PositionPopup
 		text.append(removeAfter(position.getDescription(), " ADR")).append("<br><br>");
 		text.append(position.getQuantity()).append(" shares<br><br>");
 		text.append(new PriceTable(completePosition).toHtmlSingleLine());
+		text.append("<br>52 week range: ").append(position.get_52WeekLow()).append(" - ").append(position.get_52WeekHigh()).append("<br>");
+		text.append("<div style=\"margin-top: 4px\">Dividend yield: ").append(position.getDividendYield()).append("%</div>");
 		return text.toString();
 	}
 

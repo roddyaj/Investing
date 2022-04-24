@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import static com.roddyaj.invest.html.HtmlUtils.div;
+import static com.roddyaj.invest.html.HtmlUtils.tag;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,11 +45,26 @@ public class PositionPopup
 	{
 		StringBuilder text = new StringBuilder();
 		Position position = completePosition.getPosition();
-		text.append(removeAfter(position.getDescription(), " ADR")).append("<br><br>");
-		text.append(position.getQuantity()).append(" shares<br><br>");
+		text.append(tag("p", getTitle(position)));
+		text.append(tag("p", getShareCountLine(position)));
 		text.append(new PriceTable(completePosition).toHtmlSingleLine());
 		text.append("<br>52 week range: ").append(position.get_52WeekLow()).append(" - ").append(position.get_52WeekHigh()).append("<br>");
 		text.append("<div style=\"margin-top: 4px\">Dividend yield: ").append(position.getDividendYield()).append("%</div>");
+		return text.toString();
+	}
+
+	private String getTitle(Position position)
+	{
+		return removeAfter(position.getDescription(), " ADR");
+	}
+
+	private String getShareCountLine(Position position)
+	{
+		StringBuilder text = new StringBuilder();
+		text.append(position.getQuantity()).append(" shares");
+		text.append("&nbsp;&nbsp;&nbsp;");
+		String dayChange = HtmlUtils.formatPercentChange(position.getDayChangePct(), true);
+		text.append(dayChange).append(" today");
 		return text.toString();
 	}
 

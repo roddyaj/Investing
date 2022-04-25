@@ -1,6 +1,7 @@
 package com.roddyaj.invest.model;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 import com.roddyaj.invest.util.StringUtils;
 
@@ -19,6 +20,17 @@ public record Transaction(LocalDate date, Action action, String symbol, int quan
 	public boolean isPutOption()
 	{
 		return isOption() && option.getType() == 'P';
+	}
+
+	public int getCollapsibleIdentifier()
+	{
+		return Objects.hash(date, action, symbol, price, option != null ? System.identityHashCode(option) : 0);
+	}
+
+	public static Transaction collapse(Transaction a, Transaction b)
+	{
+		return a == null ? b
+			: new Transaction(a.date(), a.action(), a.symbol(), a.quantity() + b.quantity(), a.price(), a.amount() + b.amount(), a.option());
 	}
 
 	@Override

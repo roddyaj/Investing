@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.roddyaj.invest.html.HtmlUtils;
 import com.roddyaj.invest.html.Table;
@@ -45,7 +46,7 @@ public class PositionPopup
 	{
 		StringBuilder text = new StringBuilder();
 		Position position = completePosition.getPosition();
-		text.append(tag("p", getTitle(position)));
+		text.append(getTitle(position));
 		text.append(tag("p", getShareCountLine(position)));
 		text.append(new PriceTable(completePosition).toHtmlSingleLine());
 		text.append("<br>52 week range: ").append(position.get_52WeekLow()).append(" - ").append(position.get_52WeekHigh()).append("<br>");
@@ -71,10 +72,12 @@ public class PositionPopup
 	private String getTransactionsContent()
 	{
 		String text = "";
-		List<Transaction> shareTransactions = completePosition.getTransactions().stream()
-			.filter(t -> t.action() == Action.BUY || t.action() == Action.SELL || t.action() == Action.SELL_TO_OPEN).limit(8).toList();
-		if (!shareTransactions.isEmpty())
-			text = div(Map.of("style", "font-weight: bold;"), "Recent Transactions") + new TransactionsTable(shareTransactions).toHtmlSingleLine();
+		List<Transaction> transactions = completePosition.getTransactions().stream()
+			.filter(t -> t.action() == Action.BUY || t.action() == Action.SELL || t.action() == Action.SELL_TO_OPEN)
+			.collect(Collectors.groupingBy(Transaction::getCollapsibleIdentifier, Collectors.reducing(null, Transaction::collapse))).values().stream()
+			.sorted((a, b) -> b.date().compareTo(a.date())).limit(8).toList();
+		if (!transactions.isEmpty())
+			text = div(Map.of("style", "font-weight: bold;"), "Recent Transactions") + new TransactionsTable(transactions).toHtmlSingleLine();
 		return text.toString();
 	}
 

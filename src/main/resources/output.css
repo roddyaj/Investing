@@ -12,6 +12,10 @@ body {
 	font: 14px Arial, sans-serif;
 }
 
+table {
+	margin: -2px;
+}
+
 th {
 	font-weight: normal;
 	background-color: #CCC;

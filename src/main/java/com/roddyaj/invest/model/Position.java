@@ -206,7 +206,7 @@ public class Position implements Comparable<Position>
 			columns.add(new Column("", "%s", Align.R));
 			columns.add(new Column("Strike", "%.2f", Align.R));
 			columns.add(new Column("Price", "%.2f", Align.R));
-			columns.add(new Column("Cost", "%.2f", Align.R));
+//			columns.add(new Column("Cost", "%.2f", Align.R));
 //			columns.add(new Column("U Cost", "%.2f", Align.R));
 			columns.add(new Column("", "%s", Align.C));
 			return columns;
@@ -225,13 +225,13 @@ public class Position implements Comparable<Position>
 //			}
 			int dte = p.option.getDteCurrent();
 			String dteText = "(" + dte + ")";
-			Double underlyingCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getCostPerShare() : null;
+//			Double underlyingCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getCostPerShare() : null;
 //			Double underlyingUCostPerShare = p.option.getUnderlying() != null ? p.option.getUnderlying().getUnadjustedCostPerShare() : null;
 			Chart chart = getSvgChart(p.option);
 			String chartWithPopup = chart != null ? HtmlUtils.createPopup(chart.toSvg(16, 28), chart.toSvg(64, 114), false) : "";
 
 			return Arrays.asList(link, quantityText, p.option.getType(), p.option.getExpiryDate().format(DATE_FORMAT), dteText, p.option.getStrike(),
-				p.option.getUnderlyingPrice(), underlyingCostPerShare, chartWithPopup);
+				p.option.getUnderlyingPrice(), chartWithPopup);
 		}
 
 		private static Chart getSvgChart(Option option)

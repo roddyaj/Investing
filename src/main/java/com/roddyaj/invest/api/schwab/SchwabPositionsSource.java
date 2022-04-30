@@ -50,7 +50,7 @@ public class SchwabPositionsSource
 
 	private Path getAccountFile()
 	{
-		return AppFileUtils.getAccountFile(accountSettings.getName() + "-Positions-.*\\.CSV",
+		return AppFileUtils.getAccountFile(accountSettings.getName() + ".*-Positions-.*\\.CSV",
 			(p1, p2) -> SchwabPositionsFile.getTime(p2).compareTo(SchwabPositionsFile.getTime(p1)));
 	}
 

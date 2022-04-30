@@ -48,6 +48,7 @@ public record Order(String symbol, int quantity, double price, CompletePosition 
 		{
 			Position position = o.completePosition != null ? o.completePosition.getPosition() : null;
 			Action action = o.quantity >= 0 ? Action.BUY : Action.SELL;
+			String actionText = HtmlUtils.color(action.toString(), action == Action.BUY ? "#040" : "#400");
 
 			String url = SchwabDataSource.getTradeUrl(action, o.symbol);
 			String link = HtmlUtils.toLink(url, o.symbol, Map.of("onclick", String.format("copyClip('%d');", Math.abs(o.quantity))));
@@ -64,7 +65,7 @@ public record Order(String symbol, int quantity, double price, CompletePosition 
 			String gainLossPctColored = position != null ? HtmlUtils.formatPercentChange(position.getGainLossPct()) : "";
 			String cost = position != null ? String.format("%.2f", position.getCostPerShare()) : "";
 
-			return Arrays.asList(link, yahoo, action.toString(), quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, cost);
+			return Arrays.asList(link, yahoo, actionText, quantityText, o.price, o.getAmount(), dayChangeColored, gainLossPctColored, cost);
 		}
 	}
 }

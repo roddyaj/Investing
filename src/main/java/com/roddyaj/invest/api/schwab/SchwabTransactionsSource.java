@@ -8,6 +8,8 @@ import com.roddyaj.invest.model.Option;
 import com.roddyaj.invest.model.Transaction;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.util.AppFileUtils;
+import com.roddyaj.schwabparse.SchwabTransaction;
+import com.roddyaj.schwabparse.SchwabTransactionsFile;
 
 public class SchwabTransactionsSource
 {

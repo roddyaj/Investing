@@ -9,6 +9,8 @@ import com.roddyaj.invest.model.Position;
 import com.roddyaj.invest.model.SecurityType;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.util.AppFileUtils;
+import com.roddyaj.schwabparse.SchwabPosition;
+import com.roddyaj.schwabparse.SchwabPositionsFile;
 
 public class SchwabPositionsSource
 {

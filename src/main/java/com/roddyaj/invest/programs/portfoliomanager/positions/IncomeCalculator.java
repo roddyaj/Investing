@@ -55,6 +55,11 @@ public class IncomeCalculator
 			monthToIncome.add(new MonthlyIncome(month, monthToOptionsIncome.getOrDefault(month, 0.), monthToDividendIncome.getOrDefault(month, 0.),
 					monthToContributions.getOrDefault(month, 0.)));
 
+		double optionsTotal = monthToOptionsIncome.values().stream().mapToDouble(Double::doubleValue).sum();
+		double dividendTotal = monthToDividendIncome.values().stream().mapToDouble(Double::doubleValue).sum();
+		double contributionsTotal = monthToContributions.values().stream().mapToDouble(Double::doubleValue).sum();
+		monthToIncome.add(new MonthlyIncome("Total", optionsTotal, dividendTotal, contributionsTotal));
+
 		return monthToIncome;
 	}
 

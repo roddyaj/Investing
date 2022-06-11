@@ -58,7 +58,7 @@ public class PositionManager
 			int quantity = round(delta / position.getPrice(), .75);
 
 			boolean isBuy = quantity > 0;
-			boolean doOrder = quantity != 0 && Math.abs(delta / targetValue) > (isBuy ? 0.005 : 0.01)
+			boolean doOrder = quantity != 0 && Math.abs(delta / targetValue) > (isBuy ? 0.005 : 0.04)
 				&& Math.abs(quantity * position.getPrice()) >= accountSettings.getMinOrder();
 			if (doOrder)
 			{

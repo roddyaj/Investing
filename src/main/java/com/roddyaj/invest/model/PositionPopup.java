@@ -75,7 +75,7 @@ public class PositionPopup
 		List<Transaction> transactions = completePosition.getTransactions().stream()
 			.filter(t -> t.action() == Action.BUY || t.action() == Action.SELL || t.action() == Action.SELL_TO_OPEN)
 			.collect(Collectors.groupingBy(Transaction::getCollapsibleIdentifier, Collectors.reducing(null, Transaction::collapse))).values().stream()
-			.sorted((a, b) -> b.date().compareTo(a.date())).limit(8).toList();
+			.sorted((a, b) -> Integer.compare(a.index(), b.index())).limit(8).toList();
 		if (!transactions.isEmpty())
 			text = div(Map.of("style", "font-weight: bold;"), "Recent Transactions") + new TransactionsTable(transactions).toHtmlSingleLine();
 		return text.toString();

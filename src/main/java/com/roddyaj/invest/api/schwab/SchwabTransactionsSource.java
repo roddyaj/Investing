@@ -13,6 +13,8 @@ import com.roddyaj.schwabparse.SchwabTransactionsFile;
 
 public class SchwabTransactionsSource
 {
+	private static int transactionIndex = 0;
+
 	private final AccountSettings accountSettings;
 
 	private List<Transaction> transactions;
@@ -67,6 +69,7 @@ public class SchwabTransactionsSource
 
 		// @formatter:off
 		return new Transaction(
+			transactionIndex++,
 			transaction.date(),
 			parseAction(transaction.action()),
 			symbol != null ? symbol : "",

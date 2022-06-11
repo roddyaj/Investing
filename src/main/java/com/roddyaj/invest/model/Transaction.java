@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import com.roddyaj.invest.util.StringUtils;
 
-public record Transaction(LocalDate date, Action action, String symbol, int quantity, double price, double amount, Option option)
+public record Transaction(int index, LocalDate date, Action action, String symbol, int quantity, double price, double amount, Option option)
 {
 	public boolean isOption()
 	{
@@ -29,8 +29,7 @@ public record Transaction(LocalDate date, Action action, String symbol, int quan
 
 	public static Transaction collapse(Transaction a, Transaction b)
 	{
-		return a == null ? b
-			: new Transaction(a.date(), a.action(), a.symbol(), a.quantity() + b.quantity(), a.price(), a.amount() + b.amount(), a.option());
+		return a == null ? b : new Transaction(a.index, a.date, a.action, a.symbol, a.quantity + b.quantity, a.price, a.amount + b.amount, a.option);
 	}
 
 	@Override

@@ -51,6 +51,8 @@ public class PositionPopup
 		text.append(new PriceTable(completePosition).toHtmlSingleLine());
 		text.append("<br>52 week range: ").append(position.get_52WeekLow()).append(" - ").append(position.get_52WeekHigh()).append("<br>");
 		text.append("<div style=\"margin-top: 4px\">Dividend yield: ").append(position.getDividendYield()).append("%</div>");
+		if (position.getPeRatio() != null)
+			text.append("<div style=\"margin-top: 4px\">P/E ratio: ").append(position.getPeRatio()).append("</div>");
 		return text.toString();
 	}
 

@@ -29,6 +29,7 @@ public class Position implements Comparable<Position>
 	private final double dayChangePct;
 	private final double gainLossPct;
 	private final double percentOfAccount;
+	private final Double peRatio;
 	private final double _52WeekLow;
 	private final double _52WeekHigh;
 	private final double dividendYield;
@@ -37,7 +38,7 @@ public class Position implements Comparable<Position>
 	private final Option option;
 
 	public Position(String symbol, String description, int quantity, double price, double marketValue, SecurityType securityType, double costBasis,
-		double dayChangePct, double gainLossPct, double percentOfAccount, double _52WeekLow, double _52WeekHigh, double dividendYield, Option option)
+		double dayChangePct, double gainLossPct, double percentOfAccount, Double peRatio, double _52WeekLow, double _52WeekHigh, double dividendYield, Option option)
 	{
 		this.symbol = symbol;
 		this.description = description;
@@ -49,6 +50,7 @@ public class Position implements Comparable<Position>
 		this.dayChangePct = dayChangePct;
 		this.gainLossPct = gainLossPct;
 		this.percentOfAccount = percentOfAccount;
+		this.peRatio = peRatio;
 		this._52WeekLow = _52WeekLow;
 		this._52WeekHigh = _52WeekHigh;
 		this.dividendYield = dividendYield;
@@ -108,6 +110,11 @@ public class Position implements Comparable<Position>
 	public double getPercentOfAccount()
 	{
 		return percentOfAccount;
+	}
+
+	public Double getPeRatio()
+	{
+		return peRatio;
 	}
 
 	public double get_52WeekLow()

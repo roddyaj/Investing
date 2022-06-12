@@ -87,6 +87,7 @@ public class SchwabPositionsSource
 			position.dayChangePct() != null ? position.dayChangePct().doubleValue() : 0,
 			position.gainLossPct() != null ? position.gainLossPct().doubleValue() : 0,
 			position.percentOfAccount() != null ? position.percentOfAccount().doubleValue() : 0,
+			position.peRatio(),
 			position._52WeekLow() != null ? position._52WeekLow().doubleValue() : 0,
 			position._52WeekHigh() != null ? position._52WeekHigh().doubleValue() : 0,
 			position.dividendYield() != null ? position.dividendYield().doubleValue() : 0,

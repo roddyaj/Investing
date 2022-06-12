@@ -3,6 +3,7 @@ package com.roddyaj.invest.programs.portfoliomanager.positions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.roddyaj.invest.api.yahoo.YahooUtils;
 import com.roddyaj.invest.html.Block;
@@ -66,12 +67,15 @@ public class PositionList
 		@Override
 		protected List<Object> toRow(CompletePosition p)
 		{
-			String link = new PositionPopup(p).createPopup(YahooUtils.getLink(p.getSymbol()));
+			String link = YahooUtils.getLink(p.getSymbol());
+			if (p.getPosition().getPeRatio() != null && p.getPosition().getPeRatio() < 0)
+				link = HtmlUtils.div(Map.of("style", "background-color: #FDD;"), link);
+			String popup = new PositionPopup(p).createPopup(link);
 			double targetPercent = account.getAllocation(p.getSymbol()) * 100;
 			double percentOfAccount = p.getPosition().getMarketValue() / account.getTotalValue() * 100;
 			double ratio = Math.min(percentOfAccount / targetPercent * 100, 999);
 			String gainLossPctColored = HtmlUtils.formatPercentChange(p.getPosition().getGainLossPct());
-			return List.of(link, targetPercent, percentOfAccount, ratio, gainLossPctColored);
+			return List.of(popup, targetPercent, percentOfAccount, ratio, gainLossPctColored);
 		}
 	}
 
@@ -99,10 +103,13 @@ public class PositionList
 		@Override
 		protected List<Object> toRow(CompletePosition p)
 		{
-			String link = new PositionPopup(p).createPopup(YahooUtils.getLink(p.getSymbol()));
+			String link = YahooUtils.getLink(p.getSymbol());
+			if (p.getPosition().getPeRatio() != null && p.getPosition().getPeRatio() < 0)
+				link = HtmlUtils.div(Map.of("style", "background-color: #FDD;"), link);
+			String popup = new PositionPopup(p).createPopup(link);
 			double percentOfAccount = p.getPosition().getMarketValue() / account.getTotalValue() * 100;
 			String gainLossPctColored = HtmlUtils.formatPercentChange(p.getPosition().getGainLossPct());
-			return List.of(link, p.getPosition().getQuantity(), percentOfAccount, gainLossPctColored);
+			return List.of(popup, p.getPosition().getQuantity(), percentOfAccount, gainLossPctColored);
 		}
 	}
 

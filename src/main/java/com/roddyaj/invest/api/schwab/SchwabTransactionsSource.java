@@ -40,12 +40,12 @@ public class SchwabTransactionsSource
 
 	private Path getAccountFile()
 	{
-		final String pattern = "_Transactions_.*\\.CSV";
+		final String pattern = ".*_Transactions_.*\\.csv";
 		Path file = AppFileUtils.getAccountFile(accountSettings.getName() + pattern,
 				(p1, p2) -> SchwabTransactionsFile.getTime(p2).compareTo(SchwabTransactionsFile.getTime(p1)));
 		if (file == null)
 		{
-			String masked = "XXXX" + accountSettings.getAccountNumber().substring(4);
+			String masked = "XXXXX" + accountSettings.getAccountNumber().substring(5);
 			file = AppFileUtils.getAccountFile(masked + pattern,
 					(p1, p2) -> SchwabTransactionsFile.getTime(p2).compareTo(SchwabTransactionsFile.getTime(p1)));
 		}

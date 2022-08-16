@@ -63,7 +63,7 @@ public class SchwabDataSource extends AbstractDataSource
 	@Override
 	public double getTotalValue()
 	{
-		return getPositions().stream().filter(p -> p.getSymbol().equals("Account Total")).mapToDouble(Position::getMarketValue).findFirst().orElse(0);
+		return positionsSource.getBalance();
 	}
 
 	@Override

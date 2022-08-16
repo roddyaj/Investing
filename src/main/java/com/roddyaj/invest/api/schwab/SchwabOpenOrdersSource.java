@@ -8,7 +8,7 @@ import com.roddyaj.invest.model.Option;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.schwabparse.SchwabOrder;
-import com.roddyaj.schwabparse.SchwabOrdersFile;
+import com.roddyaj.schwabparse.SchwabOrdersReader;
 
 public class SchwabOpenOrdersSource
 {
@@ -27,8 +27,7 @@ public class SchwabOpenOrdersSource
 		{
 			Path ordersFile = getAccountFile();
 			if (ordersFile != null)
-				openOrders = new SchwabOrdersFile(ordersFile).getOrders().stream().filter(o -> "OPEN".equals(o.status()))
-					.map(SchwabOpenOrdersSource::convert).toList();
+				openOrders = new SchwabOrdersReader().read(ordersFile).getOpenOrders().stream().map(SchwabOpenOrdersSource::convert).toList();
 			else
 				openOrders = List.of();
 		}
@@ -38,7 +37,7 @@ public class SchwabOpenOrdersSource
 	private Path getAccountFile()
 	{
 		return AppFileUtils.getAccountFile(accountSettings.getAccountNumber() + " Order Details.*\\.CSV",
-			(p1, p2) -> SchwabOrdersFile.getTime(p2).compareTo(SchwabOrdersFile.getTime(p1)));
+			(p1, p2) -> SchwabOrdersReader.getTime(p2).compareTo(SchwabOrdersReader.getTime(p1)));
 	}
 
 	private static OpenOrder convert(SchwabOrder order)

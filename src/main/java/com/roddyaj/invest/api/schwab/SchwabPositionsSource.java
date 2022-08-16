@@ -10,15 +10,16 @@ import com.roddyaj.invest.model.SecurityType;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.schwabparse.SchwabPosition;
-import com.roddyaj.schwabparse.SchwabPositionsFile;
+import com.roddyaj.schwabparse.SchwabPositionsData;
+import com.roddyaj.schwabparse.SchwabPositionsReader;
 
 public class SchwabPositionsSource
 {
 	private final AccountSettings accountSettings;
 
-	private List<Position> positions;
+	private SchwabPositionsData positionsData;
 
-	private ZonedDateTime dateTime;
+	private List<Position> positions;
 
 	public SchwabPositionsSource(AccountSettings accountSettings)
 	{
@@ -32,9 +33,8 @@ public class SchwabPositionsSource
 			Path positionsFile = getAccountFile();
 			if (positionsFile != null)
 			{
-				SchwabPositionsFile schwabPositionsFile = new SchwabPositionsFile(positionsFile);
-				positions = schwabPositionsFile.getPositions().stream().map(SchwabPositionsSource::convert).toList();
-				dateTime = schwabPositionsFile.getTime();
+				positionsData = new SchwabPositionsReader().read(positionsFile);
+				positions = positionsData.positions().stream().map(SchwabPositionsSource::convert).toList();
 			}
 			else
 			{
@@ -47,13 +47,18 @@ public class SchwabPositionsSource
 	public ZonedDateTime getDateTime()
 	{
 		getPositions();
-		return dateTime;
+		return positionsData != null ? positionsData.time() : null;
+	}
+
+	public double getBalance()
+	{
+		return positionsData != null ? positionsData.balance() : 0;
 	}
 
 	private Path getAccountFile()
 	{
 		return AppFileUtils.getAccountFile(accountSettings.getName() + ".*-Positions-.*\\.CSV",
-			(p1, p2) -> SchwabPositionsFile.getTime(p2).compareTo(SchwabPositionsFile.getTime(p1)));
+			(p1, p2) -> SchwabPositionsReader.getTime(p2).compareTo(SchwabPositionsReader.getTime(p1)));
 	}
 
 	private static Position convert(SchwabPosition position)

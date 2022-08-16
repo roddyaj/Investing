@@ -9,7 +9,7 @@ import com.roddyaj.invest.model.Transaction;
 import com.roddyaj.invest.model.settings.AccountSettings;
 import com.roddyaj.invest.util.AppFileUtils;
 import com.roddyaj.schwabparse.SchwabTransaction;
-import com.roddyaj.schwabparse.SchwabTransactionsFile;
+import com.roddyaj.schwabparse.SchwabTransactionsReader;
 
 public class SchwabTransactionsSource
 {
@@ -30,8 +30,8 @@ public class SchwabTransactionsSource
 		{
 			Path transactionsFile = getAccountFile();
 			if (transactionsFile != null)
-				transactions = new SchwabTransactionsFile(transactionsFile).getTransactions().stream().map(SchwabTransactionsSource::convert)
-						.toList();
+				transactions = new SchwabTransactionsReader().read(transactionsFile).transactions().stream().map(SchwabTransactionsSource::convert)
+					.toList();
 			else
 				transactions = List.of();
 		}
@@ -42,12 +42,12 @@ public class SchwabTransactionsSource
 	{
 		final String pattern = ".*_Transactions_.*\\.csv";
 		Path file = AppFileUtils.getAccountFile(accountSettings.getName() + pattern,
-				(p1, p2) -> SchwabTransactionsFile.getTime(p2).compareTo(SchwabTransactionsFile.getTime(p1)));
+			(p1, p2) -> SchwabTransactionsReader.getTime(p2).compareTo(SchwabTransactionsReader.getTime(p1)));
 		if (file == null)
 		{
 			String masked = "XXXXX" + accountSettings.getAccountNumber().substring(5);
 			file = AppFileUtils.getAccountFile(masked + pattern,
-					(p1, p2) -> SchwabTransactionsFile.getTime(p2).compareTo(SchwabTransactionsFile.getTime(p1)));
+				(p1, p2) -> SchwabTransactionsReader.getTime(p2).compareTo(SchwabTransactionsReader.getTime(p1)));
 		}
 		return file;
 	}
